@@ -34,6 +34,15 @@
   --bleed: color-mix(in oklab, var(--grey) 60%, var(--light));
 }
 
+/* The ink colour is the theme's near black with a light label and a light icon disc. The Back tile uses it. */
+.ink {
+  --bg: var(--ink);
+  --on: var(--light);
+  --chip: var(--light);
+  --chip-on: var(--ink);
+  --bleed: color-mix(in oklab, var(--ink) 60%, var(--light));
+}
+
 /* The Colours theme gives the cells four hues. */
 [data-theme='colours'] :is(.c1, .c4) {
   --h: 250;

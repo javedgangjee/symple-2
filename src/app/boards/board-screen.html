@@ -1,0 +1,18 @@
+@if (board(); as board) {
+  <div class="grid" [attr.data-layout]="board.layout ?? layout.name()">
+    <!-- The groups are tracked by board, so a new board gets new cells and focus does not stay on an old one. -->
+    @for (group of board.groups; track id() + '/' + $index) {
+      <div class="group">
+        @for (cell of group.cells; track $index) {
+          <app-cell
+            [tile]="cell.tile"
+            [style.flex-grow]="share(group, cell)"
+            (press)="onPress($event)"
+          />
+        }
+      </div>
+    }
+  </div>
+}
+<!-- A screen reader hears the phrase or the message here after a press. -->
+<p class="sr-only" role="status">{{ status() }}</p>

@@ -1,0 +1,34 @@
+<button
+  type="button"
+  [class]="classes()"
+  [attr.aria-label]="name()"
+  [attr.aria-pressed]="pressed()"
+  (click)="press.emit(tile())"
+>
+  @let shown = tile();
+  @switch (shown.style) {
+    @case ('symbol') {
+      <span class="plate"><img [src]="'symbols/' + shown.symbol" alt="" /></span>
+      <span class="label">{{ label() }}</span>
+    }
+    @case ('message') {
+      <span class="text"
+        ><span>{{ message.text() }}<span class="caret" aria-hidden="true"></span></span
+      ></span>
+    }
+    @case ('key') {
+      @if (shown.icon; as icon) {
+        <app-icon [name]="icon" />
+      } @else {
+        <span class="label">{{ label() }}</span>
+      }
+    }
+    @default {
+      @if (shown.icon; as icon) {
+        <!-- The crop keeps a bleed icon inside the rounded corners of the cell. -->
+        <span class="crop"><app-icon [name]="icon" /></span>
+      }
+      <span class="label">{{ label() }}</span>
+    }
+  }
+</button>

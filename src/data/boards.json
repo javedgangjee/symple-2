@@ -1,0 +1,709 @@
+[
+  {
+    "id": "home",
+    "title": "Home",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "my-boards"
+          },
+          {
+            "tile": "needs"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "quick-phrases"
+          },
+          {
+            "tile": "keyboards"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "needs",
+    "title": "Needs",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "help"
+          },
+          {
+            "tile": "pain"
+          },
+          {
+            "tile": "toilet"
+          },
+          {
+            "tile": "drink"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "eat"
+          },
+          {
+            "tile": "medicine"
+          },
+          {
+            "tile": "hot"
+          },
+          {
+            "tile": "blanket"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "bed"
+          },
+          {
+            "tile": "move-me"
+          },
+          {
+            "tile": "itch"
+          },
+          {
+            "tile": "glasses"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "quick-phrases",
+    "title": "Quick phrases",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "yes"
+          },
+          {
+            "tile": "no"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "more"
+          },
+          {
+            "tile": "good"
+          },
+          {
+            "tile": "hello"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "finished"
+          },
+          {
+            "tile": "dont-know"
+          },
+          {
+            "tile": "wait"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "my-boards",
+    "title": "My boards",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "food"
+          },
+          {
+            "tile": "drinks"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "feelings"
+          },
+          {
+            "tile": "people"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "places"
+          },
+          {
+            "tile": "activities"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "food",
+    "title": "Food",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "breakfast"
+          },
+          {
+            "tile": "lunch"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "dinner"
+          },
+          {
+            "tile": "snack"
+          },
+          {
+            "tile": "fruit"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "soup"
+          },
+          {
+            "tile": "bread"
+          },
+          {
+            "tile": "something-sweet"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "drinks",
+    "title": "Drinks",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "water"
+          },
+          {
+            "tile": "tea"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "coffee"
+          },
+          {
+            "tile": "juice"
+          },
+          {
+            "tile": "milk"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "something-cold"
+          },
+          {
+            "tile": "something-hot"
+          },
+          {
+            "tile": "straw"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "feelings",
+    "title": "Feelings",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "happy"
+          },
+          {
+            "tile": "sad"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "tired"
+          },
+          {
+            "tile": "angry"
+          },
+          {
+            "tile": "scared"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "worried"
+          },
+          {
+            "tile": "hungry"
+          },
+          {
+            "tile": "fine"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "people",
+    "title": "People",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "family"
+          },
+          {
+            "tile": "grandparents"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "carer"
+          },
+          {
+            "tile": "doctor"
+          },
+          {
+            "tile": "nurse"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "visitor"
+          },
+          {
+            "tile": "partner"
+          },
+          {
+            "tile": "parents"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "places",
+    "title": "Places",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "place-home"
+          },
+          {
+            "tile": "bedroom"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "bathroom"
+          },
+          {
+            "tile": "kitchen"
+          },
+          {
+            "tile": "garden"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "outside"
+          },
+          {
+            "tile": "shop"
+          },
+          {
+            "tile": "hospital"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "activities",
+    "title": "Activities",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "tv"
+          },
+          {
+            "tile": "music"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "read"
+          },
+          {
+            "tile": "go-out"
+          },
+          {
+            "tile": "rest"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "phone-call"
+          },
+          {
+            "tile": "game"
+          },
+          {
+            "tile": "shower"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "keyboard",
+    "title": "Keyboard",
+    "layout": "rows",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back",
+            "size": 1
+          },
+          {
+            "tile": "message",
+            "size": 9
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-q"
+          },
+          {
+            "tile": "key-w"
+          },
+          {
+            "tile": "key-e"
+          },
+          {
+            "tile": "key-r"
+          },
+          {
+            "tile": "key-t"
+          },
+          {
+            "tile": "key-y"
+          },
+          {
+            "tile": "key-u"
+          },
+          {
+            "tile": "key-i"
+          },
+          {
+            "tile": "key-o"
+          },
+          {
+            "tile": "key-p"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-a"
+          },
+          {
+            "tile": "key-s"
+          },
+          {
+            "tile": "key-d"
+          },
+          {
+            "tile": "key-f"
+          },
+          {
+            "tile": "key-g"
+          },
+          {
+            "tile": "key-h"
+          },
+          {
+            "tile": "key-j"
+          },
+          {
+            "tile": "key-k"
+          },
+          {
+            "tile": "key-l"
+          },
+          {
+            "tile": "key-backspace"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-caps"
+          },
+          {
+            "tile": "key-z"
+          },
+          {
+            "tile": "key-x"
+          },
+          {
+            "tile": "key-c"
+          },
+          {
+            "tile": "key-v"
+          },
+          {
+            "tile": "key-b"
+          },
+          {
+            "tile": "key-n"
+          },
+          {
+            "tile": "key-m"
+          },
+          {
+            "tile": "key-full-stop"
+          },
+          {
+            "tile": "key-question-mark"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-123",
+            "size": 2
+          },
+          {
+            "tile": "key-space",
+            "size": 6
+          },
+          {
+            "tile": "key-clear",
+            "size": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "keyboard-numbers",
+    "title": "Numbers and symbols",
+    "layout": "rows",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back",
+            "size": 1
+          },
+          {
+            "tile": "message",
+            "size": 9
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-1"
+          },
+          {
+            "tile": "key-2"
+          },
+          {
+            "tile": "key-3"
+          },
+          {
+            "tile": "key-4"
+          },
+          {
+            "tile": "key-5"
+          },
+          {
+            "tile": "key-6"
+          },
+          {
+            "tile": "key-7"
+          },
+          {
+            "tile": "key-8"
+          },
+          {
+            "tile": "key-9"
+          },
+          {
+            "tile": "key-0"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-hyphen"
+          },
+          {
+            "tile": "key-slash"
+          },
+          {
+            "tile": "key-colon"
+          },
+          {
+            "tile": "key-semicolon"
+          },
+          {
+            "tile": "key-left-bracket"
+          },
+          {
+            "tile": "key-right-bracket"
+          },
+          {
+            "tile": "key-ampersand"
+          },
+          {
+            "tile": "key-at-sign"
+          },
+          {
+            "tile": "key-quotation-mark"
+          },
+          {
+            "tile": "key-apostrophe"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-comma"
+          },
+          {
+            "tile": "key-exclamation-mark"
+          },
+          {
+            "tile": "key-pound-sign"
+          },
+          {
+            "tile": "key-dollar-sign"
+          },
+          {
+            "tile": "key-percent-sign"
+          },
+          {
+            "tile": "key-plus-sign"
+          },
+          {
+            "tile": "key-equals-sign"
+          },
+          {
+            "tile": "key-full-stop"
+          },
+          {
+            "tile": "key-question-mark"
+          },
+          {
+            "tile": "key-backspace"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-space",
+            "size": 8
+          },
+          {
+            "tile": "key-clear",
+            "size": 2
+          }
+        ]
+      }
+    ]
+  }
+]

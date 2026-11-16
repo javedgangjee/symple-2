@@ -1,0 +1,255 @@
+/* The host is the box that the cell fills. The button sizes its padding, label and icon from it, */
+/* because the same cell can be tall in one layout and wide in the other. */
+:host {
+  container-type: size;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The base rules are copied from context/design/home.html. They are also the signage cell: */
+/* the icon sits in a disc at the top left and the label sits at the bottom. */
+.cell {
+  --glass: var(--glass-dark);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2cqmin;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(6px, 9cqmin, 30px);
+  border: 0;
+  border-radius: var(--radius);
+  /* The fill is the cell's own colour, partly see-through, with a pale sheen across the top. */
+  background-color: color-mix(in oklab, var(--bg) var(--glass), transparent);
+  background-image: linear-gradient(165deg, oklch(1 0 0 / 0.16), oklch(1 0 0 / 0) 45%);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  color: var(--on);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  outline: var(--ring) solid transparent;
+  outline-offset: 3px;
+  /* The rim, then a tight shadow that draws the edge and two that lift the cell off the page. */
+  box-shadow:
+    var(--rim),
+    0 1px 2px oklch(0.25 calc(var(--shc) * 0.625) var(--shade) / 0.144),
+    0 3px 6px -2px oklch(0.25 calc(var(--shc) * 0.75) var(--shade) / 0.104),
+    0 10px 18px -10px oklch(0.25 calc(var(--shc) * 1.125) var(--shade) / 0.194);
+  transition:
+    background-color 160ms var(--ease),
+    color 160ms var(--ease),
+    outline-color 160ms var(--ease);
+}
+
+.cell:hover,
+.cell:focus-visible {
+  outline-color: var(--ink);
+}
+
+.grey {
+  --glass: var(--glass-grey);
+}
+
+.soft1 {
+  --glass: var(--glass-soft);
+}
+
+.light {
+  --glass: var(--glass-light);
+}
+
+/* The crop does nothing in a signage or a stage cell. In a bleed cell it clips the oversized icon. */
+.crop {
+  display: contents;
+}
+
+/* The disc is painted as a background. Rounding the icon itself would clip its corners. */
+app-icon {
+  flex: none;
+  width: clamp(24px, 40cqmin, 116px);
+  height: clamp(24px, 40cqmin, 116px);
+  padding: clamp(5px, 9.5cqmin, 27px);
+  background: radial-gradient(circle closest-side, var(--chip) calc(100% - 0.6px), transparent);
+  color: var(--chip-on);
+  stroke-width: 1.7;
+}
+
+.label {
+  font-size: clamp(1rem, min(19cqmin, 17cqi), 3.5rem);
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+/* A stage cell is copied from context/design/home.html. It has a bare icon in the middle */
+/* with the label centred under it. The Back tile uses it. */
+.stage {
+  justify-content: center;
+  align-items: center;
+  gap: clamp(2px, 5cqmin, 22px);
+  text-align: center;
+}
+
+.stage app-icon {
+  width: clamp(20px, 38cqmin, 140px);
+  height: clamp(20px, 38cqmin, 140px);
+  padding: 0;
+  background: none;
+  color: var(--on);
+  stroke-width: 1.5;
+}
+
+.stage .label {
+  flex: none;
+  font-weight: 660;
+}
+
+/* A bleed cell has an oversized icon cropped by its top right corner, with the label at the bottom. */
+.bleed {
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+/* The button's own clipping does not round its corners in Safari, because the button also blurs */
+/* what is behind it. This inner box has the same corners and clips the icon in every browser. */
+.bleed .crop {
+  display: block;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.bleed app-icon {
+  position: absolute;
+  top: -14cqmin;
+  right: -12cqmin;
+  width: 88cqmin;
+  height: 88cqmin;
+  padding: 0;
+  background: none;
+  /* The icon is a lighter step of the cell's own colour. */
+  color: var(--bleed);
+  stroke-width: 1.5;
+}
+
+.bleed .label {
+  position: relative;
+  font-weight: 740;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* A symbol cell is copied from the Needs mockup. The symbol sits above its label on a white plate, */
+/* because the Mulberry symbols are drawn in colour for a white ground. */
+.symbol {
+  display: grid;
+  grid-template: minmax(0, 1fr) auto / minmax(0, 1fr);
+  justify-items: center;
+  gap: clamp(2px, 3cqb, 10px);
+  padding: clamp(4px, 5cqb, 14px);
+  text-align: center;
+}
+
+.plate {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(2px, 2cqb, 8px);
+  border-radius: calc(var(--radius) - 6px);
+  background: var(--light);
+}
+
+.plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.symbol .label {
+  font-size: clamp(1rem, min(15cqb, 11cqi), 2.25rem);
+  line-height: 1.1;
+}
+
+/* A key is copied from the keyboard mockup. Its label or its icon sits in the middle. */
+.key {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0 6px;
+}
+
+.key .label {
+  font-size: clamp(1rem, min(52cqb, 44cqi), 3.5rem);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* A key that carries a word uses a smaller size so the word fits. */
+.key.word .label {
+  font-size: clamp(1rem, min(30cqb, 16cqi), 2.5rem);
+}
+
+.key app-icon {
+  width: clamp(20px, min(50cqb, 46cqi), 56px);
+  height: clamp(20px, min(50cqb, 46cqi), 56px);
+  padding: 0;
+  background: none;
+  color: inherit;
+  stroke-width: 1.9;
+}
+
+/* Caps lock turns dark while it is on. The letters also change case, so colour is not the only sign. */
+.key[aria-pressed='true'] {
+  --bg: var(--dark);
+  --on: var(--light);
+  --glass: var(--glass-dark);
+}
+
+/* The message shows the text being written. The newest words stay in view when it is too long. */
+.message {
+  flex-direction: row;
+  align-items: center;
+  padding: clamp(4px, 8cqb, 18px) clamp(10px, 3cqi, 36px);
+  overflow: hidden;
+}
+
+.text {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column-reverse;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.text > span {
+  margin-block: auto;
+  font-size: clamp(1.25rem, min(34cqb, 6cqi), 3rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The caret marks where the next letter goes. It does not blink. */
+.caret {
+  display: inline-block;
+  width: 0.07em;
+  height: 1em;
+  margin-left: 0.06em;
+  vertical-align: -0.12em;
+  border-radius: 99px;
+  background: var(--deep-c, var(--dark));
+}

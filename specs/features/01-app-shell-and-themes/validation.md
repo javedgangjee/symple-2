@@ -125,6 +125,8 @@ Safari and the iPad's WebKit are not tested by the automated checks. Manual chec
 
 Tech-stack.md asks for an end to end test that reaches each target by single switch scanning. This screen has no target for the primary user, and scanning is feature 4, so case E6 stands in for that test here.
 
+Feature 2 replaced case E6 on 2026-11-16. The home screen now holds cells, so Tab lands on them. Case E6 was removed from `e2e/shell.spec.ts`, and case E4 in feature 2's validation.md stands in its place.
+
 ## Results
 
 Dated 2026-11-16. The automated checks ran with Node 22.23.5 after the review fixes.

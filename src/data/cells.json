@@ -1,0 +1,1498 @@
+[
+  {
+    "id": "my-boards",
+    "label": "My boards",
+    "colour": "dark",
+    "hue": "c1",
+    "style": "bleed",
+    "icon": "board",
+    "action": {
+      "type": "open",
+      "board": "my-boards"
+    }
+  },
+  {
+    "id": "needs",
+    "label": "Needs",
+    "colour": "soft1",
+    "hue": "c2",
+    "style": "bleed",
+    "icon": "heart",
+    "action": {
+      "type": "open",
+      "board": "needs"
+    }
+  },
+  {
+    "id": "quick-phrases",
+    "label": "Quick phrases",
+    "colour": "grey",
+    "hue": "c3",
+    "style": "bleed",
+    "icon": "chat",
+    "action": {
+      "type": "open",
+      "board": "quick-phrases"
+    }
+  },
+  {
+    "id": "keyboards",
+    "label": "Keyboards",
+    "colour": "dark",
+    "hue": "c5",
+    "style": "bleed",
+    "icon": "keyboard",
+    "action": {
+      "type": "open",
+      "board": "keyboard"
+    }
+  },
+  {
+    "id": "back",
+    "label": "Back",
+    "colour": "ink",
+    "style": "stage",
+    "icon": "back",
+    "action": {
+      "type": "back"
+    }
+  },
+  {
+    "id": "help",
+    "label": "Help",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "help.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need help"
+    }
+  },
+  {
+    "id": "pain",
+    "label": "Pain",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "pain.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I am in pain"
+    }
+  },
+  {
+    "id": "toilet",
+    "label": "Toilet",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "toilet.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need the toilet"
+    }
+  },
+  {
+    "id": "drink",
+    "label": "Drink",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "drink.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need a drink"
+    }
+  },
+  {
+    "id": "eat",
+    "label": "Eat",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "eat.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I am hungry"
+    }
+  },
+  {
+    "id": "medicine",
+    "label": "Medicine",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "medicine.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need my medicine"
+    }
+  },
+  {
+    "id": "hot",
+    "label": "Hot",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "hot.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I am too hot"
+    }
+  },
+  {
+    "id": "blanket",
+    "label": "Blanket",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "blanket.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I am cold. I need a blanket"
+    }
+  },
+  {
+    "id": "bed",
+    "label": "Bed",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "bed.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go to bed"
+    }
+  },
+  {
+    "id": "move-me",
+    "label": "Move me",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "move.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "Please move me"
+    }
+  },
+  {
+    "id": "itch",
+    "label": "Itch",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "itch.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I have an itch"
+    }
+  },
+  {
+    "id": "glasses",
+    "label": "Glasses",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "glasses.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need my glasses"
+    }
+  },
+  {
+    "id": "yes",
+    "label": "Yes",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "yes.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "Yes"
+    }
+  },
+  {
+    "id": "no",
+    "label": "No",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "no.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "No"
+    }
+  },
+  {
+    "id": "more",
+    "label": "More",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "more.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like more"
+    }
+  },
+  {
+    "id": "good",
+    "label": "Good",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "good.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "That is good"
+    }
+  },
+  {
+    "id": "hello",
+    "label": "Hello",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "hello.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "Hello"
+    }
+  },
+  {
+    "id": "finished",
+    "label": "Finished",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "finished.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I have finished"
+    }
+  },
+  {
+    "id": "dont-know",
+    "label": "I don't know",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "dont-know.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I don't know"
+    }
+  },
+  {
+    "id": "wait",
+    "label": "Wait",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "wait.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "Please wait"
+    }
+  },
+  {
+    "id": "food",
+    "label": "Food",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "breakfast.svg",
+    "action": {
+      "type": "open",
+      "board": "food"
+    }
+  },
+  {
+    "id": "drinks",
+    "label": "Drinks",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "water.svg",
+    "action": {
+      "type": "open",
+      "board": "drinks"
+    }
+  },
+  {
+    "id": "feelings",
+    "label": "Feelings",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "happy.svg",
+    "action": {
+      "type": "open",
+      "board": "feelings"
+    }
+  },
+  {
+    "id": "people",
+    "label": "People",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "family.svg",
+    "action": {
+      "type": "open",
+      "board": "people"
+    }
+  },
+  {
+    "id": "places",
+    "label": "Places",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "house.svg",
+    "action": {
+      "type": "open",
+      "board": "places"
+    }
+  },
+  {
+    "id": "activities",
+    "label": "Activities",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "tv.svg",
+    "action": {
+      "type": "open",
+      "board": "activities"
+    }
+  },
+  {
+    "id": "breakfast",
+    "label": "Breakfast",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "breakfast.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like breakfast"
+    }
+  },
+  {
+    "id": "lunch",
+    "label": "Lunch",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "lunch.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like lunch"
+    }
+  },
+  {
+    "id": "dinner",
+    "label": "Dinner",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "dinner.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like dinner"
+    }
+  },
+  {
+    "id": "snack",
+    "label": "Snack",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "snack.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like a snack"
+    }
+  },
+  {
+    "id": "fruit",
+    "label": "Fruit",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "fruit.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like some fruit"
+    }
+  },
+  {
+    "id": "soup",
+    "label": "Soup",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "soup.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like some soup"
+    }
+  },
+  {
+    "id": "bread",
+    "label": "Bread",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "bread.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like some bread"
+    }
+  },
+  {
+    "id": "something-sweet",
+    "label": "Something sweet",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "sweet.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like something sweet"
+    }
+  },
+  {
+    "id": "water",
+    "label": "Water",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "water.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like some water"
+    }
+  },
+  {
+    "id": "tea",
+    "label": "Tea",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "tea.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like a cup of tea"
+    }
+  },
+  {
+    "id": "coffee",
+    "label": "Coffee",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "coffee.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like a coffee"
+    }
+  },
+  {
+    "id": "juice",
+    "label": "Juice",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "juice.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like some juice"
+    }
+  },
+  {
+    "id": "milk",
+    "label": "Milk",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "milk.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like some milk"
+    }
+  },
+  {
+    "id": "something-cold",
+    "label": "Something cold",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "cold-drink.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like a cold drink"
+    }
+  },
+  {
+    "id": "something-hot",
+    "label": "Something hot",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "hot-drink.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like a hot drink"
+    }
+  },
+  {
+    "id": "straw",
+    "label": "Straw",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "straw.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need a straw"
+    }
+  },
+  {
+    "id": "happy",
+    "label": "Happy",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "happy.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel happy"
+    }
+  },
+  {
+    "id": "sad",
+    "label": "Sad",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "sad.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel sad"
+    }
+  },
+  {
+    "id": "tired",
+    "label": "Tired",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "tired.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel tired"
+    }
+  },
+  {
+    "id": "angry",
+    "label": "Angry",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "angry.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel angry"
+    }
+  },
+  {
+    "id": "scared",
+    "label": "Scared",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "scared.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel scared"
+    }
+  },
+  {
+    "id": "worried",
+    "label": "Worried",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "worried.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel worried"
+    }
+  },
+  {
+    "id": "hungry",
+    "label": "Hungry",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "hungry.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel hungry"
+    }
+  },
+  {
+    "id": "fine",
+    "label": "Fine",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "fine.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I feel fine"
+    }
+  },
+  {
+    "id": "family",
+    "label": "Family",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "family.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want my family"
+    }
+  },
+  {
+    "id": "grandparents",
+    "label": "Grandparents",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "grandparents.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want my grandparents"
+    }
+  },
+  {
+    "id": "carer",
+    "label": "Carer",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "carer.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want my carer"
+    }
+  },
+  {
+    "id": "doctor",
+    "label": "Doctor",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "doctor.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to see the doctor"
+    }
+  },
+  {
+    "id": "nurse",
+    "label": "Nurse",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "nurse.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to see the nurse"
+    }
+  },
+  {
+    "id": "visitor",
+    "label": "Visitor",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "visitor.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I would like a visitor"
+    }
+  },
+  {
+    "id": "partner",
+    "label": "Partner",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "partner.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want my partner"
+    }
+  },
+  {
+    "id": "parents",
+    "label": "Parents",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "parents.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want my parents"
+    }
+  },
+  {
+    "id": "place-home",
+    "label": "Home",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "house.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go home"
+    }
+  },
+  {
+    "id": "bedroom",
+    "label": "Bedroom",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "bedroom.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go to the bedroom"
+    }
+  },
+  {
+    "id": "bathroom",
+    "label": "Bathroom",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "bathroom.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go to the bathroom"
+    }
+  },
+  {
+    "id": "kitchen",
+    "label": "Kitchen",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "kitchen.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go to the kitchen"
+    }
+  },
+  {
+    "id": "garden",
+    "label": "Garden",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "garden.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go to the garden"
+    }
+  },
+  {
+    "id": "outside",
+    "label": "Outside",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "outside.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go outside"
+    }
+  },
+  {
+    "id": "shop",
+    "label": "Shop",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "shop.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go to the shop"
+    }
+  },
+  {
+    "id": "hospital",
+    "label": "Hospital",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "hospital.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I need to go to the hospital"
+    }
+  },
+  {
+    "id": "tv",
+    "label": "TV",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "tv.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to watch TV"
+    }
+  },
+  {
+    "id": "music",
+    "label": "Music",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "music.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to listen to music"
+    }
+  },
+  {
+    "id": "read",
+    "label": "Read",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "read.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to read"
+    }
+  },
+  {
+    "id": "go-out",
+    "label": "Go out",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "go-out.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to go out"
+    }
+  },
+  {
+    "id": "rest",
+    "label": "Rest",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "rest.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to rest"
+    }
+  },
+  {
+    "id": "phone-call",
+    "label": "Phone call",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "phone-call.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to make a phone call"
+    }
+  },
+  {
+    "id": "game",
+    "label": "Game",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "game.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want to play a game"
+    }
+  },
+  {
+    "id": "shower",
+    "label": "Shower",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "shower.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I want a shower"
+    }
+  },
+  {
+    "id": "message",
+    "label": "Message",
+    "colour": "light",
+    "style": "message"
+  },
+  {
+    "id": "key-q",
+    "label": "q",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "q"
+    }
+  },
+  {
+    "id": "key-w",
+    "label": "w",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "w"
+    }
+  },
+  {
+    "id": "key-e",
+    "label": "e",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "e"
+    }
+  },
+  {
+    "id": "key-r",
+    "label": "r",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "r"
+    }
+  },
+  {
+    "id": "key-t",
+    "label": "t",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "t"
+    }
+  },
+  {
+    "id": "key-y",
+    "label": "y",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "y"
+    }
+  },
+  {
+    "id": "key-u",
+    "label": "u",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "u"
+    }
+  },
+  {
+    "id": "key-i",
+    "label": "i",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "i"
+    }
+  },
+  {
+    "id": "key-o",
+    "label": "o",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "o"
+    }
+  },
+  {
+    "id": "key-p",
+    "label": "p",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "p"
+    }
+  },
+  {
+    "id": "key-a",
+    "label": "a",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "a"
+    }
+  },
+  {
+    "id": "key-s",
+    "label": "s",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "s"
+    }
+  },
+  {
+    "id": "key-d",
+    "label": "d",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "d"
+    }
+  },
+  {
+    "id": "key-f",
+    "label": "f",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "f"
+    }
+  },
+  {
+    "id": "key-g",
+    "label": "g",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "g"
+    }
+  },
+  {
+    "id": "key-h",
+    "label": "h",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "h"
+    }
+  },
+  {
+    "id": "key-j",
+    "label": "j",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "j"
+    }
+  },
+  {
+    "id": "key-k",
+    "label": "k",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "k"
+    }
+  },
+  {
+    "id": "key-l",
+    "label": "l",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "l"
+    }
+  },
+  {
+    "id": "key-z",
+    "label": "z",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "z"
+    }
+  },
+  {
+    "id": "key-x",
+    "label": "x",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "x"
+    }
+  },
+  {
+    "id": "key-c",
+    "label": "c",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "c"
+    }
+  },
+  {
+    "id": "key-v",
+    "label": "v",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "v"
+    }
+  },
+  {
+    "id": "key-b",
+    "label": "b",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "b"
+    }
+  },
+  {
+    "id": "key-n",
+    "label": "n",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "n"
+    }
+  },
+  {
+    "id": "key-m",
+    "label": "m",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "m"
+    }
+  },
+  {
+    "id": "key-full-stop",
+    "label": ".",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "."
+    },
+    "name": "Full stop"
+  },
+  {
+    "id": "key-question-mark",
+    "label": "?",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "?"
+    },
+    "name": "Question mark"
+  },
+  {
+    "id": "key-1",
+    "label": "1",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "1"
+    }
+  },
+  {
+    "id": "key-2",
+    "label": "2",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "2"
+    }
+  },
+  {
+    "id": "key-3",
+    "label": "3",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "3"
+    }
+  },
+  {
+    "id": "key-4",
+    "label": "4",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "4"
+    }
+  },
+  {
+    "id": "key-5",
+    "label": "5",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "5"
+    }
+  },
+  {
+    "id": "key-6",
+    "label": "6",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "6"
+    }
+  },
+  {
+    "id": "key-7",
+    "label": "7",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "7"
+    }
+  },
+  {
+    "id": "key-8",
+    "label": "8",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "8"
+    }
+  },
+  {
+    "id": "key-9",
+    "label": "9",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "9"
+    }
+  },
+  {
+    "id": "key-0",
+    "label": "0",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "0"
+    }
+  },
+  {
+    "id": "key-hyphen",
+    "label": "-",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "-"
+    },
+    "name": "Hyphen"
+  },
+  {
+    "id": "key-slash",
+    "label": "/",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "/"
+    },
+    "name": "Slash"
+  },
+  {
+    "id": "key-colon",
+    "label": ":",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": ":"
+    },
+    "name": "Colon"
+  },
+  {
+    "id": "key-semicolon",
+    "label": ";",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": ";"
+    },
+    "name": "Semicolon"
+  },
+  {
+    "id": "key-left-bracket",
+    "label": "(",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "("
+    },
+    "name": "Left bracket"
+  },
+  {
+    "id": "key-right-bracket",
+    "label": ")",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": ")"
+    },
+    "name": "Right bracket"
+  },
+  {
+    "id": "key-ampersand",
+    "label": "&",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "&"
+    },
+    "name": "Ampersand"
+  },
+  {
+    "id": "key-at-sign",
+    "label": "@",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "@"
+    },
+    "name": "At sign"
+  },
+  {
+    "id": "key-quotation-mark",
+    "label": "\"",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "\""
+    },
+    "name": "Quotation mark"
+  },
+  {
+    "id": "key-apostrophe",
+    "label": "'",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "'"
+    },
+    "name": "Apostrophe"
+  },
+  {
+    "id": "key-comma",
+    "label": ",",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": ","
+    },
+    "name": "Comma"
+  },
+  {
+    "id": "key-exclamation-mark",
+    "label": "!",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "!"
+    },
+    "name": "Exclamation mark"
+  },
+  {
+    "id": "key-pound-sign",
+    "label": "£",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "£"
+    },
+    "name": "Pound sign"
+  },
+  {
+    "id": "key-dollar-sign",
+    "label": "$",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "$"
+    },
+    "name": "Dollar sign"
+  },
+  {
+    "id": "key-percent-sign",
+    "label": "%",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "%"
+    },
+    "name": "Percent sign"
+  },
+  {
+    "id": "key-plus-sign",
+    "label": "+",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "+"
+    },
+    "name": "Plus sign"
+  },
+  {
+    "id": "key-equals-sign",
+    "label": "=",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": "="
+    },
+    "name": "Equals sign"
+  },
+  {
+    "id": "key-space",
+    "label": "Space",
+    "colour": "light",
+    "style": "key",
+    "action": {
+      "type": "type",
+      "text": " "
+    }
+  },
+  {
+    "id": "key-backspace",
+    "label": "Backspace",
+    "colour": "grey",
+    "style": "key",
+    "icon": "backspace",
+    "action": {
+      "type": "backspace"
+    }
+  },
+  {
+    "id": "key-clear",
+    "label": "Clear",
+    "colour": "grey",
+    "style": "key",
+    "action": {
+      "type": "clear"
+    }
+  },
+  {
+    "id": "key-caps",
+    "label": "Caps lock",
+    "colour": "soft1",
+    "style": "key",
+    "icon": "caps",
+    "action": {
+      "type": "caps"
+    }
+  },
+  {
+    "id": "key-123",
+    "label": "123",
+    "colour": "soft1",
+    "style": "key",
+    "action": {
+      "type": "open",
+      "board": "keyboard-numbers"
+    }
+  }
+]
