@@ -9,12 +9,14 @@ The numbers in brackets are the items in requirements.md that a check covers.
 Command: `npm run build`
 
 - The build ends with no errors and no warnings, and writes the app to `dist/`.
+- No font URL in the built CSS starts with `/`. The command `grep -o 'url([^)]*woff2[^)]*)' dist/symple/browser/styles-*.css` prints the URL, and it must print one. Added after the review, finding 5.
 
 ### A2. Lint and format (17)
 
 Commands: `npm run lint` and `npm run format:check`
 
 - Both end with no errors.
+- `npm run lint` also type checks `e2e/` and `playwright.config.ts` in strict mode with `tsc --noEmit -p tsconfig.e2e.json`. Added after the review, finding 1.
 
 ### A3. Unit tests (3, 4, 5, 8, 11, 15, 16, 19, 20)
 
@@ -26,8 +28,8 @@ Theme service, in `src/app/theme/theme.spec.ts`:
 | --- | --- | --- |
 | T1 | Nothing is stored. | The theme is `blue`, and `html` has `data-theme="blue"`. |
 | T2 | `symple.theme` holds `teal`. | The theme is `teal`, and `html` has `data-theme="teal"`. |
-| T3 | `symple.theme` holds `pink`. | The theme is `blue`. |
-| T4 | Reading storage throws an error. | The theme is `blue`, and no error is thrown. |
+| T3 | `symple.theme` holds `pink`. | The theme is `blue`, and `html` has `data-theme="blue"`. |
+| T4 | Reading storage throws an error. | The theme is `blue`, `html` has `data-theme="blue"`, and no error is thrown. |
 | T5 | The theme is set to `purple`. | `html` has `data-theme="purple"`, and `symple.theme` holds `purple`. |
 | T6 | The theme is set to each of `colours`, `blue`, `purple`, `teal` and `dark` in turn. | `html` has the matching `data-theme` each time. |
 | T7 | The theme is set to `purple` and writing storage throws an error. | `html` has `data-theme="purple"`, and no error is thrown. |
@@ -73,6 +75,8 @@ Every case runs in Chromium. The cases are in `e2e/shell.spec.ts`.
 | E10 | In each of the five themes, add a test element with each of the classes `dark`, `light`, `soft1` and `grey`. | The element's `--on` colour has a contrast of at least 4.5 to 1 against its `--bg` colour. |
 | E11 | In the Colours theme, add test elements with the classes `c1`, `c2`, `c3` and `c4`. | Their `--bg` values are `oklch(0.42 0.115 250)`, `oklch(0.42 0.115 20)`, `oklch(0.42 0.115 190)` and `oklch(0.42 0.115 250)`. |
 | E12 | Request `/fonts/LibreFranklin-OFL.txt`. | The file is served and holds the words "SIL Open Font License". |
+| E13 | Open `/` with less transparency asked for. Added after the review, finding 2. | The settings button has an opacity of 1, a background colour with no transparency, and no backdrop blur. |
+| E14 | Give the contrast helper the colour `oklch(0.5 0 0 / 0.5)`. Added after the review, finding 4. | The helper throws an error. |
 
 Expected `--dark` for case E2:
 
@@ -94,7 +98,7 @@ Command: `make check`
 
 ### M1. The look matches the mockup (5, 8, 18)
 
-1. Run `npm start` and open `http://localhost:4200` in Safari on the Mac.
+1. Run `make start` and open `http://localhost:4200` in Safari on the Mac.
 2. Open `context/design/home.html` in a second window of the same size.
 3. Compare the header, the page background and the footer height. Ignore the cells in the mockup.
 4. In the mockup, pick each theme in the settings panel. In the app, run `localStorage.setItem('symple.theme', 'teal')` in the console with each theme name and reload.
@@ -110,7 +114,7 @@ Expected result: the settings button has a solid background with no blur.
 
 ### M3. The font works offline (9)
 
-1. Run `npm run build` and serve the `dist/` folder.
+1. Run `make build` and serve the `dist/` folder.
 2. Turn off Wi-Fi and reload the app.
 
 Expected result: the title is still drawn in Libre Franklin.
@@ -120,3 +124,20 @@ Expected result: the title is still drawn in Libre Franklin.
 Safari and the iPad's WebKit are not tested by the automated checks. Manual check M1 uses Safari on the Mac.
 
 Tech-stack.md asks for an end to end test that reaches each target by single switch scanning. This screen has no target for the primary user, and scanning is feature 3, so case E6 stands in for that test here.
+
+## Results
+
+Dated 2026-11-16. The automated checks ran with Node 22.23.5 after the review fixes.
+
+- A1 Build: pass. The build had no errors and no warnings. The font URL in the built CSS is `./media/LibreFranklin-Variable-SLNKJUAJ.woff2`.
+- A2 Lint and format: pass. The linter, the type check of the end to end tests and Prettier all ended clean.
+- A3 Unit tests: pass. 13 passed and 0 failed.
+- A4 End to end tests: pass. 28 passed and 0 failed. These are the 14 cases at the two window sizes, in Chromium.
+- A5 Makefile: pass. `make check` ended with no errors.
+- M1 The look matches the mockup: pass. The user ran it.
+- M2 Less transparency: pass. The user ran it.
+- M3 The font works offline: pass. The user ran it.
+
+Every test case in this file exists as a test and asserts what its expected result says.
+
+Requirements 1 to 27 each have a passing automated check. Requirement 28 has no check, because it only keeps some rules out of this feature. Requirements 5, 8, 9 and 18 also depend on the manual checks, which passed. The `start` and `install` commands of requirements 25 and 27 were not run by the automated checks.

@@ -81,3 +81,37 @@ Run `make check`. It runs the linter, the format check, the unit tests, the end 
 
 - Changes `README.md`. It says what Symple is in two sentences and lists the npm scripts and the make targets.
 - Changes `CLAUDE.md`. It gains a short section with the commands for build, test, end to end test and lint.
+
+## Fixes from the review of 2026-11-16
+
+Steps 13 to 17 fix the five findings in review.md.
+
+## Step 13. Make the disabled settings button solid (finding 2)
+
+- Changes `src/app/shell/header.css`. The disabled button is dimmed through its icon colour and keeps an opaque fill when the device asks for less transparency. It no longer uses `opacity`.
+- Changes `src/styles/glass.css` if the rule belongs with the other less-transparency rules.
+- Changes `e2e/shell.spec.ts` to add case E13.
+
+## Step 14. Make T3 and T4 check the attribute (finding 3)
+
+- Changes `src/app/theme/theme.spec.ts`. T3 and T4 also check that `html` has `data-theme="blue"`.
+
+## Step 15. Type check the end to end tests (finding 1)
+
+- Creates `tsconfig.e2e.json`. It covers `e2e/**/*.ts` and `playwright.config.ts` in strict mode.
+- Changes `package.json` and `package-lock.json`. `@types/node` is added, and `npm run lint` also runs `tsc --noEmit -p tsconfig.e2e.json`.
+
+## Step 16. Make the contrast helper refuse see-through colours (finding 4)
+
+- Changes `e2e/support/contrast.ts`. It throws an error when a colour has alpha below 1, and its comment says so.
+- Changes `e2e/shell.spec.ts` to add case E14.
+
+## Step 17. Use a relative font URL (finding 5)
+
+- Changes `src/styles.css` so that the font URL in the built CSS does not start with `/`.
+- Changes `angular.json`, and moves the font file out of `public/fonts/` if the builder needs that to resolve the URL. The font and its licence text must both still ship, and cases E7 and E12 must still pass.
+- Changes `specs/roadmap.md`. Feature 9 gains an open question: how Electron loads the build, because `index.html` uses a base href of `/`, and the font must be tested in the packaged Mac app.
+
+## Step 18. Run everything again
+
+Run `make check` and fix what fails.

@@ -42,6 +42,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 Each question must be answered in the plan of the feature it names.
 
+- Feature 9: how Electron loads the build. `src/index.html` uses a base href of `/`, so the app may not load from disk as it is. The plan must also test that the font loads in the packaged Mac app.
 - Feature 10: how switches reach the app on iPad.
 - Feature 10: whether the iPad app works in portrait. Features before it are built and tested in landscape only.
 - Feature 10: the end to end tests run in Chromium only until then. The plan must add WebKit.

@@ -31,7 +31,7 @@ These points are not in the specs. The user decided each one during planning.
 21. The page title in the browser is always `Symple`. It does not change with the screen.
 22. The end to end tests run in Chromium only. Safari and the iPad's WebKit are not tested until feature 10.
 23. The tests use two window sizes, 1024 by 768 and 1440 by 900. Both are landscape. Whether the iPad app works in portrait is now an open question for feature 10 in roadmap.md.
-24. The Libre Franklin licence text is added next to the font as `public/fonts/LibreFranklin-OFL.txt`, because the Open Font License asks for it to travel with the font.
+24. The Libre Franklin licence text ships with the app as `public/fonts/LibreFranklin-OFL.txt`, because the Open Font License asks for it to travel with the font. Since the review fix of 2026-11-16 the font file itself is in `src/fonts/`, so the two files ship in the same build but in different folders.
 25. The npm scripts are `build`, `start`, `test`, `e2e`, `lint` and `format:check`. A `Makefile` at the repo root offers the same commands.
 26. The cell colours are added in this feature, although no cell is drawn until feature 2. They are the four colour classes `dark`, `light`, `soft1` and `grey`, and the hue rules of the Colours theme.
 27. The `Makefile` has the targets `install`, `start`, `build`, `test`, `e2e`, `lint`, `format-check` and `check`. Each one calls the npm script of the same name. The `check` target runs lint, format-check, test, e2e and build in turn.
