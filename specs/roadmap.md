@@ -6,7 +6,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 ## Core
 
-1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: in progress.
+1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: done.
 2. **Home screen from data.** The home screen is drawn from `boards.json` and `tiles.json` as a small grid of large cells, each with a colour, a label and an icon. Covers: Capabilities (home screen, cell contents), Principles 3 and 4, the data rule in tech-stack.md. Status: planned.
 3. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
 4. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Covers: Speech output. Status: planned.
