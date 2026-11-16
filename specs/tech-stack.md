@@ -15,6 +15,7 @@ The versions below were set on 2026-11-16.
 - Node 22 runs the build, and npm is the package manager.
 - The Angular CLI builds and serves the app.
 - Xcode is needed to build the iPad app. It is not installed on the development Mac yet.
+- ESLint with angular-eslint 22 checks the code and the templates. Prettier formats the files. Added on 2026-11-16.
 
 ## Tests
 

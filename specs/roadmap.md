@@ -6,7 +6,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 ## Core
 
-1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: planned.
+1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: in progress.
 2. **Home screen from data.** The home screen is drawn from `boards.json` and `tiles.json` as a small grid of large cells, each with a colour, a label and an icon. Covers: Capabilities (home screen, cell contents), Principles 3 and 4, the data rule in tech-stack.md. Status: planned.
 3. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
 4. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Covers: Speech output. Status: planned.
@@ -43,6 +43,8 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 Each question must be answered in the plan of the feature it names.
 
 - Feature 10: how switches reach the app on iPad.
+- Feature 10: whether the iPad app works in portrait. Features before it are built and tested in landscape only.
+- Feature 10: the end to end tests run in Chromium only until then. The plan must add WebKit.
 - Feature 12: which licence the public repo uses. The Mulberry symbols are CC BY-SA 4.0, so the choice must allow for that.
 - Feature 12: whether the Mac app also goes to the Mac App Store, or is offered only as a download.
 - Feature 12: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 6.
