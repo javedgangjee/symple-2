@@ -21,16 +21,16 @@
 These points are not in the specs. The user decided each one during planning.
 
 14. The Angular project sits at the repo root.
-15. The theme is read from a value stored on the device. Blue is used when no value is stored. Feature 1 shows no theme picker. Feature 7 adds the picker and uses the same theme service.
-16. The settings button is drawn as in the mockup and is disabled until feature 7.
+15. The theme is read from a value stored on the device. Blue is used when no value is stored. Feature 1 shows no theme picker. Feature 8 adds the picker and uses the same theme service.
+16. The settings button is drawn as in the mockup and is disabled until feature 8.
 17. ESLint with angular-eslint 22 checks the code, and Prettier formats it. tech-stack.md now lists both.
 18. The shell uses the glass look of `home.html`. The page has three pale colour patches, and the settings button is glass. People who ask their device for less transparency get solid surfaces with no blur.
 
 19. The stored theme uses the browser's local storage under the key `symple.theme`. The stored values are `colours`, `blue`, `purple`, `teal` and `dark`.
 20. The theme is applied as a `data-theme` attribute on the `html` element, as in the mockup.
 21. The page title in the browser is always `Symple`. It does not change with the screen.
-22. The end to end tests run in Chromium only. Safari and the iPad's WebKit are not tested until feature 10.
-23. The tests use two window sizes, 1024 by 768 and 1440 by 900. Both are landscape. Whether the iPad app works in portrait is now an open question for feature 10 in roadmap.md.
+22. The end to end tests run in Chromium only. Safari and the iPad's WebKit are not tested until feature 11.
+23. The tests use two window sizes, 1024 by 768 and 1440 by 900. Both are landscape. Whether the iPad app works in portrait is now an open question for feature 11 in roadmap.md.
 24. The Libre Franklin licence text ships with the app as `public/fonts/LibreFranklin-OFL.txt`, because the Open Font License asks for it to travel with the font. Since the review fix of 2026-11-16 the font file itself is in `src/fonts/`, so the two files ship in the same build but in different folders.
 25. The npm scripts are `build`, `start`, `test`, `e2e`, `lint` and `format:check`. A `Makefile` at the repo root offers the same commands.
 26. The cell colours are added in this feature, although no cell is drawn until feature 2. They are the four colour classes `dark`, `light`, `soft1` and `grey`, and the hue rules of the Colours theme.
@@ -39,7 +39,7 @@ These points are not in the specs. The user decided each one during planning.
 
 ## Out of this feature
 
-- Scanning is feature 3. This feature only checks that the screen holds no control that a switch user could land on.
-- The settings panel and the theme picker are feature 7.
-- Electron and Capacitor are features 9 and 10.
+- Scanning is feature 4. This feature only checks that the screen holds no control that a switch user could land on.
+- The settings panel and the theme picker are feature 8.
+- Electron and Capacitor are features 10 and 11.
 - No patent check is needed, because this feature generates no content and no suggestions.

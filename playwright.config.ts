@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// The end to end tests run in Chromium only until feature 10 adds WebKit.
+// The end to end tests run in Chromium only until feature 11 adds WebKit.
 // Every test runs at the two landscape window sizes from the requirements.
 // The tests start their own dev server on a port of their own, so they never test another app
 // that happens to run on the usual port 4200.

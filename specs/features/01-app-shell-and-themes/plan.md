@@ -110,7 +110,7 @@ Steps 13 to 17 fix the five findings in review.md.
 
 - Changes `src/styles.css` so that the font URL in the built CSS does not start with `/`.
 - Changes `angular.json`, and moves the font file out of `public/fonts/` if the builder needs that to resolve the URL. The font and its licence text must both still ship, and cases E7 and E12 must still pass.
-- Changes `specs/roadmap.md`. Feature 9 gains an open question: how Electron loads the build, because `index.html` uses a base href of `/`, and the font must be tested in the packaged Mac app.
+- Changes `specs/roadmap.md`. Feature 10 gains an open question: how Electron loads the build, because `index.html` uses a base href of `/`, and the font must be tested in the packaged Mac app.
 
 ## Step 18. Run everything again
 

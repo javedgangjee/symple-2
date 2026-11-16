@@ -57,7 +57,7 @@ h1 {
   outline-offset: 3px;
 }
 
-/* The button is dimmed until feature 7 adds the settings panel. */
+/* The button is dimmed until feature 8 adds the settings panel. */
 /* Only the icon is dimmed, so the fill stays solid when glass.css makes it solid. */
 .settings:disabled {
   cursor: default;

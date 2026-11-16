@@ -3,7 +3,7 @@ import { Logo } from './logo';
 
 /**
  * The shared header. It shows the Symple icon, the screen title and the settings button.
- * The settings button is a caregiver control. It stays disabled until feature 7 adds the settings panel.
+ * The settings button is a caregiver control. It stays disabled until feature 8 adds the settings panel.
  */
 @Component({
   selector: 'app-header',

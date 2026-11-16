@@ -16,7 +16,7 @@ function isThemeName(value: unknown): value is ThemeName {
 }
 
 /**
- * Reads the stored theme and applies it to the page. Feature 7 adds the picker that calls `set`.
+ * Reads the stored theme and applies it to the page. Feature 8 adds the picker that calls `set`.
  */
 @Injectable({ providedIn: 'root' })
 export class Theme {

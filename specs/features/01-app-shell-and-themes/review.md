@@ -28,7 +28,7 @@ Claim: the disabled state uses `opacity: 0.5`, so the button is half transparent
 
 File and line: `src/app/shell/header.css` lines 61 to 64, with `src/styles/glass.css` lines 40 to 50.
 
-Case: in Chromium with `prefers-reduced-transparency: reduce`, the button's background is `oklch(0.995 0.003 260)` and its backdrop filter is `none`, but its opacity is `0.5`. The page shows through the whole button. Manual check M2 expects "a solid background with no blur", and requirement 18 says these users get solid surfaces. The button stays disabled until feature 7, so every user who asks for less transparency sees this.
+Case: in Chromium with `prefers-reduced-transparency: reduce`, the button's background is `oklch(0.995 0.003 260)` and its backdrop filter is `none`, but its opacity is `0.5`. The page shows through the whole button. Manual check M2 expects "a solid background with no blur", and requirement 18 says these users get solid surfaces. The button stays disabled until feature 8, so every user who asks for less transparency sees this.
 
 Fix: dim the disabled button with its icon colour, for example `color: color-mix(in oklab, var(--ink) 45%, transparent)`, and keep the fill opaque. Or set `opacity: 1` and a dimmed icon colour inside the reduced transparency media query.
 
@@ -66,7 +66,7 @@ File and line: `src/styles.css` line 9.
 
 Case: the built file `dist/symple/browser/styles-*.css` holds `url(/fonts/LibreFranklin-Variable.woff2)`. tech-stack.md says all three targets use the same build. If Electron loads `index.html` from disk, this URL points at `file:///fonts/...` and the page falls back to the system font with no error. A CSS URL resolves against the stylesheet, so changing the base href does not fix it. The end to end tests and manual check M3 serve the app over HTTP, so none of them would catch it.
 
-Fix: use a relative URL, such as `url('fonts/LibreFranklin-Variable.woff2')` with the font placed where the builder can resolve it, and add a note to the feature 9 plan to test the font in the packaged Mac app.
+Fix: use a relative URL, such as `url('fonts/LibreFranklin-Variable.woff2')` with the font placed where the builder can resolve it, and add a note to the feature 10 plan to test the font in the packaged Mac app.
 
 Level: low.
 
@@ -78,7 +78,7 @@ Dated 2026-11-16. Five voters checked each finding against the code. All five fi
 2. Finding 3, T3 and T4 do not prove the fallback is applied. Votes: 5 valid. Level: low. No fact corrected.
 3. Finding 1, the end to end tests and the Playwright config are never type checked. Votes: 5 valid. Level: low. No fact corrected. No voter ran `tsc`.
 4. Finding 4, the contrast helper ignores transparency. Votes: 4 valid, 1 partly. Level: low. One voter noted that the helper may not return exactly the solid colour's ratio, as the finding says, because the canvas stores a see-through colour differently. The core claim stands.
-5. Finding 5, the font URL is root relative. Votes: 5 partly. Level: low. Four voters corrected the framing. `src/index.html` has `<base href="/" />`, so the whole app would fail to load from disk and the font is one part of that. A relative font URL alone does not make the build load from disk. How Electron loads the build is a question for feature 9.
+5. Finding 5, the font URL is root relative. Votes: 5 partly. Level: low. Four voters corrected the framing. `src/index.html` has `<base href="/" />`, so the whole app would fail to load from disk and the font is one part of that. A relative font URL alone does not make the build load from disk. How Electron loads the build is a question for feature 10.
 
 Findings 1 and 3 had the same average rank. Finding 3 is listed first because three voters ranked it higher.
 

@@ -123,7 +123,7 @@ Expected result: the title is still drawn in Libre Franklin.
 
 Safari and the iPad's WebKit are not tested by the automated checks. Manual check M1 uses Safari on the Mac.
 
-Tech-stack.md asks for an end to end test that reaches each target by single switch scanning. This screen has no target for the primary user, and scanning is feature 3, so case E6 stands in for that test here.
+Tech-stack.md asks for an end to end test that reaches each target by single switch scanning. This screen has no target for the primary user, and scanning is feature 4, so case E6 stands in for that test here.
 
 ## Results
 
