@@ -1,0 +1,51 @@
+/* The glass look, copied from context/design/home.html. */
+/* Cells, panels and round buttons are tinted glass. They blur what is behind them and carry a bright top edge. */
+:root {
+  /* How solid each kind of glass is. Dark cells keep white labels at 4.5:1 or better. */
+  --glass-dark: 86%;
+  --glass-grey: 92%;
+  --glass-soft: 78%;
+  --glass-light: 58%;
+  --glass-panel: 80%;
+  --blur: blur(22px) saturate(1.7);
+  /* The bright rim. A line of light along the top edge, a faint line all round, and a soft glow inside the bottom edge. */
+  --rim:
+    inset 0 1px 0 oklch(1 0 0 / 0.55), inset 0 0 0 1px oklch(1 0 0 / 0.16),
+    inset 0 -14px 22px -18px oklch(1 0 0 / 0.35);
+  /* The fill of a round glass button, such as the settings button, at rest and on hover. */
+  --glass-button: oklch(1 0 0 / 0.45);
+  --glass-button-hover: oklch(1 0 0 / 0.75);
+  /* The page has three pale patches of colour for the glass to pick up. They are a faint wash, so the title keeps about 14:1. */
+  --blob1: color-mix(in oklab, var(--soft1) 30%, var(--light));
+  --blob2: color-mix(in oklab, var(--dark) 7%, var(--light));
+  --blob3: var(--light);
+}
+
+/* The Colours theme uses three hues for its patches, at the same strength as the other themes. */
+:root[data-theme='colours'] {
+  --blob1: oklch(0.945 0.025 255);
+  --blob2: oklch(0.952 0.02 20);
+  --blob3: oklch(0.96 0.016 190);
+}
+
+/* The patches sit over the page colour, which styles.css sets. */
+body {
+  background-image:
+    radial-gradient(60vmax 50vmax at 8% 12%, var(--blob1), transparent 62%),
+    radial-gradient(55vmax 55vmax at 92% 88%, var(--blob2), transparent 60%),
+    radial-gradient(45vmax 40vmax at 62% 30%, var(--blob3), transparent 65%);
+}
+
+/* People who ask for less transparency get solid surfaces and no blur. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-dark: 100%;
+    --glass-grey: 100%;
+    --glass-soft: 100%;
+    --glass-light: 100%;
+    --glass-panel: 100%;
+    --blur: none;
+    --glass-button: var(--light);
+    --glass-button-hover: var(--light);
+  }
+}

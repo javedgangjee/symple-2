@@ -1,0 +1,6 @@
+# The mockups, the specs and the agent files are not formatted by Prettier.
+context/
+specs/
+.claude/
+# The editor settings file belongs to the user and keeps its own layout.
+.vscode/settings.json

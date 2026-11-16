@@ -1,0 +1,83 @@
+/* The cell colours, copied from context/design/home.html. Feature 2 draws the cells. */
+/* This file holds colours only. The layout of a cell and the rules for one kind of cell come with the feature that draws it. */
+
+/* The four cell colours are one dark, one light, one soft and one grey. */
+.dark {
+  --bg: var(--dark);
+  --on: var(--light);
+  --chip: var(--light);
+  --chip-on: var(--dark);
+  --bleed: color-mix(in oklab, var(--dark) 52%, var(--soft1));
+}
+
+.light {
+  --bg: var(--light);
+  --on: var(--ink);
+  --chip: var(--dark);
+  --chip-on: var(--light);
+  --bleed: color-mix(in oklab, var(--dark) 16%, var(--light));
+}
+
+.soft1 {
+  --bg: var(--soft1);
+  --on: var(--ink);
+  --chip: var(--light);
+  --chip-on: var(--dark);
+  --bleed: color-mix(in oklab, var(--soft1) 45%, var(--light));
+}
+
+.grey {
+  --bg: var(--grey);
+  --on: var(--light);
+  --chip: var(--light);
+  --chip-on: var(--grey);
+  --bleed: color-mix(in oklab, var(--grey) 60%, var(--light));
+}
+
+/* The Colours theme gives the cells four hues. */
+[data-theme='colours'] :is(.c1, .c4) {
+  --h: 250;
+}
+
+[data-theme='colours'] .c2 {
+  --h: 20;
+}
+
+[data-theme='colours'] .c3 {
+  --h: 190;
+}
+
+[data-theme='colours'] :is(.c1, .c2, .c3, .c4) {
+  --bg: oklch(0.42 0.115 var(--h));
+  --on: var(--light);
+  --chip: var(--light);
+  --chip-on: oklch(0.42 0.115 var(--h));
+  --bleed: oklch(0.63 0.13 var(--h));
+}
+
+/* A cell recoloured by the caregiver takes the hue of the swatch that was picked. */
+[data-theme='colours'] .cell.recoloured:is(.dark, .soft1, .grey) {
+  --bg: oklch(0.42 0.115 var(--h));
+  --on: var(--light);
+  --chip: var(--light);
+  --chip-on: oklch(0.42 0.115 var(--h));
+  --bleed: oklch(0.63 0.13 var(--h));
+}
+
+[data-theme='colours'] .cell.recoloured.dark {
+  --h: 250;
+}
+
+[data-theme='colours'] .cell.recoloured.soft1 {
+  --h: 20;
+}
+
+[data-theme='colours'] .cell.recoloured.grey {
+  --h: 190;
+}
+
+[data-theme='colours'] .c5 {
+  --bg: oklch(0.4 0.19 285);
+  --chip-on: oklch(0.4 0.19 285);
+  --bleed: color-mix(in oklab, oklch(0.4 0.19 285) 52%, oklch(0.83 0.085 295));
+}

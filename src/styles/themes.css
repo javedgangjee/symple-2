@@ -1,0 +1,73 @@
+/* Each theme sets the palette. The theme service sets data-theme on the html element. */
+/* Blue is also the default, so the page has a palette before the theme service runs. */
+/* The values are copied from context/design/home.html. */
+:root,
+:root[data-theme='blue'] {
+  --canvas: oklch(0.968 0.01 260);
+  --canvas-2: oklch(0.895 0.022 260);
+  --canvas-3: oklch(0.85 0.03 260);
+  --dark: oklch(0.42 0.15 258);
+  --light: oklch(0.995 0.003 260);
+  --soft1: oklch(0.84 0.075 255);
+  --grey: oklch(0.29 0.015 258);
+  --ink: oklch(0.21 0.05 258);
+  --shade: 258;
+  --shc: 0.08;
+  --deep-c: oklch(0.3 0.12 260);
+}
+
+:root[data-theme='purple'] {
+  --canvas: oklch(0.968 0.01 290);
+  --canvas-2: oklch(0.895 0.022 290);
+  --canvas-3: oklch(0.85 0.03 290);
+  --dark: oklch(0.4 0.19 285);
+  --light: oklch(0.995 0.003 290);
+  --soft1: oklch(0.83 0.085 295);
+  --grey: oklch(0.29 0.015 285);
+  --ink: oklch(0.21 0.06 285);
+  --shade: 285;
+  --shc: 0.1;
+  --deep-c: oklch(0.31 0.17 285);
+}
+
+:root[data-theme='teal'] {
+  --canvas: oklch(0.968 0.008 192);
+  --canvas-2: oklch(0.895 0.018 192);
+  --canvas-3: oklch(0.85 0.025 192);
+  --dark: oklch(0.42 0.07 192);
+  --light: oklch(0.995 0.003 192);
+  --soft1: oklch(0.85 0.06 188);
+  --grey: oklch(0.29 0.012 200);
+  --ink: oklch(0.21 0.03 200);
+  --shade: 195;
+  --shc: 0.035;
+  --deep-c: oklch(0.3 0.052 195);
+}
+
+:root[data-theme='dark'] {
+  --canvas: oklch(0.965 0.002 270);
+  --canvas-2: oklch(0.89 0.003 270);
+  --canvas-3: oklch(0.84 0.004 270);
+  --dark: oklch(0.22 0.006 270);
+  --light: oklch(0.995 0.001 270);
+  --soft1: oklch(0.84 0.004 270);
+  --grey: oklch(0.45 0.005 270);
+  --ink: oklch(0.17 0.006 270);
+  --shade: 270;
+  --shc: 0.004;
+  --deep-c: oklch(0.15 0.005 270);
+}
+
+/* The Colours theme keeps neutral page greys. Its cells take four hues, which are set in cells.css. */
+:root[data-theme='colours'] {
+  --canvas: oklch(0.968 0.004 265);
+  --canvas-2: oklch(0.895 0.008 265);
+  --canvas-3: oklch(0.85 0.01 265);
+  --dark: oklch(0.42 0.115 250);
+  --light: oklch(0.995 0.002 265);
+  --soft1: oklch(0.84 0.075 255);
+  --grey: oklch(0.29 0.015 258);
+  --ink: oklch(0.21 0.02 265);
+  --shade: 265;
+  --shc: 0.03;
+}

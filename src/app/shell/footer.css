@@ -1,0 +1,14 @@
+/* Copied from context/design/home.html. */
+:host {
+  display: block;
+}
+
+/* The footer keeps its height when it is empty, so the main area does not move when buttons are added. */
+/* It has the same side margin as the main area. */
+footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 48px;
+  margin-inline: 4%;
+}
