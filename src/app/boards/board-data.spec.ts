@@ -145,15 +145,16 @@ describe('Board data with the real files', () => {
       'thumbs',
       'apps',
     ]);
-    // The colours are mixed, and each cell has a hue for the Colours theme.
+    // The colours are mixed. Feelings and Yes or no are soft and have no hue, so they stay
+    // pale in the Colours theme. Each other cell has a hue for that theme.
     expect(cells.map((cell) => `${cell.tile.colour} ${cell.tile.hue}`)).toEqual([
       'soft1 c2',
       'dark c1',
-      'grey c3',
+      'soft1 undefined',
       'dark c5',
       'soft1 c2',
       'dark c1',
-      'grey c3',
+      'soft1 undefined',
       'dark c5',
     ]);
   });

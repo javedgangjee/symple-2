@@ -82,6 +82,8 @@
 55. **Asked for by the user on 2026-11-16 after the review.** The `keyboard-abc` board has the title "ABC keyboard" and the five rows of item 47, with the letters in the order of the alphabet: a to j, then k to s and Backspace, then Caps lock, t to z, the full stop and the question mark.
 56. **Asked for by the user on 2026-11-16 after the review.** The `keyboard-vowels` board has the title "Vowel keyboard" and seven rows. Each letter row starts with a vowel, as in the vowel layouts of other AAC software: a to d with the full stop and Backspace, e to h with the question mark and Caps lock, i to n, o to t, and u to z. The top row and the bottom row are those of item 47. The layout was chosen under the user's standing yes for layout, labels and icons.
 57. **Follows from items 55 and 56.** The three keyboards share the board `keyboard-numbers`. Its ABC key has the `back` action, so it returns to the keyboard that opened the numbers. This replaces the part of item 48 that says ABC opens `keyboard`. The rule of one Back tile on a board counts the tile `back` and not the ABC key.
+58. **Asked for by the user on 2026-11-16 after the review.** On My boards the Feelings tile and the Yes or no tile are `soft1` and have no hue, so they take the pale colour of the theme in every theme, such as light purple in the Purple theme. They are not `light`, which is near white in every theme. This changes item 51 for these two tiles.
+59. **Asked for by the user on 2026-11-16 after the review.** A cell has a thin line all round it, in the shadow colour of the theme. The shadows of the mockup all fall downwards, so without the line the top edge of a light cell runs into the page.
 
 ## Out of this feature
 

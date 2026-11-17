@@ -340,8 +340,7 @@
   {
     "id": "feelings",
     "label": "Feelings",
-    "colour": "grey",
-    "hue": "c3",
+    "colour": "soft1",
     "style": "stage",
     "icon": "mood",
     "action": {
@@ -1551,8 +1550,7 @@
   {
     "id": "yes-no",
     "label": "Yes or no",
-    "colour": "grey",
-    "hue": "c3",
+    "colour": "soft1",
     "style": "stage",
     "icon": "thumbs",
     "action": {
