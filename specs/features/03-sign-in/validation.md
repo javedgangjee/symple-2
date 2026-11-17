@@ -93,6 +93,45 @@ The settings sync with a fake cloud store, in `src/app/sync/settings-sync.spec.t
 | Y10 | The store fails to save. | No error escapes, and the device keeps the new value. |
 | Y11 | Account A signs out and account B signs in. | Only the document of account B is watched. |
 
+The cases below were added after the review of 2026-11-17. Each names the finding of review.md that it covers.
+
+The auth service on a device that was signed in before, in `src/app/auth/auth.spec.ts`. They cover finding 1, which says the first screen waits on the network.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| U5 | The signed in flag is set on the device, and the source reports nothing for 1 second. | `ready()` resolves, `signedIn` is true and the account is still empty. |
+| U6 | After case U5, which checks a start with no report, the source reports no account. | The app goes to `/sign-in`, `signedIn` is false and the flag is cleared. |
+| U7 | After case U5, the source reports an account. | The service gives that account, and the app stays on its route. |
+| U8 | The flag is not set, and the source reports nothing for 1 second. | `ready()` has not resolved, and `signedIn` is false. |
+| U9 | The source reports an account, and later reports none. | The flag is set after the first report and cleared after the second. The flag never holds the account id or the email. |
+
+The guards on a device that was signed in before, in `src/app/auth/signed-in-guard.spec.ts`. They cover finding 1.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| G7 | The flag is set, the source reports nothing, and the home route is opened. | The route opens after 1 second. |
+| G8 | The flag is set, the source reports nothing, and `/sign-in` is opened. | The app goes to the home route after 1 second. |
+
+The settings sync with a report from the device cache, in `src/app/sync/settings-sync.spec.ts`. They cover finding 2, which says the rule that a cache report never writes to the cloud has no test.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| Y12 | An account signs in, and the store reports from the device cache that it has no document. | Nothing is written to the store. |
+| Y13 | An account signs in, and the store reports from the device cache a document that holds only the theme `dark`. | The device uses `dark`, and nothing is written to the store. |
+| Y14 | After case Y13, which checks a cache report with a missing field, the store reports the same document from the cloud. | The store is asked to save only the layout `columns`. |
+
+The Firestore store with a stand-in for Firestore, in `src/app/sync/firestore-cloud-store.spec.ts`. Cases C1 to C4 cover finding 2. Cases C5 to C7 cover finding 4, which says a Firestore failure stops the sync and leaves no trace.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| C1 | Firestore reports a document from its cache. | The listener gets the fields, and `fromCloud` is false. |
+| C2 | Firestore reports a document from the server. | The listener gets the fields, and `fromCloud` is true. |
+| C3 | Firestore reports that the document does not exist. | The listener gets no fields. |
+| C4 | A watch is stopped before Firestore has loaded. | Firestore is never asked to watch the document. |
+| C5 | The load of Firestore fails once, and then a save is made. | The load is tried again, and the save reaches Firestore. |
+| C6 | The watch fails with the code `permission-denied`. | One warning is written to the console. It holds the code, and it does not hold the account id. |
+| C7 | The load of Firestore fails. | One warning is written to the console, and no error escapes. |
+
 ### A4. End to end tests (1, 4, 9, 10, 11, 16, 17, 20, 21, 23, 24, 25)
 
 Command: `npm run e2e`
@@ -117,8 +156,10 @@ The cases are in `e2e/sign-in.spec.ts`. Each runs at 1024 by 768 and at 1440 by 
 | N14 | On a signed in device, open the home screen and press Sign out. Then load the page again. | The sign in screen shows after the press, and again after the load. |
 | N15 | On a signed in device, measure the Sign out button on the home screen and on the Needs board. | It sits in the bottom right corner inside the footer, it is at least 24 by 24 CSS pixels, and it comes after every cell in the tab order. |
 | N16 | On a signed in device, run axe on the home screen in each of the five themes. | axe reports no WCAG 2.2 Level AA violation with the Sign out button on screen. |
+| N17 | On a signed in device, leave every Firebase Auth call with no answer and load the page. | The home screen shows within 3 seconds. This covers finding 1 of review.md, which says the first screen waits on the network. |
+| N18 | Open the sign in screen and measure the message region before any message shows. | The region is rendered, so its `display` is not `none`, and its height is 0. This covers finding 3 of review.md, which says screen readers may not announce a message. |
 
-The end to end cases of features 1 and 2 also run, on a signed in device, and all pass with no change to a case.
+The end to end cases of features 1 and 2 also run, on a signed in device, and all pass. One case changed, with the user's approval on 2026-11-17. Case E7 of feature 1, which checks that the title font loads from the app, now checks only the font requests, because a signed in device calls Firebase Auth at each start.
 
 ## Manual checks
 
@@ -161,6 +202,13 @@ These use the real Firebase project and the caregiver account from step 1 of the
 ### H7. No account creation (14, 30)
 
 1. In the Firebase console, open the Auth settings and User actions. Expected: account creation is off.
+
+### H8. A screen reader speaks the message (23)
+
+This check was added after the review of 2026-11-17. It covers finding 3 of review.md, which says screen readers may not announce a message.
+
+1. Turn on VoiceOver with Command and F5, and open the sign in screen.
+2. Enter the account's email and a wrong password, and press Sign in. Expected: VoiceOver says "The email or password is wrong."
 
 ## Requirements with no check in this feature
 

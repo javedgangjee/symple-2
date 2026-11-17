@@ -48,3 +48,5 @@ Thumbs.db
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# The saved browser state of the signed in test device
+/e2e/.auth/

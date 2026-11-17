@@ -23,13 +23,17 @@ The versions below were set on 2026-11-16.
 - Playwright runs the end to end tests in a browser.
 - axe-core runs inside the Playwright tests and checks each screen against WCAG 2.2 Level AA.
 - Every screen for the primary user has an end to end test that reaches each target by single switch scanning.
+- The tests never reach Firebase, and they do not use the Firebase emulator, because the development Mac has no Java. The unit tests use fakes of the auth source and the cloud store. The end to end tests answer the Firebase Auth network calls with canned replies and block the Firestore calls, in `e2e/support/firebase.ts`. A setup project signs in once and saves the browser state, and the other tests start from it. The Firestore access rules are checked by hand.
 
 ## Data
 
 - Boards and cells are data. The app loads them from `boards.json` and `cells.json`. A hardcoded board or cell is an exception and needs a stated reason.
 - The data files are `src/data/boards.json` and `src/data/cells.json`, and they are built into the app. The symbols are in `public/symbols/`, with the credit and the original file names in `ATTRIBUTION.txt`.
 - Settings and edited boards are stored on the device.
-- Firebase is the cloud provider if a feature needs a cloud service. No feature uses one until its plan says so.
+- Firebase is the cloud provider if a feature needs a cloud service. No feature uses one until its plan says so. The Firebase project id is `symple-2`, and the app uses the `firebase` npm package, version 13, with no AngularFire.
+- Firebase Auth holds the caregiver accounts. The caregiver signs in with an email address and a password, and the sign in is kept on the device. The user makes each account in the Firebase console, and account creation is turned off in the project.
+- Firestore holds a second copy of the settings in the document `users/{uid}`, with the fields `theme` and `layout` for now. The access rules in `firestore.rules` let an account reach only its own document. One account holds one set of settings.
+- Auth and the cloud copy each sit behind an interface, as speech does, so the screens and the tests do not depend on Firebase.
 - Messaging sends and receives text messages (SMS) through Twilio. The Twilio keys must stay on a server and never ship inside the app. Text messages are not end to end encrypted, and they pass through Twilio and the phone carriers.
 - Music, photos and videos come from the device's own libraries. The Mac app reads them through Electron and the iPad app reads them through Capacitor.
 - Home control talks to a Home Assistant hub on the home network. Symple does not talk to device brands directly.

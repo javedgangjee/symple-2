@@ -73,3 +73,43 @@ This step is the user's. It changes no files.
 ## Step 11. Run everything
 
 Run `make check` and fix what fails.
+
+## Fixes from the review of 2026-11-17
+
+The user picked four findings of review.md to fix. Steps 12 to 16 are the only steps left to do.
+
+## Step 12. Test the rule that a cache report never writes to the cloud (27)
+
+This fixes finding 2, which says that no test fails if the check on a report from the device cache is removed.
+
+- Changes `src/app/sync/settings-sync.spec.ts`. The fake cloud store can report a document that comes from the device cache. Cases Y12 to Y14 of validation.md are added. Cases Y1 to Y11 do not change.
+- `src/app/sync/settings-sync.ts` does not change.
+
+## Step 13. Do not hold the first screen on the network (4, 20)
+
+This fixes finding 1, which says that a signed in device can show a blank window for 30 seconds at start on a network that does not answer.
+
+- Changes `src/app/auth/auth.ts`. The service keeps a flag in local storage that says this device was signed in. The flag holds no account id and no email. It is set when the source reports an account and cleared when the source reports none. `ready()` resolves at the first report, or after 1 second when the flag is set and no report has come. The service gains a `signedIn` signal. It is true when an account is present, and also when the flag is set and the source has not reported yet. When a late report says there is no account, the service opens the sign in screen. The `account` signal stays empty until the source reports, so the sync does not start early.
+- Changes `src/app/auth/signed-in-guard.ts`. Both guards read `signedIn` in place of the account.
+- Changes `src/app/auth/auth.spec.ts` and `src/app/auth/signed-in-guard.spec.ts` to add cases U5 to U9 and G7 to G8 of validation.md.
+- Changes `e2e/support/firebase.ts` to add a helper that leaves the Firebase Auth calls with no answer, and `e2e/sign-in.spec.ts` to add case N17.
+- The guards protect no data, because the boards are built into the app and Firestore checks the account itself. The flag only decides which screen is drawn first.
+
+## Step 14. Keep the message region on the page when it is empty (23)
+
+This fixes finding 3, which says that screen readers may not announce a message, because the empty region is hidden with `display: none`.
+
+- Changes `src/app/auth/sign-in-screen.css`. The rule `.message:empty { display: none; }` goes. The empty region stays rendered with no height, and the gap around it is taken out another way, so the card looks as it does now.
+- Changes `src/app/auth/sign-in-screen.html` only if the region must move to make that work.
+- Changes `e2e/sign-in.spec.ts` to add case N18.
+
+## Step 15. Let the sync recover and leave a trace (5, 27)
+
+This fixes finding 4, which says that one Firestore failure stops the sync until the app is loaded again and writes nothing to the console.
+
+- Changes `src/app/sync/firestore-cloud-store.ts`. The load of Firestore comes through an injection token, so a test can stand in for it. A failed load is not kept, so the next watch or save tries again. A failed load and a failed watch each write one `console.warn` with the Firebase error code and nothing else. The warning holds no account id, no email and no settings.
+- Creates `src/app/sync/firestore-cloud-store.spec.ts` with cases C1 to C7 of validation.md.
+
+## Step 16. Run everything again
+
+Run `make check` and fix what fails.

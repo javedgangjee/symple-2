@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { axeViolations } from './support/axe';
 import {
   BOARDS,
@@ -19,6 +19,7 @@ import {
   statusRegion,
   type LayoutName,
 } from './support/boards';
+import { test } from './support/firebase';
 
 const BOARD_IDS = Object.keys(BOARDS);
 const MY_BOARDS = [

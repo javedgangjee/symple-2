@@ -1,6 +1,6 @@
 # Each target calls the npm script of the same name. See package.json.
 
-.PHONY: install start build test e2e lint format-check check
+.PHONY: install start stop build test e2e lint format-check check
 
 # Installs the packages and the Chromium browser that the end to end tests use.
 install:
@@ -9,6 +9,12 @@ install:
 
 start:
 	npm start
+
+# Ends the dev server that `make start` left running on port 4200.
+stop:
+	@pids=$$(lsof -ti tcp:4200 -sTCP:LISTEN); \
+	if [ -n "$$pids" ]; then kill $$pids && echo "Stopped the server on port 4200."; \
+	else echo "Nothing is running on port 4200."; fi
 
 build:
 	npm run build

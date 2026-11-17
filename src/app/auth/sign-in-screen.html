@@ -1,0 +1,50 @@
+<form novalidate (submit)="$event.preventDefault(); signIn(email, password)">
+  <img class="logo" src="symple-logo.png" width="720" height="387" alt="Symple" />
+  <h1>Sign in</h1>
+  <div>
+    <label for="sign-in-email">Email</label>
+    <input
+      #email
+      id="sign-in-email"
+      name="email"
+      type="email"
+      autocomplete="email"
+      autocapitalize="none"
+      spellcheck="false"
+      placeholder="name@example.com"
+      required
+      [attr.aria-invalid]="invalid() === 'email' ? 'true' : null"
+      [attr.aria-describedby]="invalid() === 'email' ? 'sign-in-message' : null"
+    />
+  </div>
+  <div>
+    <label for="sign-in-password">Password</label>
+    <input
+      #password
+      id="sign-in-password"
+      name="password"
+      type="password"
+      autocomplete="current-password"
+      required
+      [attr.aria-invalid]="invalid() === 'password' ? 'true' : null"
+      [attr.aria-describedby]="invalid() === 'password' ? 'sign-in-message' : null"
+    />
+  </div>
+  <div>
+    <!-- The one message of the screen. The region is always on the page, so a screen reader hears each change. -->
+    <!-- The text is drawn again for each message, so the same message twice is told twice. -->
+    <p id="sign-in-message" class="message" role="status">
+      @for (said of [message()]; track said.count) {
+        @if (said.text) {
+          <span>{{ said.text }}</span>
+        }
+      }
+    </p>
+    <button class="primary" type="submit" [disabled]="busy() !== null">
+      {{ busy() === 'sign-in' ? 'Signing in' : 'Sign in' }}
+    </button>
+  </div>
+  <button class="link" type="button" [disabled]="busy() !== null" (click)="forgotPassword(email)">
+    Forgot password
+  </button>
+</form>

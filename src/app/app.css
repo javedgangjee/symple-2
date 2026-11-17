@@ -17,6 +17,16 @@ main {
   margin-inline: 4%;
 }
 
+/* A bare screen has the window to itself and sits in the middle of it. */
+:host(.bare) {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+:host(.bare) main {
+  place-items: center;
+  margin-inline: 0;
+}
+
 /* The router outlet is an empty marker. Hiding it keeps it from taking a row of the main area. */
 router-outlet {
   display: none;
