@@ -1,0 +1,167 @@
+# Feature 3: Sign in. Validation
+
+The numbers in brackets are the items in requirements.md that a check covers.
+
+## Automated checks
+
+### A1. Build (7, 18, 31)
+
+Command: `npm run build`
+
+- The build ends with no errors and no warnings. This includes the 500 kB warning for the first load.
+
+### A2. Lint and format
+
+Commands: `npm run lint` and `npm run format:check`
+
+- Both end with no errors.
+
+### A3. Unit tests (1, 3, 4, 5, 8, 9, 13, 14, 16, 19, 20, 22, 23, 24, 25, 27)
+
+Command: `npm test`
+
+Firebase error codes, in `src/app/auth/firebase-auth-source.spec.ts`:
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| M1 | Each of the codes `auth/invalid-credential`, `auth/wrong-password`, `auth/user-not-found` and `auth/invalid-email`. | The kind is `wrong`. |
+| M2 | The code `auth/network-request-failed`. | The kind is `network`. |
+| M3 | The code `auth/too-many-requests`. | The kind is `too-many`. |
+| M4 | The code `auth/user-disabled`. | The kind is `disabled`. |
+| M5 | The code `auth/internal-error`, and an error with no code. | The kind is `unknown`. |
+
+The auth service with a fake source, in `src/app/auth/auth.spec.ts`:
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| U1 | The source reports no account. | The service's account is empty. |
+| U2 | The source reports an account. | The service gives that account's id and email. |
+| U3 | The service signs out. | The source's sign out is called, and the account is empty. |
+| U4 | The source reports that the account went away while the `needs` board is open. | The app goes to `/sign-in`. |
+
+The footer with a fake source, in `src/app/shell/footer.spec.ts`:
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| O1 | The footer is drawn. | It shows one button named Sign out, and the button carries the caregiver control mark that the settings button carries. |
+| O2 | Sign out is pressed. | The source's sign out is called once. |
+
+The guards with a fake source, in `src/app/auth/signed-in-guard.spec.ts`:
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| G1 | No account, and the home route is opened. | The app goes to `/sign-in`. |
+| G2 | No account, and `board/needs` is opened. | The app goes to `/sign-in`. |
+| G3 | An account, and the home route is opened. | The route opens. |
+| G4 | An account, and `/sign-in` is opened. | The app goes to the home route. |
+| G5 | No account, and `/sign-in` is opened. | The route opens. |
+| G6 | The source has not yet read the stored sign in, and the home route is opened. | The guard gives no answer until the source is ready. |
+
+The sign in screen with a fake source, in `src/app/auth/sign-in-screen.spec.ts`:
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| F1 | The screen is drawn. | It shows the logo, the heading "Sign in", a field named Email of type `email` with `autocomplete="email"`, a field named Password of type `password` with `autocomplete="current-password"`, a button named Sign in and a control named Forgot password. It shows no control that makes an account. |
+| F2 | Sign in is pressed with an empty email. Then with the email `anna`. | Each time the message is "Enter your email address.", the Email field is marked invalid, and the source is not called. |
+| F3 | Sign in is pressed with the email `anna@example.com` and an empty password. | The message is "Enter your password.", and the source is not called. |
+| F4 | Sign in is pressed with the email ` anna@example.com ` and the password `secret12`. | The source is asked to sign in with `anna@example.com` and `secret12`. Until it answers, the button is disabled and reads "Signing in". |
+| F5 | The source accepts the sign in. | The app goes to the home route. |
+| F6 | The source fails with `wrong`. | The message is "The email or password is wrong.", the button is enabled again, and the two fields keep their text. |
+| F7 | The source fails with `network`. | The message is "Symple cannot reach the network. Connect and try again." |
+| F8 | The source fails with `too-many`. | The message is "Too many tries. Wait a few minutes and try again." |
+| F9 | The source fails with `disabled`. | The message is "This account is turned off." |
+| F10 | The source fails with `unknown`. | The message is "Sign in failed. Try again." |
+| F11 | Forgot password is pressed with an empty email. | The message is "Enter your email address, then press Forgot password.", and the source is not called. |
+| F12 | Forgot password is pressed with the email `anna@example.com`. | The source is asked to send a reset email to that address, and the message is "If an account uses this address, a reset email is on its way." |
+| F13 | Forgot password is pressed, and the source fails with `wrong`. | The message is the same as in case F12, which checks a reset email request for a known address. |
+| F14 | Forgot password is pressed, and the source fails with `network`. | The message is "Symple cannot reach the network. Connect and try again." |
+| F15 | Any message is shown. | It sits in a region that screen readers announce, and only one message is on screen. |
+
+The settings sync with a fake cloud store, in `src/app/sync/settings-sync.spec.ts`. The device starts with the theme `blue` and the layout `columns` unless a case says otherwise.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| Y1 | No account. | The store is not watched and not written. |
+| Y2 | An account signs in, and its document holds the theme `teal` and the layout `rows`. | The device uses `teal` and `rows`, local storage holds both, and nothing is written to the store. |
+| Y3 | An account signs in, and it has no document. | The store is asked to save the theme `blue` and the layout `columns`. |
+| Y4 | An account signs in, and its document holds only the theme `dark`. | The device uses `dark`, and the store is asked to save only the layout `columns`. |
+| Y5 | An account signs in, and its document holds the theme `pink` and the layout `rows`. | The device keeps `blue` and uses `rows`, and nothing is written to the store. |
+| Y6 | After case Y2, which checks a document with both settings, the theme is set to `dark` on the device. | The store is asked to save only the theme `dark`. |
+| Y7 | After case Y2, the layout is set to `columns` on the device. | The store is asked to save only the layout `columns`. |
+| Y8 | After case Y2, the store reports that the document now holds the theme `purple`. | The device uses `purple`, and nothing is written to the store. |
+| Y9 | After case Y2, the account signs out, and then the theme is set to `dark`. | The watch is stopped, and nothing is written to the store. |
+| Y10 | The store fails to save. | No error escapes, and the device keeps the new value. |
+| Y11 | Account A signs out and account B signs in. | Only the document of account B is watched. |
+
+### A4. End to end tests (1, 4, 9, 10, 11, 16, 17, 20, 21, 23, 24, 25)
+
+Command: `npm run e2e`
+
+The cases are in `e2e/sign-in.spec.ts`. Each runs at 1024 by 768 and at 1440 by 900. The Firebase Auth calls get canned replies, and the Firestore calls are blocked. Each case starts on a device with no stored sign in unless it says otherwise.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| N1 | Open `/`. | The address is `/sign-in`. The card shows, and the page has no header, no footer and no cells. |
+| N2 | Open `/board/needs`. | The address is `/sign-in`. |
+| N3 | Type an email and a password and press Sign in. The reply accepts them. | The home screen shows with the title "Home" and its four cells. |
+| N4 | After case N3, which checks a sign in that is accepted, load the page again. | The home screen shows, and the sign in screen never appears. |
+| N5 | After case N3, block every call to Firebase and load the page again. Then open `/board/needs`. | The home screen shows, then the Needs board. |
+| N6 | Type an email and a password and press Sign in. The reply is `INVALID_LOGIN_CREDENTIALS`. | The message "The email or password is wrong." shows, and the address is still `/sign-in`. |
+| N7 | Block every call to Firebase. Type an email and a password and press Sign in. | The message "Symple cannot reach the network. Connect and try again." shows. |
+| N8 | Type the email `anna@example.com` and press Forgot password. | One call asks Firebase for a password reset for `anna@example.com`, and the message "If an account uses this address, a reset email is on its way." shows. |
+| N9 | Press Tab four times from the top of the page. Then type in the two fields and press Enter in the Password field. | The focus lands on Email, Password, Sign in and Forgot password, in that order. Enter sends the sign in. |
+| N10 | In each of the five themes, run axe on the screen, and again with the message of case N6 on screen. | axe reports no WCAG 2.2 Level AA violation. |
+| N11 | Measure the page and the card. | The page does not scroll in either direction, and the whole card is inside the window. |
+| N12 | On a signed in device, open `/sign-in`. | The home screen shows. |
+| N13 | Ask for less transparency. | The card has a solid background and no blur. |
+| N14 | On a signed in device, open the home screen and press Sign out. Then load the page again. | The sign in screen shows after the press, and again after the load. |
+| N15 | On a signed in device, measure the Sign out button on the home screen and on the Needs board. | It sits in the bottom right corner inside the footer, it is at least 24 by 24 CSS pixels, and it comes after every cell in the tab order. |
+| N16 | On a signed in device, run axe on the home screen in each of the five themes. | axe reports no WCAG 2.2 Level AA violation with the Sign out button on screen. |
+
+The end to end cases of features 1 and 2 also run, on a signed in device, and all pass with no change to a case.
+
+## Manual checks
+
+These use the real Firebase project and the caregiver account from step 1 of the plan. Run `npm start` and use a browser profile with no Symple data.
+
+### H1. Real sign in (1, 3, 25)
+
+1. Open `http://localhost:4200`. Expected: the sign in screen.
+2. Enter the account's email and a wrong password, and press Sign in. Expected: "The email or password is wrong."
+3. Enter the right password and press Sign in. Expected: the home screen.
+4. Quit the browser, open it again and open the same address. Expected: the home screen with no sign in.
+5. Press Sign out in the bottom right corner. Expected: the sign in screen. Sign in again before the next check.
+
+### H2. No network (4)
+
+1. After check H1, which signs in for real, turn off Wi-Fi.
+2. Load the page again and open Needs. Expected: the home screen, then the Needs board.
+3. Turn Wi-Fi on again.
+
+### H3. Reset email (24)
+
+1. In a second browser profile, open the app, enter the account's email and press Forgot password. Expected: the reset message on screen, and a reset email from Firebase in the inbox.
+
+### H4. The device writes the cloud copy (5, 13, 27)
+
+1. After check H1, open Firestore in the Firebase console. Expected: the document `users/{uid}` of the account holds `theme: "blue"` and `layout: "columns"`.
+
+### H5. The cloud copy reaches a device (5, 13, 27, 28)
+
+1. With the app open, change `theme` to `teal` in the console. Expected: the app turns teal within a few seconds, with no reload.
+2. Sign in to the same account in the second browser profile. Expected: the app is teal.
+
+### H6. Access rules (29)
+
+1. Deploy the rules with `npx firebase-tools deploy --only firestore:rules`.
+2. In the Rules Playground of the console, read `users/abc` as a signed in account with the id `abc`. Expected: allowed.
+3. Read and write `users/abc` as the id `xyz`. Expected: both refused.
+4. Read `users/abc` with no account. Expected: refused.
+
+### H7. No account creation (14, 30)
+
+1. In the Firebase console, open the Auth settings and User actions. Expected: account creation is off.
+
+## Requirements with no check in this feature
+
+- Item 6 of requirements.md, which says sign in protects the cloud functions, has nothing to check until a cloud function exists.
