@@ -1,0 +1,45 @@
+/* The screen fills the main area. */
+:host {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The groups fill the main area equally, and the cells of a group fill it by their shares. */
+/* One gap size is used between groups and between cells. */
+.grid,
+.group {
+  display: flex;
+  gap: var(--gap);
+  min-width: 0;
+  min-height: 0;
+}
+
+.group {
+  flex: 1 1 0;
+}
+
+/* The share of each cell is set as flex-grow by the screen. */
+app-cell {
+  flex: 1 1 0;
+}
+
+/* In the columns layout each group is a column, read top to bottom. */
+.grid[data-layout='columns'] .group {
+  flex-direction: column;
+}
+
+/* In the rows layout each group is a row, read left to right. */
+.grid[data-layout='rows'] {
+  flex-direction: column;
+}
+
+/* This text is for screen readers only. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

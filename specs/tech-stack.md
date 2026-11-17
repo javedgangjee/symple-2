@@ -26,7 +26,8 @@ The versions below were set on 2026-11-16.
 
 ## Data
 
-- Boards and cells are data. The app loads them from `boards.json` and `tiles.json`. A hardcoded board or cell is an exception and needs a stated reason.
+- Boards and cells are data. The app loads them from `boards.json` and `cells.json`. A hardcoded board or cell is an exception and needs a stated reason.
+- The data files are `src/data/boards.json` and `src/data/cells.json`, and they are built into the app. The symbols are in `public/symbols/`, with the credit and the original file names in `ATTRIBUTION.txt`.
 - Settings and edited boards are stored on the device.
 - Firebase is the cloud provider if a feature needs a cloud service. No feature uses one until its plan says so.
 - Messaging sends and receives text messages (SMS) through Twilio. The Twilio keys must stay on a server and never ship inside the app. Text messages are not end to end encrypted, and they pass through Twilio and the phone carriers.
@@ -60,7 +61,8 @@ The versions below were set on 2026-11-16.
 - The product typeface is Libre Franklin, as in the mockups. The font file ships with the app, so it works offline.
 - Red Hat Display is stored next to it in `context/design/mockups/home/fonts/` for later use. No screen uses it until the user says so.
 - The boards use the Mulberry symbol set, which is licensed CC BY-SA 4.0. The app must credit it, and any changed symbol must be shared under the same licence.
-- Scan order runs by row, left to right and then top to bottom. One gap size is used across a screen.
+- A group of cells is a column or a row. In the columns layout each group is a column, read top to bottom. In the rows layout each group is a row, read left to right. A stored setting picks the layout, and columns are the default. A board can fix its own layout, as the keyboard does with rows. Scan order follows the groups and then the cells of a group.
+- One gap size is used across a screen.
 
 ## Patents
 

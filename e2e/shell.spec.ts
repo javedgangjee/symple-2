@@ -139,18 +139,8 @@ test('E5: the page fits the window at both sizes', async ({ page }) => {
   }
 });
 
-test('E6: pressing Tab three times lands on no control', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator('h1')).toHaveText('Home');
-  for (let press = 1; press <= 3; press++) {
-    await page.keyboard.press('Tab');
-    const focused = await page.evaluate(() => {
-      const active = document.activeElement;
-      return active === null || active === document.body ? 'none' : active.outerHTML;
-    });
-    expect(focused, `after Tab press ${press}`).toBe('none');
-  }
-});
+// Case E6 said that Tab lands on no control. Feature 2 added the cells, and case E4 in
+// e2e/home.spec.ts replaces it.
 
 test('E7: the title uses Libre Franklin from the app itself', async ({ page, baseURL }) => {
   const hosts = new Set<string>();

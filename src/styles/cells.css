@@ -34,6 +34,32 @@
   --bleed: color-mix(in oklab, var(--grey) 60%, var(--light));
 }
 
+/* The ink colour is the theme's near black with a light label and a light icon disc. The Back tile uses it. */
+.ink {
+  --bg: var(--ink);
+  --on: var(--light);
+  --chip: var(--light);
+  --chip-on: var(--ink);
+  --bleed: color-mix(in oklab, var(--ink) 60%, var(--light));
+}
+
+/* Green and red are the same in every theme. The Yes and No tiles use them. */
+.green {
+  --bg: oklch(0.43 0.12 150);
+  --on: oklch(0.985 0 0);
+  --chip: oklch(0.985 0 0);
+  --chip-on: oklch(0.43 0.12 150);
+  --bleed: oklch(0.63 0.13 150);
+}
+
+.red {
+  --bg: oklch(0.43 0.16 27);
+  --on: oklch(0.985 0 0);
+  --chip: oklch(0.985 0 0);
+  --chip-on: oklch(0.43 0.16 27);
+  --bleed: oklch(0.63 0.15 27);
+}
+
 /* The Colours theme gives the cells four hues. */
 [data-theme='colours'] :is(.c1, .c4) {
   --h: 250;

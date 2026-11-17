@@ -1,0 +1,111 @@
+The symbols in this folder are from the Mulberry Symbols set.
+Copyright 2018-2026 Steve Lee.
+Licensed under Creative Commons Attribution-ShareAlike 4.0.
+https://creativecommons.org/licenses/by-sa/4.0/
+Source: https://mulberrysymbols.org
+
+The files are unchanged apart from their names. Original names:
+help.svg          help_,_to.svg
+pain.svg          headache.svg
+toilet.svg        toilet.svg
+drink.svg         drink_,_to.svg
+eat.svg           eat_,_to.svg
+medicine.svg      medicine.svg
+hot.svg           hot_person.svg
+blanket.svg       blanket.svg
+bed.svg           bed_time.svg
+move.svg          move_,_to.svg
+itch.svg          itch.svg
+glasses.svg       glasses.svg
+yes.svg           correct.svg
+no.svg            mistake_no_wrong.svg
+more.svg          more.svg
+good.svg          good.svg
+hello.svg         hello.svg
+finished.svg      finish.svg
+dont-know.svg     guess_,_to.svg
+wait.svg          wait_,_to.svg
+breakfast.svg     breakfast_1.svg
+lunch.svg         lunch_1.svg
+dinner.svg        dinner.svg
+snack.svg         biscuits.svg
+fruit.svg         fruit.svg
+soup.svg          soup.svg
+bread.svg         bread.svg
+sweet.svg         sweet.svg
+water.svg         water.svg
+tea.svg           tea.svg
+coffee.svg        coffee.svg
+juice.svg         orange_juice.svg
+milk.svg          milk.svg
+cold-drink.svg    drink_cold_2.svg
+hot-drink.svg     drink_hot.svg
+straw.svg         straw.svg
+happy.svg         happy_lady.svg
+sad.svg           sad_man.svg
+tired.svg         yawn_,_to.svg
+angry.svg         angry_man.svg
+scared.svg        afraid_lady.svg
+worried.svg       worried_man.svg
+hungry.svg        hungry.svg
+fine.svg          serene_lady.svg
+family.svg        family.svg
+grandparents.svg  grandparents.svg
+carer.svg         care_assistant_1a.svg
+doctor.svg        doctor_1a.svg
+nurse.svg         nurse_1a.svg
+visitor.svg       visitor_1a.svg
+partner.svg       partner.svg
+parents.svg       parents.svg
+house.svg         house.svg
+bedroom.svg       single_bed.svg
+bathroom.svg      bath.svg
+kitchen.svg       cooker.svg
+garden.svg        back_garden.svg
+outside.svg       outside.svg
+shop.svg          shop.svg
+hospital.svg      surgery_health_centre.svg
+tv.svg            flatscreen_tv.svg
+music.svg         music.svg
+read.svg          read_,_to.svg
+go-out.svg        go_out_2_,_to.svg
+rest.svg          rest_,_to.svg
+phone-call.svg    telephone_2_,_to.svg
+game.svg          playing_cards.svg
+shower.svg        shower.svg
+like.svg          favourite.svg
+want.svg          want_,_to.svg
+get.svg           get_,_to.svg
+make.svg          make_,_to.svg
+go.svg            go_,_to.svg
+look.svg          look_,_to.svg
+turn.svg          turn_,_to.svg
+different.svg     opposite.svg
+i.svg             I.svg
+he.svg            man_-_face.svg
+open.svg          open_,_to.svg
+do.svg            work_,_to.svg
+put.svg           put_,_to.svg
+same.svg          same.svg
+you.svg           point_,_to.svg
+she.svg           lady_-_face.svg
+that.svg          finger.svg
+up.svg            up.svg
+all.svg           every.svg
+some.svg          some.svg
+it.svg            top.svg
+here.svg          down.svg
+in.svg            in.svg
+on.svg            on.svg
+can.svg           strong.svg
+where.svg         where.svg
+what.svg          what.svg
+why.svg           why.svg
+who.svg           who.svg
+when.svg          when.svg
+
+The file stop.svg is from OpenMoji, the open source emoji and icon project.
+Licensed under Creative Commons Attribution-ShareAlike 4.0.
+Source: https://openmoji.org
+The file is unchanged apart from its name. Original name:
+stop.svg          270B.svg (raised hand)

@@ -1,0 +1,25 @@
+@if (board(); as board) {
+  <div class="grid" [attr.data-layout]="board.layout ?? layout.name()">
+    <!-- Each group and each cell is tracked as itself, so a new board gets new cells. A reused cell -->
+    <!-- would fade from the old tile's colours to the new ones and keep focus from the old board. -->
+    <!-- A key built from the board id does not do this, because it reads the new id for the old groups too. -->
+    @for (group of board.groups; track group) {
+      <div class="group">
+        @for (cell of group.cells; track cell) {
+          <app-cell
+            [tile]="cell.tile"
+            [style.flex-grow]="share(group, cell)"
+            (press)="onPress($event)"
+          />
+        }
+      </div>
+    }
+  </div>
+}
+<!-- A screen reader hears the phrase or the message here after a press. -->
+<!-- The text is drawn again for each press, so the same phrase twice is told twice. -->
+<p class="sr-only" role="status">
+  @for (said of [status()]; track said.press) {
+    <span>{{ said.text }}</span>
+  }
+</p>

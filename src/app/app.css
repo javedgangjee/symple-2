@@ -16,3 +16,8 @@ main {
   min-width: 0;
   margin-inline: 4%;
 }
+
+/* The router outlet is an empty marker. Hiding it keeps it from taking a row of the main area. */
+router-outlet {
+  display: none;
+}
