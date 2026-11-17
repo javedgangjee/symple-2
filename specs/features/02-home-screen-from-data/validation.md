@@ -317,3 +317,30 @@ Scanning is feature 4. Cases E4 and B8 stand in for the scanning test that tech-
 Safari and the iPad's WebKit are not tested by the automated checks. Manual checks M1 and M2 use Safari on the Mac.
 
 Requirements 14, 19 and 20 only move work to other features, so they have no check beyond case R16.
+
+## Results on 2026-11-16
+
+The automated checks ran on Node 22.23.5, the version in `.nvmrc`. The shell's default Node 22.22.1 is too old for the Angular CLI, so the commands stop at once on it.
+
+| Check | Result | Summary |
+| --- | --- | --- |
+| A1. Build | Pass | `npm run build` ended with no errors and no warnings. |
+| A2. Lint and format | Pass | `npm run lint` and `npm run format:check` ended with no errors. |
+| A3. Unit tests | Pass | 104 tests in 11 files passed. Every case listed above has a test, and none is skipped. |
+| A4. End to end tests | Pass | 106 tests passed in Chromium at both window sizes, with the feature 1 cases in `e2e/shell.spec.ts`. |
+| A5. Makefile | Pass | `make check` ran lint, format-check, test, e2e and build in turn and ended with exit code 0. |
+| A6. First review cases | Pass | K6, S17 and R28 passed in the unit run. B17 and B18 passed in the end to end run. |
+| A7. Counts | Pass | The grep finds only the line of the check itself. |
+| A8. Keyboard list cases | Pass | D13, D14 and D15 passed in the unit run. Y12, Y13 and Y14 passed in the end to end run. |
+| A9. Cells of its own | Pass | S18 passed. |
+| A10. Second review cases | Pass | I1 passed, the build passed with the `never` check in `onPress`, and the keyboard cases passed with `pressTo`. |
+| M1 to M6 | Pass | The user ran the six manual checks and reported that all pass. |
+
+During the end to end run the dev server wrote the Angular warning NG0956 several times. It says that a list tracked by identity was built again in full. No check fails on it.
+
+Requirements with no passing check:
+
+- Requirement 59, the thin line round each cell, has no automated case and no manual step that names it.
+- Requirement 14 has no check of its own, as the section above says. Cases L1 to L6 cover the reading of the stored layout.
+
+Requirements 50, 51, 52, 53 and 58 are not in the brackets above. Cases D1, D3, D4, D5, D13, D14 and B16 cover them and passed.
