@@ -151,16 +151,22 @@
           },
           {
             "tile": "people"
+          },
+          {
+            "tile": "places"
           }
         ]
       },
       {
         "cells": [
           {
-            "tile": "places"
+            "tile": "activities"
           },
           {
-            "tile": "activities"
+            "tile": "yes-no"
+          },
+          {
+            "tile": "core-words"
           }
         ]
       }
@@ -437,6 +443,179 @@
     ]
   },
   {
+    "id": "yes-no",
+    "title": "Yes or no",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "yes-green"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "no-red"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "core-words",
+    "title": "Core words",
+    "layout": "columns",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "core-like"
+          },
+          {
+            "tile": "core-not"
+          },
+          {
+            "tile": "core-i"
+          },
+          {
+            "tile": "core-you"
+          },
+          {
+            "tile": "core-it"
+          },
+          {
+            "tile": "core-where"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "core-want"
+          },
+          {
+            "tile": "core-go"
+          },
+          {
+            "tile": "core-he"
+          },
+          {
+            "tile": "core-she"
+          },
+          {
+            "tile": "core-here"
+          },
+          {
+            "tile": "core-what"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "core-get"
+          },
+          {
+            "tile": "core-look"
+          },
+          {
+            "tile": "core-open"
+          },
+          {
+            "tile": "core-that"
+          },
+          {
+            "tile": "core-in"
+          },
+          {
+            "tile": "core-why"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "core-make"
+          },
+          {
+            "tile": "core-turn"
+          },
+          {
+            "tile": "core-do"
+          },
+          {
+            "tile": "core-up"
+          },
+          {
+            "tile": "core-on"
+          },
+          {
+            "tile": "core-who"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "core-good"
+          },
+          {
+            "tile": "core-help"
+          },
+          {
+            "tile": "core-put"
+          },
+          {
+            "tile": "core-all"
+          },
+          {
+            "tile": "core-can"
+          },
+          {
+            "tile": "core-when"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "core-more"
+          },
+          {
+            "tile": "core-different"
+          },
+          {
+            "tile": "core-same"
+          },
+          {
+            "tile": "core-some"
+          },
+          {
+            "tile": "core-finished"
+          },
+          {
+            "tile": "core-stop"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "keyboard",
     "title": "Keyboard",
     "layout": "rows",
@@ -695,8 +874,12 @@
       {
         "cells": [
           {
+            "tile": "key-abc",
+            "size": 2
+          },
+          {
             "tile": "key-space",
-            "size": 8
+            "size": 6
           },
           {
             "tile": "key-clear",

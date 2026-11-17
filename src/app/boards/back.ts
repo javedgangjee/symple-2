@@ -23,9 +23,13 @@ export class Back {
       )
       .subscribe((event) => {
         const url = event.urlAfterRedirects;
-        // Going back lands on the screen that is already last in the list, so it is not added twice.
-        if (this.trail.at(-1) !== url) {
+        // A screen is in the list once. Opening one that is already there cuts the list back to it,
+        // so going back or switching between two keyboards never builds a loop.
+        const seen = this.trail.indexOf(url);
+        if (seen === -1) {
           this.trail.push(url);
+        } else {
+          this.trail.length = seen + 1;
         }
       });
   }

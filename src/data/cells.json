@@ -280,9 +280,10 @@
   {
     "id": "food",
     "label": "Food",
-    "colour": "light",
-    "style": "symbol",
-    "symbol": "breakfast.svg",
+    "colour": "soft1",
+    "hue": "c2",
+    "style": "stage",
+    "icon": "restaurant",
     "action": {
       "type": "open",
       "board": "food"
@@ -291,9 +292,10 @@
   {
     "id": "drinks",
     "label": "Drinks",
-    "colour": "light",
-    "style": "symbol",
-    "symbol": "water.svg",
+    "colour": "dark",
+    "hue": "c1",
+    "style": "stage",
+    "icon": "cafe",
     "action": {
       "type": "open",
       "board": "drinks"
@@ -302,9 +304,10 @@
   {
     "id": "feelings",
     "label": "Feelings",
-    "colour": "light",
-    "style": "symbol",
-    "symbol": "happy.svg",
+    "colour": "grey",
+    "hue": "c3",
+    "style": "stage",
+    "icon": "mood",
     "action": {
       "type": "open",
       "board": "feelings"
@@ -313,9 +316,10 @@
   {
     "id": "people",
     "label": "People",
-    "colour": "light",
-    "style": "symbol",
-    "symbol": "family.svg",
+    "colour": "dark",
+    "hue": "c5",
+    "style": "stage",
+    "icon": "group",
     "action": {
       "type": "open",
       "board": "people"
@@ -324,9 +328,10 @@
   {
     "id": "places",
     "label": "Places",
-    "colour": "light",
-    "style": "symbol",
-    "symbol": "house.svg",
+    "colour": "soft1",
+    "hue": "c2",
+    "style": "stage",
+    "icon": "place",
     "action": {
       "type": "open",
       "board": "places"
@@ -335,9 +340,10 @@
   {
     "id": "activities",
     "label": "Activities",
-    "colour": "light",
-    "style": "symbol",
-    "symbol": "tv.svg",
+    "colour": "dark",
+    "hue": "c1",
+    "style": "stage",
+    "icon": "game",
     "action": {
       "type": "open",
       "board": "activities"
@@ -1471,6 +1477,8 @@
     "label": "Clear",
     "colour": "grey",
     "style": "key",
+    "icon": "trash",
+    "caption": true,
     "action": {
       "type": "clear"
     }
@@ -1488,11 +1496,463 @@
   {
     "id": "key-123",
     "label": "123",
-    "colour": "soft1",
+    "colour": "dark",
     "style": "key",
     "action": {
       "type": "open",
       "board": "keyboard-numbers"
+    }
+  },
+  {
+    "id": "key-abc",
+    "label": "ABC",
+    "colour": "dark",
+    "style": "key",
+    "action": {
+      "type": "open",
+      "board": "keyboard"
+    }
+  },
+  {
+    "id": "yes-no",
+    "label": "Yes or no",
+    "colour": "grey",
+    "hue": "c3",
+    "style": "stage",
+    "icon": "thumbs",
+    "action": {
+      "type": "open",
+      "board": "yes-no"
+    }
+  },
+  {
+    "id": "yes-green",
+    "label": "Yes",
+    "colour": "green",
+    "style": "stage",
+    "icon": "check",
+    "action": {
+      "type": "speak",
+      "phrase": "Yes"
+    }
+  },
+  {
+    "id": "no-red",
+    "label": "No",
+    "colour": "red",
+    "style": "stage",
+    "icon": "cross",
+    "action": {
+      "type": "speak",
+      "phrase": "No"
+    }
+  },
+  {
+    "id": "core-words",
+    "label": "Core words",
+    "colour": "dark",
+    "hue": "c5",
+    "style": "stage",
+    "icon": "apps",
+    "action": {
+      "type": "open",
+      "board": "core-words"
+    }
+  },
+  {
+    "id": "core-like",
+    "label": "like",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "like.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "like"
+    }
+  },
+  {
+    "id": "core-want",
+    "label": "want",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "want.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "want"
+    }
+  },
+  {
+    "id": "core-get",
+    "label": "get",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "get.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "get"
+    }
+  },
+  {
+    "id": "core-make",
+    "label": "make",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "make.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "make"
+    }
+  },
+  {
+    "id": "core-good",
+    "label": "good",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "good.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "good"
+    }
+  },
+  {
+    "id": "core-more",
+    "label": "more",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "more.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "more"
+    }
+  },
+  {
+    "id": "core-not",
+    "label": "not",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "no.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "not"
+    }
+  },
+  {
+    "id": "core-go",
+    "label": "go",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "go.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "go"
+    }
+  },
+  {
+    "id": "core-look",
+    "label": "look",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "look.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "look"
+    }
+  },
+  {
+    "id": "core-turn",
+    "label": "turn",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "turn.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "turn"
+    }
+  },
+  {
+    "id": "core-help",
+    "label": "help",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "help.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "help"
+    }
+  },
+  {
+    "id": "core-different",
+    "label": "different",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "different.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "different"
+    }
+  },
+  {
+    "id": "core-i",
+    "label": "I",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "i.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "I"
+    }
+  },
+  {
+    "id": "core-he",
+    "label": "he",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "he.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "he"
+    }
+  },
+  {
+    "id": "core-open",
+    "label": "open",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "open.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "open"
+    }
+  },
+  {
+    "id": "core-do",
+    "label": "do",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "do.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "do"
+    }
+  },
+  {
+    "id": "core-put",
+    "label": "put",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "put.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "put"
+    }
+  },
+  {
+    "id": "core-same",
+    "label": "same",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "same.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "same"
+    }
+  },
+  {
+    "id": "core-you",
+    "label": "you",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "you.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "you"
+    }
+  },
+  {
+    "id": "core-she",
+    "label": "she",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "she.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "she"
+    }
+  },
+  {
+    "id": "core-that",
+    "label": "that",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "that.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "that"
+    }
+  },
+  {
+    "id": "core-up",
+    "label": "up",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "up.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "up"
+    }
+  },
+  {
+    "id": "core-all",
+    "label": "all",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "all.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "all"
+    }
+  },
+  {
+    "id": "core-some",
+    "label": "some",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "some.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "some"
+    }
+  },
+  {
+    "id": "core-it",
+    "label": "it",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "it.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "it"
+    }
+  },
+  {
+    "id": "core-here",
+    "label": "here",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "here.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "here"
+    }
+  },
+  {
+    "id": "core-in",
+    "label": "in",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "in.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "in"
+    }
+  },
+  {
+    "id": "core-on",
+    "label": "on",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "on.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "on"
+    }
+  },
+  {
+    "id": "core-can",
+    "label": "can",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "can.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "can"
+    }
+  },
+  {
+    "id": "core-finished",
+    "label": "finished",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "finished.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "finished"
+    }
+  },
+  {
+    "id": "core-where",
+    "label": "where",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "where.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "where"
+    }
+  },
+  {
+    "id": "core-what",
+    "label": "what",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "what.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "what"
+    }
+  },
+  {
+    "id": "core-why",
+    "label": "why",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "why.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "why"
+    }
+  },
+  {
+    "id": "core-who",
+    "label": "who",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "who.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "who"
+    }
+  },
+  {
+    "id": "core-when",
+    "label": "when",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "when.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "when"
+    }
+  },
+  {
+    "id": "core-stop",
+    "label": "stop",
+    "colour": "light",
+    "style": "symbol",
+    "symbol": "stop.svg",
+    "action": {
+      "type": "speak",
+      "phrase": "stop"
     }
   }
 ]

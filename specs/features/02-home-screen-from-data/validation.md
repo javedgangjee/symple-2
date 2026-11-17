@@ -27,15 +27,17 @@ Board data with the real files, in `src/app/boards/board-data.spec.ts`:
 | D1 | The `home` board. | It has the title "Home" and two groups. Group 1 holds `my-boards` and `needs`. Group 2 holds `quick-phrases` and `keyboards`. No cell has a size. No board lists a Devices tile. |
 | D2 | The four home tiles. | Each has the label, icon, colour, hue and style of requirement 31. My boards, Needs, Quick phrases and Keyboards open `my-boards`, `needs`, `quick-phrases` and `keyboard`. |
 | D3 | The `needs` board. | It has the title "Needs" and three groups. The first cell of group 1 is the Back tile. After it, the groups hold four cells each, with the labels and phrases in the table below, in that order. |
-| D4 | The `my-boards` board. | It has three groups, of three, two and two cells. The first cell of group 1 is the Back tile. The six cells after it read Food, Drinks, Feelings, People, Places and Activities, and each opens the board of that name. |
+| D4 | The `my-boards` board. | It has three groups of three cells. The first cell of group 1 is the Back tile. The eight cells after it read Food, Drinks, Feelings, People, Places, Activities, Yes or no and Core words, and each opens its board. Each is `stage` with a Material icon and no symbol. The colours are mixed as in requirement 51. |
 | D5 | The boards of requirement 24. | Each has three groups of three cells. The first cell of group 1 is the Back tile. The eight cells after it have the labels of requirement 24, in that order. Each of those cells has a phrase that is not empty. |
 | D6 | Every symbol tile. | Its symbol file exists in `public/symbols/`, and `ATTRIBUTION.txt` lists that file. |
 | D7 | Every board. | It can be reached from `home` by tiles that open boards. |
 | D8 | Every board. | The `home` board has no Back tile. Every other board has exactly one, as the first cell of its first group. The Back tile reads "Back", is `ink` and `stage`, and has the icon `back`. |
 | D12 | The two shipped files. | The list of faults is empty. |
 | D9 | The `keyboard` board. | It has the title "Keyboard", the layout `rows` and five groups. Group 1 holds Back with a size of 1 and the message tile with a size of 9. Group 2 holds the keys q, w, e, r, t, y, u, i, o and p. Group 3 holds a, s, d, f, g, h, j, k, l and Backspace. Group 4 holds Caps lock, z, x, c, v, b, n, m, the full stop and the question mark. Group 5 holds 123, Space and Clear with sizes of 2, 6 and 2. |
-| D10 | The keys of the `keyboard` board. | Each letter key types its own letter and is `key` and `light`. Space types one space. The full stop has the name "Full stop", and the question mark has the name "Question mark". Backspace, Clear and Caps lock have the action types `backspace`, `clear` and `caps`. The 123 key opens `keyboard-numbers`. |
-| D11 | The `keyboard-numbers` board. | It has the title "Numbers and symbols", the layout `rows` and five groups. Group 1 is the same as on `keyboard`. Groups 2 to 4 hold the keys of requirement 48 in that order, and each types its own sign. Group 5 holds Space and Clear with sizes of 8 and 2. |
+| D10 | The keys of the `keyboard` board. | Each letter key types its own letter and is `key` and `light`. Space types one space. The full stop has the name "Full stop", and the question mark has the name "Question mark". Backspace, Clear and Caps lock have the action types `backspace`, `clear` and `caps`. The 123 key opens `keyboard-numbers` and is `dark`. Clear has the icon `trash` and a caption. |
+| D11 | The `keyboard-numbers` board. | It has the title "Numbers and symbols", the layout `rows` and five groups. Group 1 is the same as on `keyboard`. Groups 2 to 4 hold the keys of requirement 48 in that order, and each types its own sign. Group 5 holds ABC, Space and Clear with sizes of 2, 6 and 2, and ABC opens `keyboard` and is `dark`. |
+| D13 | The `yes-no` board. | It has the title "Yes or no" and three groups of one cell: Back, then Yes, which is `green` and `stage` with the icon `check` and says "Yes", then No, which is `red` and `stage` with the icon `cross` and says "No". |
+| D14 | The `core-words` board. | It has the title "Core words", the layout `columns` and seven groups. Group 1 holds Back. Groups 2 to 7 hold the six columns of requirement 53, six words each. Each word is a symbol tile that says its own label. |
 
 Expected labels and phrases for case D3, from the Needs mockup:
 
@@ -150,6 +152,7 @@ The way back, in `src/app/boards/back.spec.ts`:
 | --- | --- | --- |
 | K3 | Home, then `my-boards`, then `food`. Back is pressed twice. | The app shows `my-boards`, then home. |
 | K4 | `food` is the first screen of the session. Back is pressed. | The app shows home. |
+| K5 | Home, then `keyboard`, then `keyboard-numbers`, then `keyboard` again. Back is pressed. | The app shows home. |
 
 ### A4. End to end tests (1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 20, 21, 22, 23, 30, 32, 34, 37, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49)
 
@@ -179,7 +182,7 @@ Boards, in `e2e/boards.spec.ts`:
 | B3 | Open every board. | Each symbol image has loaded, came from the app's own host, and has empty alt text. |
 | B4 | On Needs, press Help. | The status region reads "I need help". The address does not change, and the background colour of Help is the same before and after the press. |
 | B5 | On Needs, press Back. | The app shows home, and no button reads "Back". |
-| B6 | Home, My boards, Food, Back, Back. | The `h1` reads "My boards", "Food", "My boards" and "Home" in turn. My boards holds Back and the six buttons of case D4. Food holds Back and its eight buttons. |
+| B6 | Home, My boards, Food, Back, Back. | The `h1` reads "My boards", "Food", "My boards" and "Home" in turn. My boards holds Back and the eight buttons of case D4. Food holds Back and its eight buttons. |
 | B7 | Open `/board/food` by its address and press Back. Then open `/board/nope`. | Both end on home with the `h1` "Home". |
 | B8 | On Needs, in both layouts, press Tab thirteen times, then once more. | Focus lands on Back, then on the twelve other cells in the order of the data. The last press does not land on the settings button. |
 | B9 | Every board, in both layouts. | The page does not scroll in either direction. Every cell lies inside the main area. The groups fill the main area, and the cells of each group fill that group, with only the gaps left over. No label is cut off. |
@@ -189,6 +192,7 @@ Boards, in `e2e/boards.spec.ts`:
 | B13 | Home and Needs with less transparency asked for. | Each cell has a background colour with no transparency and no backdrop blur, and the label has a contrast of at least 4.5 to 1 against it. |
 | B14 | Open Needs and wait for the fonts. | The label of Help uses Libre Franklin. |
 | B15 | Request `/symbols/ATTRIBUTION.txt`. | The file is served and holds the words "Mulberry" and "Creative Commons Attribution-ShareAlike 4.0". |
+| B16 | The Yes or no board in each of the five themes. Then press Yes. | The board holds Back, Yes and No. The `--bg` of Yes is `oklch(0.43 0.12 150)` and of No is `oklch(0.43 0.16 27)` in every theme. Each label has a contrast of at least 4.5 to 1 against its glass fill. The status region reads "Yes". |
 
 Keyboard, in `e2e/keyboard.spec.ts`:
 
@@ -204,6 +208,7 @@ Keyboard, in `e2e/keyboard.spec.ts`:
 | Y8 | Press Tab thirty five times, then once more. | Focus lands on Back, the message, then the keys in the order of the data. The last press does not land on the settings button. |
 | Y9 | Type sixty letters. | The message stays inside its cell, the end of the text is in view, and the page does not scroll. |
 | Y10 | The keyboard in each of the five themes. | axe reports no violations for WCAG 2.2 Level AA. The label of each key has a contrast of at least 4.5 to 1 against its glass fill laid over the worst backdrop. |
+| Y11 | On home, press Keyboards, then 123, then ABC, then Back. | The `h1` reads "Numbers and symbols", then "Keyboard", then "Home". On the numbers board ABC is as wide as Clear, within 2px. |
 
 The cases of feature 1 in `e2e/shell.spec.ts` must still pass, except E6, which case E4 replaces.
 
@@ -232,7 +237,7 @@ Expected result: the cells, the symbols and the labels look the same in both win
 
 ### M3. Both layouts read well on every board (13, 17, 37)
 
-1. Open each of the twelve boards in the columns layout and in the rows layout, at a small and a large window size.
+1. Open each of the fourteen boards in the columns layout and in the rows layout, at a small and a large window size.
 
 Expected result: each label is whole and easy to read, each symbol is whole, and no icon covers a label.
 

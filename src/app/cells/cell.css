@@ -88,7 +88,7 @@ app-icon {
 }
 
 /* A stage cell is copied from context/design/home.html. It has a bare icon in the middle */
-/* with the label centred under it. The Back tile uses it. */
+/* with the label centred under it. Back and the cells of My boards use it. */
 .stage {
   justify-content: center;
   align-items: center;
@@ -186,6 +186,7 @@ app-icon {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  gap: clamp(2px, 3cqi, 12px);
   padding: 0 6px;
 }
 

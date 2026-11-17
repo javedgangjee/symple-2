@@ -106,12 +106,21 @@ describe('Board data with the real files', () => {
     ]);
   });
 
-  it('D4: my boards has Back, then six cells in three groups that open the topic boards', () => {
+  it('D4: my boards has Back, then eight stage cells in three groups that open their boards', () => {
     const board = boardOf(loaded, 'my-boards');
-    expect(board.groups.map((group) => group.cells.length)).toEqual([3, 2, 2]);
+    expect(board.groups.map((group) => group.cells.length)).toEqual([3, 3, 3]);
     expect(board.groups[0].cells[0].tile.id).toBe('back');
     const cells = board.groups.flatMap((group) => group.cells).slice(1);
-    expect(labels(cells)).toEqual(['Food', 'Drinks', 'Feelings', 'People', 'Places', 'Activities']);
+    expect(labels(cells)).toEqual([
+      'Food',
+      'Drinks',
+      'Feelings',
+      'People',
+      'Places',
+      'Activities',
+      'Yes or no',
+      'Core words',
+    ]);
     expect(cells.map(opened)).toEqual([
       'food',
       'drinks',
@@ -119,7 +128,76 @@ describe('Board data with the real files', () => {
       'people',
       'places',
       'activities',
+      'yes-no',
+      'core-words',
     ]);
+    for (const cell of cells) {
+      expect(cell.tile.style, cell.tile.id).toBe('stage');
+      expect(cell.tile.symbol, cell.tile.id).toBeUndefined();
+    }
+    expect(cells.map((cell) => cell.tile.icon)).toEqual([
+      'restaurant',
+      'cafe',
+      'mood',
+      'group',
+      'place',
+      'game',
+      'thumbs',
+      'apps',
+    ]);
+    // The colours are mixed, and each cell has a hue for the Colours theme.
+    expect(cells.map((cell) => `${cell.tile.colour} ${cell.tile.hue}`)).toEqual([
+      'soft1 c2',
+      'dark c1',
+      'grey c3',
+      'dark c5',
+      'soft1 c2',
+      'dark c1',
+      'grey c3',
+      'dark c5',
+    ]);
+  });
+
+  it('D14: the core words board has Back, then six fixed columns of six words', () => {
+    const board = boardOf(loaded, 'core-words');
+    expect(board.title).toBe('Core words');
+    expect(board.layout).toBe('columns');
+    expect(board.groups.map((group) => group.cells.length)).toEqual([1, 6, 6, 6, 6, 6, 6]);
+    expect(board.groups.slice(1).map((group) => labels(group.cells))).toEqual([
+      ['like', 'not', 'I', 'you', 'it', 'where'],
+      ['want', 'go', 'he', 'she', 'here', 'what'],
+      ['get', 'look', 'open', 'that', 'in', 'why'],
+      ['make', 'turn', 'do', 'up', 'on', 'who'],
+      ['good', 'help', 'put', 'all', 'can', 'when'],
+      ['more', 'different', 'same', 'some', 'finished', 'stop'],
+    ]);
+    for (const cell of board.groups.slice(1).flatMap((group) => group.cells)) {
+      expect(cell.tile.style, cell.tile.id).toBe('symbol');
+      expect(cell.tile.action, cell.tile.id).toEqual({ type: 'speak', phrase: cell.tile.label });
+    }
+  });
+
+  it('D13: the yes or no board has Back, a green Yes and a red No, one in each group', () => {
+    const board = boardOf(loaded, 'yes-no');
+    expect(board.title).toBe('Yes or no');
+    expect(board.groups.map((group) => group.cells.length)).toEqual([1, 1, 1]);
+    const [, yes, no] = board.groups.map((group) => group.cells[0].tile);
+    expect(yes).toEqual({
+      id: 'yes-green',
+      label: 'Yes',
+      colour: 'green',
+      style: 'stage',
+      icon: 'check',
+      action: { type: 'speak', phrase: 'Yes' },
+    });
+    expect(no).toEqual({
+      id: 'no-red',
+      label: 'No',
+      colour: 'red',
+      style: 'stage',
+      icon: 'cross',
+      action: { type: 'speak', phrase: 'No' },
+    });
   });
 
   it('D5: the boards of requirement 24 have three groups of three, with Back first', () => {
@@ -191,7 +269,7 @@ describe('Board data with the real files', () => {
         }
       }
     }
-    expect(loaded.boards.length).toBe(12);
+    expect(loaded.boards.length).toBe(14);
     expect([...reached].sort()).toEqual(loaded.boards.map((board) => board.id).sort());
   });
 
@@ -256,6 +334,9 @@ describe('Board data with the real files', () => {
     expect(byLabel('Clear').tile.action?.type).toBe('clear');
     expect(byLabel('Caps lock').tile.action?.type).toBe('caps');
     expect(opened(byLabel('123'))).toBe('keyboard-numbers');
+    expect(byLabel('123').tile.colour).toBe('dark');
+    expect(byLabel('Clear').tile.icon).toBe('trash');
+    expect(byLabel('Clear').tile.caption).toBe(true);
   });
 
   it('D11: the numbers board has the same top row and the signs of requirement 48', () => {
@@ -274,8 +355,10 @@ describe('Board data with the real files', () => {
       ...board.groups[3].cells.slice(0, -1),
     ];
     expect(signKeys.map(typed)).toEqual(rows.flat());
-    expect(labels(board.groups[4].cells)).toEqual(['Space', 'Clear']);
-    expect(sizes(board.groups[4].cells)).toEqual([8, 2]);
+    expect(labels(board.groups[4].cells)).toEqual(['ABC', 'Space', 'Clear']);
+    expect(sizes(board.groups[4].cells)).toEqual([2, 6, 2]);
+    expect(opened(board.groups[4].cells[0])).toBe('keyboard');
+    expect(board.groups[4].cells[0].tile.colour).toBe('dark');
   });
 });
 

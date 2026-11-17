@@ -125,6 +125,24 @@ test('Y5: the message is kept between the letters and the numbers', async ({ pag
   await expect(message(page)).toHaveText('hi2');
 });
 
+test('Y11: ABC returns to the letters, and Back then goes home', async ({ page }) => {
+  await openBoard(page, 'home');
+  await press(page, 'Keyboards', '123');
+  await expect(page.locator('h1')).toHaveText('Numbers and symbols');
+  const sizes = await page.evaluate(() =>
+    ['ABC', 'Space', 'Clear'].map(
+      (name) =>
+        document.querySelector(`main button[aria-label="${name}"]`)?.getBoundingClientRect().width,
+    ),
+  );
+  expect(sizes[0]).toBeGreaterThan(0);
+  expect(Math.abs((sizes[0] ?? 0) - (sizes[2] ?? 0))).toBeLessThanOrEqual(2);
+  await press(page, 'ABC');
+  await expect(page.locator('h1')).toHaveText('Keyboard');
+  await press(page, 'Back');
+  await expect(page.locator('h1')).toHaveText('Home');
+});
+
 test('Y6: the message is kept when the user goes home and comes back', async ({ page }) => {
   await openWithHi(page);
   await press(page, 'Back');

@@ -19,6 +19,9 @@
     @case ('key') {
       @if (shown.icon; as icon) {
         <app-icon [name]="icon" />
+        @if (shown.caption) {
+          <span class="label">{{ label() }}</span>
+        }
       } @else {
         <span class="label">{{ label() }}</span>
       }

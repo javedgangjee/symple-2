@@ -73,3 +73,39 @@ rest.svg          rest_,_to.svg
 phone-call.svg    telephone_2_,_to.svg
 game.svg          playing_cards.svg
 shower.svg        shower.svg
+like.svg          favourite.svg
+want.svg          want_,_to.svg
+get.svg           get_,_to.svg
+make.svg          make_,_to.svg
+go.svg            go_,_to.svg
+look.svg          look_,_to.svg
+turn.svg          turn_,_to.svg
+different.svg     opposite.svg
+i.svg             I.svg
+he.svg            man_-_face.svg
+open.svg          open_,_to.svg
+do.svg            work_,_to.svg
+put.svg           put_,_to.svg
+same.svg          same.svg
+you.svg           point_,_to.svg
+she.svg           lady_-_face.svg
+that.svg          finger.svg
+up.svg            up.svg
+all.svg           every.svg
+some.svg          some.svg
+it.svg            top.svg
+here.svg          down.svg
+in.svg            in.svg
+on.svg            on.svg
+can.svg           strong.svg
+where.svg         where.svg
+what.svg          what.svg
+why.svg           why.svg
+who.svg           who.svg
+when.svg          when.svg
+
+The file stop.svg is from OpenMoji, the open source emoji and icon project.
+Licensed under Creative Commons Attribution-ShareAlike 4.0.
+Source: https://openmoji.org
+The file is unchanged apart from its name. Original name:
+stop.svg          270B.svg (raised hand)

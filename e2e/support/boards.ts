@@ -6,7 +6,7 @@ export type ThemeName = (typeof THEMES)[number];
 export const LAYOUTS = ['columns', 'rows'] as const;
 export type LayoutName = (typeof LAYOUTS)[number];
 
-/** Home and the eleven other boards, with the title that the header shows. */
+/** Home and the other boards, with the title that the header shows. */
 export const BOARDS: Record<string, string> = {
   home: 'Home',
   needs: 'Needs',
@@ -18,12 +18,18 @@ export const BOARDS: Record<string, string> = {
   people: 'People',
   places: 'Places',
   activities: 'Activities',
+  'yes-no': 'Yes or no',
+  'core-words': 'Core words',
   keyboard: 'Keyboard',
   'keyboard-numbers': 'Numbers and symbols',
 };
 
-/** The two boards that fix their own layout. */
-export const FIXED_ROWS = ['keyboard', 'keyboard-numbers'];
+/** The boards that fix their own layout. */
+export const FIXED_LAYOUTS: Record<string, LayoutName> = {
+  keyboard: 'rows',
+  'keyboard-numbers': 'rows',
+  'core-words': 'columns',
+};
 
 export const NEEDS_LABELS = [
   'Help',

@@ -39,4 +39,13 @@ describe('Back', () => {
     await back.back();
     expect(router.url).toBe('/');
   });
+
+  it('K5: opening a screen that is already in the list does not build a loop', async () => {
+    await router.navigateByUrl('/');
+    await router.navigateByUrl('/board/keyboard');
+    await router.navigateByUrl('/board/keyboard-numbers');
+    await router.navigateByUrl('/board/keyboard');
+    await back.back();
+    expect(router.url).toBe('/');
+  });
 });

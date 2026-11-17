@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { axeViolations } from './support/axe';
 import {
   BOARDS,
-  FIXED_ROWS,
+  FIXED_LAYOUTS,
   LAYOUTS,
   NEEDS_LABELS,
   THEMES,
@@ -21,12 +21,20 @@ import {
 } from './support/boards';
 
 const BOARD_IDS = Object.keys(BOARDS);
-const MY_BOARDS = ['Food', 'Drinks', 'Feelings', 'People', 'Places', 'Activities'];
+const MY_BOARDS = [
+  'Food',
+  'Drinks',
+  'Feelings',
+  'People',
+  'Places',
+  'Activities',
+  'Yes or no',
+  'Core words',
+];
 const FOOD = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Fruit', 'Soup', 'Bread', 'Something sweet'];
 
 /** The layout a board is drawn in: its own when it fixes one, and the stored one when it does not. */
-const drawnLayout = (id: string, stored: LayoutName): LayoutName =>
-  FIXED_ROWS.includes(id) ? 'rows' : stored;
+const drawnLayout = (id: string, stored: LayoutName): LayoutName => FIXED_LAYOUTS[id] ?? stored;
 
 test('B1: Needs opens from home with Back and the twelve cells', async ({ page }) => {
   await openBoard(page, 'home');
@@ -80,8 +88,8 @@ test('B3: every symbol image loads from the app itself with empty alt text', asy
     }
     seen += count;
   }
-  // Needs has twelve symbols, My boards has six and each of the seven other boards has eight.
-  expect(seen).toBe(74);
+  // Needs has twelve symbols, Core words has thirty six and each of the seven other symbol boards has eight.
+  expect(seen).toBe(104);
 });
 
 test('B4: pressing Help tells screen readers the phrase and changes nothing on screen', async ({
@@ -121,6 +129,27 @@ test('B6: Back goes one screen at a time from Food to My boards to home', async 
   await expect(page.locator('h1')).toHaveText('My boards');
   await cell(page, 'Back').click();
   await expect(page.locator('h1')).toHaveText('Home');
+});
+
+test('B16: Yes is green and No is red in every theme', async ({ page }) => {
+  for (const theme of THEMES) {
+    await openBoard(page, 'yes-no', { theme });
+    expect(await cellNames(page)).toEqual(['Back', 'Yes', 'No']);
+    const [yes, green] = await resolveColours(
+      cell(page, 'Yes'),
+      'var(--bg)',
+      'oklch(0.43 0.12 150)',
+    );
+    const [no, red] = await resolveColours(cell(page, 'No'), 'var(--bg)', 'oklch(0.43 0.16 27)');
+    expect(yes, theme).toBe(green);
+    expect(no, theme).toBe(red);
+    for (const name of ['Yes', 'No']) {
+      const { ratio } = await readGlass(cell(page, name));
+      expect(ratio, `${theme} ${name}`).toBeGreaterThanOrEqual(4.5);
+    }
+  }
+  await cell(page, 'Yes').click();
+  await expect(statusRegion(page)).toHaveText('Yes');
 });
 
 test('B7: Back on a board opened by its address, and an unknown board, both show home', async ({
@@ -269,7 +298,8 @@ test('B10: one gap size is used between cells, between groups and under the head
 });
 
 test('B11: axe reports no WCAG 2.2 Level AA violations on any board', async ({ page }) => {
-  test.slow();
+  // The scan covers every board in both layouts, so it needs more time than the other tests.
+  test.setTimeout(240_000);
   for (const stored of LAYOUTS) {
     const layout = stored === 'rows' ? { layout: stored } : {};
     for (const id of BOARD_IDS) {

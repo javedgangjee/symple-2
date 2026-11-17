@@ -4,7 +4,7 @@ import cellsFile from '../../data/cells.json';
 import { LayoutName, isLayoutName } from '../layout/layout';
 
 /** The cell colours. Each name is a class in src/styles/cells.css. */
-export const CELL_COLOURS = ['dark', 'light', 'soft1', 'grey', 'ink'] as const;
+export const CELL_COLOURS = ['dark', 'light', 'soft1', 'grey', 'ink', 'green', 'red'] as const;
 export type CellColour = (typeof CELL_COLOURS)[number];
 
 /** The cell styles that this feature draws. */
@@ -24,6 +24,17 @@ export const ICON_NAMES = [
   'back',
   'backspace',
   'caps',
+  'trash',
+  'check',
+  'cross',
+  'restaurant',
+  'cafe',
+  'mood',
+  'group',
+  'place',
+  'game',
+  'thumbs',
+  'apps',
 ] as const;
 export type IconName = (typeof ICON_NAMES)[number];
 
@@ -49,6 +60,8 @@ export interface Tile {
   readonly style: CellStyle;
   readonly hue?: CellHue;
   readonly icon?: IconName;
+  /** A key with an icon shows its label beside the icon when this is true. */
+  readonly caption?: true;
   /** The file name of a symbol in public/symbols. */
   readonly symbol?: string;
   /** The name for screen readers, when the label is a sign. */
@@ -112,7 +125,18 @@ function show(value: unknown): string {
 /** A symbol is a plain file name, so the data cannot point outside the symbols folder. */
 const SYMBOL_FILE = /^[a-z0-9-]+\.svg$/;
 
-const TILE_FIELDS = ['id', 'label', 'colour', 'style', 'hue', 'icon', 'symbol', 'name', 'action'];
+const TILE_FIELDS = [
+  'id',
+  'label',
+  'colour',
+  'style',
+  'hue',
+  'icon',
+  'caption',
+  'symbol',
+  'name',
+  'action',
+];
 
 /** Reads the action of a tile. It gives the action, or a line that says what is wrong with it. */
 function readAction(value: unknown): TileAction | string {
@@ -156,7 +180,7 @@ function readTile(value: Json, id: string): Tile | string {
   if (extra) {
     return `it has the unknown field "${extra}"`;
   }
-  const { label, colour, style, hue, icon, symbol, name, action } = value;
+  const { label, colour, style, hue, icon, caption, symbol, name, action } = value;
   if (!isText(label)) {
     return 'it has no label';
   }
@@ -174,6 +198,9 @@ function readTile(value: Json, id: string): Tile | string {
   }
   if ((style === 'bleed' || style === 'signage' || style === 'stage') && icon === undefined) {
     return `a ${style} tile must name an icon`;
+  }
+  if (caption !== undefined && caption !== true) {
+    return `its caption ${show(caption)} is not true`;
   }
   if (symbol !== undefined && !(typeof symbol === 'string' && SYMBOL_FILE.test(symbol))) {
     return `its symbol ${show(symbol)} is not a file name such as "help.svg"`;
@@ -199,6 +226,7 @@ function readTile(value: Json, id: string): Tile | string {
     style,
     ...(hue !== undefined && { hue }),
     ...(icon !== undefined && { icon }),
+    ...(caption === true && { caption }),
     ...(symbol !== undefined && { symbol }),
     ...(name !== undefined && { name }),
     ...(readActionResult && { action: readActionResult }),
