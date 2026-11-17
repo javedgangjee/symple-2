@@ -6,34 +6,28 @@ export type ThemeName = (typeof THEMES)[number];
 export const LAYOUTS = ['columns', 'rows'] as const;
 export type LayoutName = (typeof LAYOUTS)[number];
 
-/** Home and the other boards, with the title that the header shows. */
+/**
+ * The sample boards, with the title that the header shows. There is one board of each kind:
+ * bleed tiles, symbols, stage tiles, the fixed colours of Yes and No, a full grid with a fixed
+ * layout, a keyboard of five rows and a keyboard of seven. The tests that go over the boards use
+ * these, because a second board of the same kind is drawn by the same rules. The unit tests
+ * check the data of every board.
+ */
 export const BOARDS: Record<string, string> = {
   home: 'Home',
   needs: 'Needs',
-  'quick-phrases': 'Quick phrases',
   'my-boards': 'My boards',
-  food: 'Food',
-  drinks: 'Drinks',
-  feelings: 'Feelings',
-  people: 'People',
-  places: 'Places',
-  activities: 'Activities',
   'yes-no': 'Yes or no',
   'core-words': 'Core words',
-  keyboards: 'Keyboards',
   keyboard: 'QWERTY keyboard',
-  'keyboard-abc': 'ABC keyboard',
   'keyboard-vowels': 'Vowel keyboard',
-  'keyboard-numbers': 'Numbers and symbols',
 };
 
-/** The boards that fix their own layout. */
+/** The sample boards that fix their own layout. */
 export const FIXED_LAYOUTS: Record<string, LayoutName> = {
-  keyboard: 'rows',
-  'keyboard-abc': 'rows',
-  'keyboard-vowels': 'rows',
-  'keyboard-numbers': 'rows',
   'core-words': 'columns',
+  keyboard: 'rows',
+  'keyboard-vowels': 'rows',
 };
 
 export const NEEDS_LABELS = [
@@ -96,6 +90,15 @@ export function cells(page: Page): Locator {
 
 export function cell(page: Page, name: string): Locator {
   return page.getByRole('main').getByRole('button', { name, exact: true });
+}
+
+/**
+ * Presses a cell that opens a board and waits for the title of that board.
+ * A test that presses and then reads the page at once can read the old board.
+ */
+export async function pressTo(page: Page, name: string, title: string): Promise<void> {
+  await cell(page, name).click();
+  await expect(page.locator('h1')).toHaveText(title);
 }
 
 export function statusRegion(page: Page): Locator {

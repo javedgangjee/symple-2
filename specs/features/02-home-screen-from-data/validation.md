@@ -158,7 +158,7 @@ The way back, in `src/app/boards/back.spec.ts`:
 
 Command: `npm run e2e`
 
-Every case runs in Chromium at 1024 by 768 and at 1440 by 900. "Both layouts" means the case runs once with nothing stored and once with `symple.layout` set to `rows`. "Every board" means home and the sixteen other boards.
+Every case runs in Chromium at 1024 by 768 and at 1440 by 900. "Both layouts" means the case runs once with nothing stored and once with `symple.layout` set to `rows`. "Every board" in the end to end cases means the seven sample boards, one of each kind: `home`, `needs`, `my-boards`, `yes-no`, `core-words`, `keyboard` and `keyboard-vowels`. The unit cases check the data of all seventeen boards.
 
 Home, in `e2e/home.spec.ts`:
 
@@ -254,6 +254,16 @@ The unit cases are in `src/app/boards/board-data.spec.ts` and the end to end cas
 | Case | File | Input | Expected result |
 | --- | --- | --- | --- |
 | S18 | `src/app/boards/board-screen.spec.ts` | A screen shows one board, and its id changes to a second board. | The screen shows the cells of the second board. No group element and no button of the first board is still on the page. |
+
+### A10. Cases added by the second review on 2026-11-16
+
+The numbers in brackets are the findings in review-2.md.
+
+| Case | File | Input | Expected result |
+| --- | --- | --- | --- |
+| I1 (5) | `src/app/cells/icon.spec.ts` | Each name in `ICON_NAMES` is drawn. | The `svg` holds at least one path, rect or circle. |
+| Build (4) | `src/app/boards/board-screen.ts` | `npm run build`. | The build passes. The switch in `onPress` ends with a `never` check, so an action type with no case would stop the build. |
+| Y1, Y5, Y6, Y11 to Y14 (7) | `e2e/keyboard.spec.ts` | Each press that opens a board goes through `pressTo`. | The cases pass as before. |
 
 ## Manual checks
 

@@ -121,3 +121,31 @@ Run `make check` and fix what fails.
 
 - Changes `src/app/boards/board-screen.html`. The groups and the cells are tracked as themselves. The old key was built from the board id, and it read the new id for the old groups too, so a move between two boards reused the old cells. The reused cells faded from the old tile's colours to the new ones and showed the old symbols until the new ones loaded.
 - Changes `src/app/boards/board-screen.spec.ts` to add case S18.
+
+## Steps added by the second review on 2026-11-16
+
+The numbers in brackets are the findings in review-2.md.
+
+### Step 21. Cut the board list of the end to end tests to one board of each kind (2)
+
+- Changes `e2e/support/boards.ts`. `BOARDS` holds seven sample boards and `FIXED_LAYOUTS` holds the three of them that fix a layout. The user chose this over building the list from `boards.json`.
+- Changes `e2e/boards.spec.ts` to name the sample boards in the titles of B3, B9 and B11.
+- Changes `validation.md` to say what "Every board" means in the end to end cases.
+- The cases B3, B9, B10 and B11 no longer open the six topic boards, Quick phrases, the list of keyboards, the ABC keyboard or the numbers board. A label that is cut off on one of those is no longer caught by a test.
+
+### Step 22. Make a new action type fail to compile until it has a case (4)
+
+- Changes `src/app/boards/board-screen.ts`. `onPress` returns early for a tile with no action, and its switch ends with a `never` check. The three cases that change the message share one ending. The list of types in `board-data.ts` stays as it is, as the voters advised.
+
+### Step 23. Check that each icon name has a drawing (5)
+
+- Creates `src/app/cells/icon.spec.ts` with case I1.
+
+### Step 24. Wait for the next board after a press that opens one (7)
+
+- Changes `e2e/support/boards.ts` to add `pressTo`, which presses a cell and waits for the title of the board it opens.
+- Changes `e2e/keyboard.spec.ts` to use it for each press that opens a board. The other repeats of finding 7 stay as they are.
+
+### Not taken from the second review
+
+Findings 1, 3, 6 and 8 are left. Finding 1 is to be done at the start of feature 8, when more stored settings arrive.

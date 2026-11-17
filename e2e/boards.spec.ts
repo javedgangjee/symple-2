@@ -65,7 +65,7 @@ test('B2: Needs is drawn as columns or as rows, with equal cells in each group',
   }
 });
 
-test('B3: every symbol image loads from the app itself with empty alt text', async ({
+test('B3: every symbol image on the sample boards loads from the app itself with empty alt text', async ({
   page,
   baseURL,
 }) => {
@@ -88,8 +88,8 @@ test('B3: every symbol image loads from the app itself with empty alt text', asy
     }
     seen += count;
   }
-  // Needs has twelve symbols, Core words has thirty six and each of the seven other symbol boards has eight.
-  expect(seen).toBe(104);
+  // Of the sample boards, Needs has twelve symbols and Core words has thirty six.
+  expect(seen).toBe(48);
 });
 
 test('B4: pressing Help tells screen readers the phrase and changes nothing on screen', async ({
@@ -199,7 +199,7 @@ test('B8: Tab reaches the thirteen cells of Needs in order and skips the setting
   }
 });
 
-test('B9: every board fills the main area, does not scroll and cuts off no label', async ({
+test('B9: each sample board fills the main area, does not scroll and cuts off no label', async ({
   page,
 }) => {
   test.slow();
@@ -316,8 +316,8 @@ test('B10: one gap size is used between cells, between groups and under the head
   }
 });
 
-test('B11: axe reports no WCAG 2.2 Level AA violations on any board', async ({ page }) => {
-  // The scan covers every board in both layouts, so it needs more time than the other tests.
+test('B11: axe reports no WCAG 2.2 Level AA violations on any sample board', async ({ page }) => {
+  // The scan covers each sample board in both layouts, so it needs more time than the other tests.
   test.setTimeout(240_000);
   for (const stored of LAYOUTS) {
     const layout = stored === 'rows' ? { layout: stored } : {};

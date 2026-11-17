@@ -56,7 +56,11 @@ export class BoardScreen {
 
   protected onPress(tile: Tile): void {
     const action = tile.action;
-    switch (action?.type) {
+    if (!action) {
+      // A tile with no action does nothing. The message tile is one until feature 5.
+      return;
+    }
+    switch (action.type) {
       case 'open':
         this.say('');
         void this.router.navigate(['/board', action.board]);
@@ -71,22 +75,27 @@ export class BoardScreen {
         break;
       case 'type':
         this.message.type(action.text);
-        this.say(this.message.text());
+        this.sayMessage();
         break;
       case 'backspace':
         this.message.backspace();
-        this.say(this.message.text());
+        this.sayMessage();
         break;
       case 'clear':
         this.message.clear();
-        this.say(this.message.text());
+        this.sayMessage();
         break;
       case 'caps':
         this.message.toggleCaps();
         break;
       default:
-        // A tile with no action does nothing. The message tile is one until feature 5.
-        break;
+        // Every action type has a case above. A new type does not compile until it has one too.
+        action satisfies never;
     }
+  }
+
+  /** Tells screen readers the message as it stands after a key has changed it. */
+  private sayMessage(): void {
+    this.say(this.message.text());
   }
 }
