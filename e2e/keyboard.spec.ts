@@ -43,12 +43,12 @@ async function openWithHi(page: Page): Promise<void> {
   await expect(message(page)).toHaveText('hi');
 }
 
-test('Y1: Keyboards opens five groups and thirty five cells, with an empty message', async ({
+test('Y1: Keyboards and QWERTY open five groups and thirty five cells, with an empty message', async ({
   page,
 }) => {
   await openBoard(page, 'home');
-  await cell(page, 'Keyboards').click();
-  await expect(page.locator('h1')).toHaveText('Keyboard');
+  await press(page, 'Keyboards', 'QWERTY');
+  await expect(page.locator('h1')).toHaveText('QWERTY keyboard');
   await expect(page.locator('main .group')).toHaveCount(5);
   await expect(cells(page)).toHaveCount(35);
   expect((await cellNames(page))[0]).toBe('Back');
@@ -121,13 +121,13 @@ test('Y5: the message is kept between the letters and the numbers', async ({ pag
   await press(page, '2');
   await expect(message(page)).toHaveText('hi2');
   await press(page, 'Back');
-  await expect(page.locator('h1')).toHaveText('Keyboard');
+  await expect(page.locator('h1')).toHaveText('QWERTY keyboard');
   await expect(message(page)).toHaveText('hi2');
 });
 
-test('Y11: ABC returns to the letters, and Back then goes home', async ({ page }) => {
+test('Y11: ABC returns to the letters, and Back then leads home', async ({ page }) => {
   await openBoard(page, 'home');
-  await press(page, 'Keyboards', '123');
+  await press(page, 'Keyboards', 'QWERTY', '123');
   await expect(page.locator('h1')).toHaveText('Numbers and symbols');
   const sizes = await page.evaluate(() =>
     ['ABC', 'Space', 'Clear'].map(
@@ -138,7 +138,9 @@ test('Y11: ABC returns to the letters, and Back then goes home', async ({ page }
   expect(sizes[0]).toBeGreaterThan(0);
   expect(Math.abs((sizes[0] ?? 0) - (sizes[2] ?? 0))).toBeLessThanOrEqual(2);
   await press(page, 'ABC');
-  await expect(page.locator('h1')).toHaveText('Keyboard');
+  await expect(page.locator('h1')).toHaveText('QWERTY keyboard');
+  await press(page, 'Back');
+  await expect(page.locator('h1')).toHaveText('Keyboards');
   await press(page, 'Back');
   await expect(page.locator('h1')).toHaveText('Home');
 });
@@ -147,8 +149,8 @@ test('Y6: the message is kept when the user goes home and comes back', async ({ 
   await openWithHi(page);
   await press(page, 'Back');
   await expect(page.locator('h1')).toHaveText('Home');
-  await press(page, 'Keyboards');
-  await expect(page.locator('h1')).toHaveText('Keyboard');
+  await press(page, 'Keyboards', 'QWERTY');
+  await expect(page.locator('h1')).toHaveText('QWERTY keyboard');
   await expect(message(page)).toHaveText('hi');
 });
 
@@ -251,4 +253,74 @@ test('Y10: the keyboard passes axe and each key keeps 4.5:1 in every theme', asy
       expect(ratio, `${theme} cell ${index}`).toBeGreaterThanOrEqual(4.5);
     }
   }
+});
+
+test('Y12: Keyboards lists the three keyboards as bleed tiles, and each one opens', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await press(page, 'Keyboards');
+  await expect(page).toHaveURL(/\/board\/keyboards$/);
+  await expect(page.locator('h1')).toHaveText('Keyboards');
+  expect(await cellNames(page)).toEqual(['Back', 'QWERTY', 'ABC', 'Vowels']);
+  const titles = { QWERTY: 'QWERTY keyboard', ABC: 'ABC keyboard', Vowels: 'Vowel keyboard' };
+  for (const [name, title] of Object.entries(titles)) {
+    await expect(cell(page, name)).toHaveClass(/\bbleed\b/);
+    await press(page, name);
+    await expect(page.locator('h1')).toHaveText(title);
+    await press(page, 'Back');
+    await expect(page.locator('h1')).toHaveText('Keyboards');
+  }
+});
+
+test('Y13: the ABC keyboard runs in the order of the alphabet, types, and gets its numbers back to itself', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await press(page, 'Keyboards', 'ABC');
+  await expect(page.locator('h1')).toHaveText('ABC keyboard');
+  const layout = await measure(page);
+  expectDirection(layout, 'rows');
+  expect(layout.groups.map((group) => group.cells.map((item) => item.name))).toEqual([
+    ['Back', 'Message'],
+    [...'abcdefghij'],
+    [...'klmnopqrs', 'Backspace'],
+    ['Caps lock', ...'tuvwxyz', 'Full stop', 'Question mark'],
+    ['123', 'Space', 'Clear'],
+  ]);
+  await press(page, 'h', 'i', '123');
+  await expect(page.locator('h1')).toHaveText('Numbers and symbols');
+  await press(page, '2', 'ABC');
+  await expect(page.locator('h1')).toHaveText('ABC keyboard');
+  await expect(message(page)).toHaveText('hi2');
+  await press(page, 'Back');
+  await expect(page.locator('h1')).toHaveText('Keyboards');
+});
+
+test('Y14: each letter row of the vowel keyboard starts with a vowel, and the keys type', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await press(page, 'Keyboards', 'Vowels');
+  await expect(page.locator('h1')).toHaveText('Vowel keyboard');
+  const layout = await measure(page);
+  expectDirection(layout, 'rows');
+  expect(layout.groups.map((group) => group.cells.map((item) => item.name))).toEqual([
+    ['Back', 'Message'],
+    [...'abcd', 'Full stop', 'Backspace'],
+    [...'efgh', 'Question mark', 'Caps lock'],
+    [...'ijklmn'],
+    [...'opqrst'],
+    [...'uvwxyz'],
+    ['123', 'Space', 'Clear'],
+  ]);
+  const keys = layout.groups.slice(1, 6).flatMap((group) => group.cells);
+  for (const key of keys) {
+    expect(Math.abs(key.box.width - keys[0].box.width), key.name).toBeLessThanOrEqual(2);
+    expect(Math.abs(key.box.height - keys[0].box.height), key.name).toBeLessThanOrEqual(2);
+  }
+  await press(page, 'h', 'i', 'Full stop', '123');
+  await press(page, 'ABC');
+  await expect(page.locator('h1')).toHaveText('Vowel keyboard');
+  await expect(message(page)).toHaveText('hi.');
 });

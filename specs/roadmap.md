@@ -77,6 +77,7 @@ Each question must be answered in the plan of the feature it names.
 - Feature 2: Back is a tile in the data. It goes to the previous screen, and it is the first cell of every board except home.
 - Feature 2: My boards holds typical topic boards, as found in Proloquo2Go or Grid 3.
 - Feature 2: the keyboard is a board in the data that is always drawn in the rows layout, and its letters are tiles.
+- Feature 2: the Keyboards tile opens a list of three keyboards, which are QWERTY, ABC and Vowels. They share one board of numbers and symbols.
 - Feature 2: seven labels of the first boards were changed because Mulberry has no symbol for them. Please, Thank you and Goodbye became More, Good and Finished. Bored and Uncomfortable became Worried and Hungry. Friend and Everyone became Grandparents and Parents.
 - Feature 7: a language model generates the suggested words. The patent limits in tech-stack.md apply. There are three sources: the Apple model on the device, Claude and Gemini. The caregiver picks the source in settings, and a bundled word list is the fallback.
 - Feature 12: on iPad, the iPad's own pointer carries head tracking and eye gaze and does the dwell click. Symple receives a tap.

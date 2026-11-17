@@ -112,7 +112,7 @@ test('E7: the focused cell has an ink outline at least 4px wide', async ({ page 
   );
 });
 
-test('E8: Keyboards opens the keyboard with no console error', async ({ page }) => {
+test('E8: Keyboards opens the list of keyboards with no console error', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'error') {
@@ -122,7 +122,7 @@ test('E8: Keyboards opens the keyboard with no console error', async ({ page }) 
   page.on('pageerror', (error) => errors.push(error.message));
   await openBoard(page, 'home');
   await cell(page, 'Keyboards').click();
-  await expect(page).toHaveURL(/\/board\/keyboard$/);
-  await expect(page.locator('h1')).toHaveText('Keyboard');
+  await expect(page).toHaveURL(/\/board\/keyboards$/);
+  await expect(page.locator('h1')).toHaveText('Keyboards');
   expect(errors).toEqual([]);
 });

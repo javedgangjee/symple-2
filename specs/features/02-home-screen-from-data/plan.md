@@ -106,3 +106,13 @@ The numbers in brackets are the findings in review.md.
 ### Step 18. Run everything again
 
 Run `make check` and fix what fails.
+
+## Steps added with the keyboard list on 2026-11-16
+
+### Step 19. Add the list of keyboards and two more keyboards (54, 55, 56, 57)
+
+- Changes `src/data/cells.json`. The Keyboards tile opens `keyboards`. The tiles `keyboard-qwerty`, `keyboard-abc` and `keyboard-vowels` are added. The ABC key of the numbers board takes the `back` action.
+- Changes `src/data/boards.json`. The boards `keyboards`, `keyboard-abc` and `keyboard-vowels` are added, which makes seventeen boards. The title of `keyboard` becomes "QWERTY keyboard".
+- Changes `src/app/boards/board-data.spec.ts` to add cases D13 to D15 and to bring D2, D7, D8, D9 and D11 up to date.
+- Changes `e2e/keyboard.spec.ts` to add cases Y12 to Y14 and to bring Y1, Y6 and Y11 up to date. Changes `e2e/home.spec.ts` for case E8 and `e2e/support/boards.ts` for the list of boards.
+- No code outside the tests changes.

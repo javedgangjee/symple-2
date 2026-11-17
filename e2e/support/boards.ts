@@ -20,13 +20,18 @@ export const BOARDS: Record<string, string> = {
   activities: 'Activities',
   'yes-no': 'Yes or no',
   'core-words': 'Core words',
-  keyboard: 'Keyboard',
+  keyboards: 'Keyboards',
+  keyboard: 'QWERTY keyboard',
+  'keyboard-abc': 'ABC keyboard',
+  'keyboard-vowels': 'Vowel keyboard',
   'keyboard-numbers': 'Numbers and symbols',
 };
 
 /** The boards that fix their own layout. */
 export const FIXED_LAYOUTS: Record<string, LayoutName> = {
   keyboard: 'rows',
+  'keyboard-abc': 'rows',
+  'keyboard-vowels': 'rows',
   'keyboard-numbers': 'rows',
   'core-words': 'columns',
 };

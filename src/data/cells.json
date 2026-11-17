@@ -44,7 +44,43 @@
     "icon": "keyboard",
     "action": {
       "type": "open",
+      "board": "keyboards"
+    }
+  },
+  {
+    "id": "keyboard-qwerty",
+    "label": "QWERTY",
+    "colour": "dark",
+    "hue": "c1",
+    "style": "bleed",
+    "icon": "keyboard",
+    "action": {
+      "type": "open",
       "board": "keyboard"
+    }
+  },
+  {
+    "id": "keyboard-abc",
+    "label": "ABC",
+    "colour": "soft1",
+    "hue": "c2",
+    "style": "bleed",
+    "icon": "keyboard",
+    "action": {
+      "type": "open",
+      "board": "keyboard-abc"
+    }
+  },
+  {
+    "id": "keyboard-vowels",
+    "label": "Vowels",
+    "colour": "grey",
+    "hue": "c3",
+    "style": "bleed",
+    "icon": "keyboard",
+    "action": {
+      "type": "open",
+      "board": "keyboard-vowels"
     }
   },
   {
@@ -1509,8 +1545,7 @@
     "colour": "dark",
     "style": "key",
     "action": {
-      "type": "open",
-      "board": "keyboard"
+      "type": "back"
     }
   },
   {

@@ -63,7 +63,7 @@ describe('Board data with the real files', () => {
       ['my-boards', 'My boards', 'board', 'dark', 'c1', 'my-boards'],
       ['needs', 'Needs', 'heart', 'soft1', 'c2', 'needs'],
       ['quick-phrases', 'Quick phrases', 'chat', 'grey', 'c3', 'quick-phrases'],
-      ['keyboards', 'Keyboards', 'keyboard', 'dark', 'c5', 'keyboard'],
+      ['keyboards', 'Keyboards', 'keyboard', 'dark', 'c5', 'keyboards'],
     ];
     for (const [id, label, icon, colour, hue, board] of expected) {
       expect(tile(id)).toEqual({
@@ -269,14 +269,15 @@ describe('Board data with the real files', () => {
         }
       }
     }
-    expect(loaded.boards.length).toBe(14);
+    expect(loaded.boards.length).toBe(17);
     expect([...reached].sort()).toEqual(loaded.boards.map((board) => board.id).sort());
   });
 
   it('D8: every board except home has one Back tile, as its first cell', () => {
     for (const board of loaded.boards) {
       const cells = board.groups.flatMap((group) => group.cells);
-      const backs = cells.filter((cell) => cell.tile.action?.type === 'back');
+      // The ABC key of the numbers board also goes back, so the Back tile is counted by its id.
+      const backs = cells.filter((cell) => cell.tile.id === 'back');
       if (board.id === 'home') {
         expect(backs.length, board.id).toBe(0);
         continue;
@@ -299,7 +300,7 @@ describe('Board data with the real files', () => {
 
   it('D9: the keyboard board has the message row, three letter rows and the bottom row', () => {
     const board = boardOf(loaded, 'keyboard');
-    expect(board.title).toBe('Keyboard');
+    expect(board.title).toBe('QWERTY keyboard');
     expect(board.layout).toBe('rows');
     expect(board.groups.length).toBe(5);
     expect(ids(board.groups[0].cells)).toEqual(['back', 'message']);
@@ -357,8 +358,66 @@ describe('Board data with the real files', () => {
     expect(signKeys.map(typed)).toEqual(rows.flat());
     expect(labels(board.groups[4].cells)).toEqual(['ABC', 'Space', 'Clear']);
     expect(sizes(board.groups[4].cells)).toEqual([2, 6, 2]);
-    expect(opened(board.groups[4].cells[0])).toBe('keyboard');
+    // ABC goes back, so it returns to whichever keyboard opened the numbers.
+    expect(board.groups[4].cells[0].tile.action).toEqual({ type: 'back' });
     expect(board.groups[4].cells[0].tile.colour).toBe('dark');
+  });
+
+  it('D13: the keyboards board holds Back and one bleed tile for each keyboard', () => {
+    const board = boardOf(loaded, 'keyboards');
+    expect(board.title).toBe('Keyboards');
+    expect(board.layout).toBeUndefined();
+    expect(board.groups.map((group) => ids(group.cells))).toEqual([
+      ['back', 'keyboard-qwerty'],
+      ['keyboard-abc', 'keyboard-vowels'],
+    ]);
+    const expected = [
+      ['keyboard-qwerty', 'QWERTY', 'dark', 'c1', 'keyboard'],
+      ['keyboard-abc', 'ABC', 'soft1', 'c2', 'keyboard-abc'],
+      ['keyboard-vowels', 'Vowels', 'grey', 'c3', 'keyboard-vowels'],
+    ];
+    for (const [id, label, colour, hue, target] of expected) {
+      expect(tile(id)).toEqual({
+        id,
+        label,
+        colour,
+        hue,
+        style: 'bleed',
+        icon: 'keyboard',
+        action: { type: 'open', board: target },
+      });
+    }
+  });
+
+  it('D14: the ABC keyboard has the letters in the order of the alphabet', () => {
+    const board = boardOf(loaded, 'keyboard-abc');
+    const qwerty = boardOf(loaded, 'keyboard');
+    expect(board.title).toBe('ABC keyboard');
+    expect(board.layout).toBe('rows');
+    expect(board.groups.length).toBe(5);
+    expect(board.groups[0]).toEqual(qwerty.groups[0]);
+    expect(labels(board.groups[1].cells)).toEqual([...'abcdefghij']);
+    expect(labels(board.groups[2].cells)).toEqual([...'klmnopqrs', 'Backspace']);
+    expect(labels(board.groups[3].cells)).toEqual(['Caps lock', ...'tuvwxyz', '.', '?']);
+    expect(board.groups[4]).toEqual(qwerty.groups[4]);
+  });
+
+  it('D15: each letter row of the vowel keyboard starts with a vowel', () => {
+    const board = boardOf(loaded, 'keyboard-vowels');
+    const qwerty = boardOf(loaded, 'keyboard');
+    expect(board.title).toBe('Vowel keyboard');
+    expect(board.layout).toBe('rows');
+    expect(board.groups.length).toBe(7);
+    expect(board.groups[0]).toEqual(qwerty.groups[0]);
+    expect(labels(board.groups[1].cells)).toEqual([...'abcd', '.', 'Backspace']);
+    expect(labels(board.groups[2].cells)).toEqual([...'efgh', '?', 'Caps lock']);
+    expect(labels(board.groups[3].cells)).toEqual([...'ijklmn']);
+    expect(labels(board.groups[4].cells)).toEqual([...'opqrst']);
+    expect(labels(board.groups[5].cells)).toEqual([...'uvwxyz']);
+    expect(board.groups[6]).toEqual(qwerty.groups[4]);
+    for (const cell of board.groups.slice(1, 6).flatMap((group) => group.cells)) {
+      expect(sizes([cell])).toEqual([undefined]);
+    }
   });
 });
 

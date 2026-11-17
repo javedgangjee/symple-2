@@ -616,8 +616,34 @@
     ]
   },
   {
+    "id": "keyboards",
+    "title": "Keyboards",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back"
+          },
+          {
+            "tile": "keyboard-qwerty"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "keyboard-abc"
+          },
+          {
+            "tile": "keyboard-vowels"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "keyboard",
-    "title": "Keyboard",
+    "title": "QWERTY keyboard",
     "layout": "rows",
     "groups": [
       {
@@ -731,6 +757,288 @@
           },
           {
             "tile": "key-question-mark"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-123",
+            "size": 2
+          },
+          {
+            "tile": "key-space",
+            "size": 6
+          },
+          {
+            "tile": "key-clear",
+            "size": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "keyboard-abc",
+    "title": "ABC keyboard",
+    "layout": "rows",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back",
+            "size": 1
+          },
+          {
+            "tile": "message",
+            "size": 9
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-a"
+          },
+          {
+            "tile": "key-b"
+          },
+          {
+            "tile": "key-c"
+          },
+          {
+            "tile": "key-d"
+          },
+          {
+            "tile": "key-e"
+          },
+          {
+            "tile": "key-f"
+          },
+          {
+            "tile": "key-g"
+          },
+          {
+            "tile": "key-h"
+          },
+          {
+            "tile": "key-i"
+          },
+          {
+            "tile": "key-j"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-k"
+          },
+          {
+            "tile": "key-l"
+          },
+          {
+            "tile": "key-m"
+          },
+          {
+            "tile": "key-n"
+          },
+          {
+            "tile": "key-o"
+          },
+          {
+            "tile": "key-p"
+          },
+          {
+            "tile": "key-q"
+          },
+          {
+            "tile": "key-r"
+          },
+          {
+            "tile": "key-s"
+          },
+          {
+            "tile": "key-backspace"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-caps"
+          },
+          {
+            "tile": "key-t"
+          },
+          {
+            "tile": "key-u"
+          },
+          {
+            "tile": "key-v"
+          },
+          {
+            "tile": "key-w"
+          },
+          {
+            "tile": "key-x"
+          },
+          {
+            "tile": "key-y"
+          },
+          {
+            "tile": "key-z"
+          },
+          {
+            "tile": "key-full-stop"
+          },
+          {
+            "tile": "key-question-mark"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-123",
+            "size": 2
+          },
+          {
+            "tile": "key-space",
+            "size": 6
+          },
+          {
+            "tile": "key-clear",
+            "size": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "keyboard-vowels",
+    "title": "Vowel keyboard",
+    "layout": "rows",
+    "groups": [
+      {
+        "cells": [
+          {
+            "tile": "back",
+            "size": 1
+          },
+          {
+            "tile": "message",
+            "size": 9
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-a"
+          },
+          {
+            "tile": "key-b"
+          },
+          {
+            "tile": "key-c"
+          },
+          {
+            "tile": "key-d"
+          },
+          {
+            "tile": "key-full-stop"
+          },
+          {
+            "tile": "key-backspace"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-e"
+          },
+          {
+            "tile": "key-f"
+          },
+          {
+            "tile": "key-g"
+          },
+          {
+            "tile": "key-h"
+          },
+          {
+            "tile": "key-question-mark"
+          },
+          {
+            "tile": "key-caps"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-i"
+          },
+          {
+            "tile": "key-j"
+          },
+          {
+            "tile": "key-k"
+          },
+          {
+            "tile": "key-l"
+          },
+          {
+            "tile": "key-m"
+          },
+          {
+            "tile": "key-n"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-o"
+          },
+          {
+            "tile": "key-p"
+          },
+          {
+            "tile": "key-q"
+          },
+          {
+            "tile": "key-r"
+          },
+          {
+            "tile": "key-s"
+          },
+          {
+            "tile": "key-t"
+          }
+        ]
+      },
+      {
+        "cells": [
+          {
+            "tile": "key-u"
+          },
+          {
+            "tile": "key-v"
+          },
+          {
+            "tile": "key-w"
+          },
+          {
+            "tile": "key-x"
+          },
+          {
+            "tile": "key-y"
+          },
+          {
+            "tile": "key-z"
           }
         ]
       },

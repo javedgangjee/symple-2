@@ -25,7 +25,7 @@ Board data with the real files, in `src/app/boards/board-data.spec.ts`:
 | Case | Input | Expected result |
 | --- | --- | --- |
 | D1 | The `home` board. | It has the title "Home" and two groups. Group 1 holds `my-boards` and `needs`. Group 2 holds `quick-phrases` and `keyboards`. No cell has a size. No board lists a Devices tile. |
-| D2 | The four home tiles. | Each has the label, icon, colour, hue and style of requirement 31. My boards, Needs, Quick phrases and Keyboards open `my-boards`, `needs`, `quick-phrases` and `keyboard`. |
+| D2 | The four home tiles. | Each has the label, icon, colour, hue and style of requirement 31. My boards, Needs, Quick phrases and Keyboards open `my-boards`, `needs`, `quick-phrases` and `keyboards`. |
 | D3 | The `needs` board. | It has the title "Needs" and three groups. The first cell of group 1 is the Back tile. After it, the groups hold four cells each, with the labels and phrases in the table below, in that order. |
 | D4 | The `my-boards` board. | It has three groups of three cells. The first cell of group 1 is the Back tile. The eight cells after it read Food, Drinks, Feelings, People, Places, Activities, Yes or no and Core words, and each opens its board. Each is `stage` with a Material icon and no symbol. The colours are mixed as in requirement 51. |
 | D5 | The boards of requirement 24. | Each has three groups of three cells. The first cell of group 1 is the Back tile. The eight cells after it have the labels of requirement 24, in that order. Each of those cells has a phrase that is not empty. |
@@ -33,7 +33,7 @@ Board data with the real files, in `src/app/boards/board-data.spec.ts`:
 | D7 | Every board. | It can be reached from `home` by tiles that open boards. |
 | D8 | Every board. | The `home` board has no Back tile. Every other board has exactly one, as the first cell of its first group. The Back tile reads "Back", is `ink` and `stage`, and has the icon `back`. |
 | D12 | The two shipped files. | The list of faults is empty. |
-| D9 | The `keyboard` board. | It has the title "Keyboard", the layout `rows` and five groups. Group 1 holds Back with a size of 1 and the message tile with a size of 9. Group 2 holds the keys q, w, e, r, t, y, u, i, o and p. Group 3 holds a, s, d, f, g, h, j, k, l and Backspace. Group 4 holds Caps lock, z, x, c, v, b, n, m, the full stop and the question mark. Group 5 holds 123, Space and Clear with sizes of 2, 6 and 2. |
+| D9 | The `keyboard` board. | It has the title "QWERTY keyboard", the layout `rows` and five groups. Group 1 holds Back with a size of 1 and the message tile with a size of 9. Group 2 holds the keys q, w, e, r, t, y, u, i, o and p. Group 3 holds a, s, d, f, g, h, j, k, l and Backspace. Group 4 holds Caps lock, z, x, c, v, b, n, m, the full stop and the question mark. Group 5 holds 123, Space and Clear with sizes of 2, 6 and 2. |
 | D10 | The keys of the `keyboard` board. | Each letter key types its own letter and is `key` and `light`. Space types one space. The full stop has the name "Full stop", and the question mark has the name "Question mark". Backspace, Clear and Caps lock have the action types `backspace`, `clear` and `caps`. The 123 key opens `keyboard-numbers` and is `dark`. Clear has the icon `trash` and a caption. |
 | D11 | The `keyboard-numbers` board. | It has the title "Numbers and symbols", the layout `rows` and five groups. Group 1 is the same as on `keyboard`. Groups 2 to 4 hold the keys of requirement 48 in that order, and each types its own sign. Group 5 holds ABC, Space and Clear with sizes of 2, 6 and 2, and ABC opens `keyboard` and is `dark`. |
 | D13 | The `yes-no` board. | It has the title "Yes or no" and three groups of one cell: Back, then Yes, which is `green` and `stage` with the icon `check` and says "Yes", then No, which is `red` and `stage` with the icon `cross` and says "No". |
@@ -158,7 +158,7 @@ The way back, in `src/app/boards/back.spec.ts`:
 
 Command: `npm run e2e`
 
-Every case runs in Chromium at 1024 by 768 and at 1440 by 900. "Both layouts" means the case runs once with nothing stored and once with `symple.layout` set to `rows`. "Every board" means home and the thirteen other boards.
+Every case runs in Chromium at 1024 by 768 and at 1440 by 900. "Both layouts" means the case runs once with nothing stored and once with `symple.layout` set to `rows`. "Every board" means home and the sixteen other boards.
 
 Home, in `e2e/home.spec.ts`:
 
@@ -171,7 +171,7 @@ Home, in `e2e/home.spec.ts`:
 | E5 | In each of the five themes, for each of the four home cells. | The label colour has a contrast of at least 4.5 to 1 against the cell's glass fill laid over the worst backdrop. The worst backdrop is white for a cell with a light label and `--canvas-3` for a cell with a dark label. |
 | E6 | The Colours theme. | The `--bg` of My boards is `oklch(0.42 0.115 250)`, of Needs `oklch(0.42 0.115 20)`, of Quick phrases `oklch(0.42 0.115 190)` and of Keyboards `oklch(0.40 0.19 285)`. |
 | E7 | Press Tab once. | My boards has an outline in the `--ink` colour that is at least 4px wide. The `--ink` colour has a contrast of at least 3 to 1 against `--canvas`. |
-| E8 | Press Keyboards. | The address is `/board/keyboard`, the `h1` reads "Keyboard", and the console shows no error. |
+| E8 | Press Keyboards. | The address is `/board/keyboards`, the `h1` reads "Keyboards", and the console shows no error. |
 
 Boards, in `e2e/boards.spec.ts`:
 
@@ -198,17 +198,17 @@ Keyboard, in `e2e/keyboard.spec.ts`:
 
 | Case | Input | Expected result |
 | --- | --- | --- |
-| Y1 | On home, press Keyboards. | The main area holds five groups and thirty five buttons. The first reads "Back", and the second is the message, which is empty. No row of suggested words is shown. |
+| Y1 | On home, press Keyboards, then QWERTY. | The main area holds five groups and thirty five buttons. The first reads "Back", and the second is the message, which is empty. No row of suggested words is shown. |
 | Y2 | Open `/board/keyboard` with nothing stored, then with `rows` stored. | Both times the five groups are stacked and the keys of each run left to right. The thirty keys of groups 2 to 4 have the same size, within 2px. The message is nine times as wide as Back, and Space is three times as wide as 123 and as Clear, within 2px after the gaps are taken out. |
 | Y3 | Press h, i, Space, Caps lock, m, Caps lock, o, m and the full stop. | The message shows "hi Mom.", and the status region reads "hi Mom.". While caps lock was on, the letter keys showed capitals and Caps lock had `aria-pressed="true"`. |
 | Y4 | The message is "hi". Press Backspace, then Clear. | The message shows "h", then is empty. |
 | Y5 | The message is "hi". Press 123, then 2, then Back. | The `h1` reads "Numbers and symbols", then "Keyboard". The message shows "hi2" on both boards. |
-| Y6 | The message is "hi". Press Back, then Keyboards. | The app shows home, then the keyboard, and the message still shows "hi". |
+| Y6 | The message is "hi". Press Back, then Keyboards, then QWERTY. | The app shows home, then the keyboard, and the message still shows "hi". |
 | Y7 | The message is "hi". Press the message. | Nothing changes, and the app makes no request to speak. |
 | Y8 | Press Tab thirty five times, then once more. | Focus lands on Back, the message, then the keys in the order of the data. The last press does not land on the settings button. |
 | Y9 | Type sixty letters. | The message stays inside its cell, the end of the text is in view, and the page does not scroll. |
 | Y10 | The keyboard in each of the five themes. | axe reports no violations for WCAG 2.2 Level AA. The label of each key has a contrast of at least 4.5 to 1 against its glass fill laid over the worst backdrop. |
-| Y11 | On home, press Keyboards, then 123, then ABC, then Back. | The `h1` reads "Numbers and symbols", then "Keyboard", then "Home". On the numbers board ABC is as wide as Clear, within 2px. |
+| Y11 | On home, press Keyboards, then QWERTY, then 123, then ABC, then Back twice. | The `h1` reads "Numbers and symbols", then "QWERTY keyboard", then "Keyboards", then "Home". On the numbers board ABC is as wide as Clear, within 2px. |
 
 The cases of feature 1 in `e2e/shell.spec.ts` must still pass, except E6, which case E4 replaces.
 
@@ -236,6 +236,19 @@ Command: `grep -n "twelve boards\|seven line icons\|eleven other boards" specs/f
 
 - The command finds no line outside this check.
 
+### A8. Cases added with the keyboard list on 2026-11-16 (54, 55, 56, 57)
+
+The unit cases are in `src/app/boards/board-data.spec.ts` and the end to end cases in `e2e/keyboard.spec.ts`. Case D7 now counts seventeen boards. Case D8 counts the tile `back`, and case D11 expects the `back` action on the ABC key.
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| D13 | The `keyboards` board. | It has the title "Keyboards", no layout and two groups. Group 1 holds Back and `keyboard-qwerty`. Group 2 holds `keyboard-abc` and `keyboard-vowels`. The three tiles have the values of requirement 54. |
+| D14 | The `keyboard-abc` board. | It has the title "ABC keyboard", the layout `rows` and the five groups of requirement 55. Its first and last groups are the same as on `keyboard`. |
+| D15 | The `keyboard-vowels` board. | It has the title "Vowel keyboard", the layout `rows` and the seven groups of requirement 56. No key in the letter rows has a size. |
+| Y12 | On home, press Keyboards. | The address is `/board/keyboards`. The cells read Back, QWERTY, ABC and Vowels, and the last three have the `bleed` style. Each opens its keyboard, and Back returns to "Keyboards". |
+| Y13 | On home, press Keyboards, then ABC. Type "hi", press 123, then 2, then ABC, then Back. | The rows hold the keys of requirement 55 in order. The `h1` reads "Numbers and symbols", then "ABC keyboard" with the message "hi2", then "Keyboards". |
+| Y14 | On home, press Keyboards, then Vowels. Type "hi.", press 123, then ABC. | The rows hold the keys of requirement 56 in order, and the thirty keys of the letter rows have the same size, within 2px. The `h1` reads "Vowel keyboard" again, with the message "hi.". |
+
 ## Manual checks
 
 ### M1. The home screen matches the mockup (10)
@@ -255,7 +268,7 @@ Expected result: the cells, the symbols and the labels look the same in both win
 
 ### M3. Both layouts read well on every board (13, 17, 37)
 
-1. Open each of the fourteen boards in the columns layout and in the rows layout, at a small and a large window size.
+1. Open each of the seventeen boards in the columns layout and in the rows layout, at a small and a large window size.
 
 Expected result: each label is whole and easy to read, each symbol is whole, and no icon covers a label.
 
