@@ -33,8 +33,8 @@ describe('BoardScreen', () => {
   const back = { back: vi.fn(() => Promise.resolve(true)) };
 
   /** Draws the screen with one board of test data in place of the board service. */
-  async function draw(board: Omit<Board, 'id' | 'title'>): Promise<void> {
-    const boards: Board[] = [{ id: 'test', title: 'Test', ...board }];
+  async function draw(board: Omit<Board, 'id' | 'title'>, others: Board[] = []): Promise<void> {
+    const boards: Board[] = [{ id: 'test', title: 'Test', ...board }, ...others];
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'board/:id', component: Blank }]),
@@ -149,6 +149,21 @@ describe('BoardScreen', () => {
     await press('Help');
     expect(said()).not.toBe(afterOne);
     expect(status()).toBe('I need help');
+  });
+
+  it('S18: a second board gets cells of its own and keeps none of the first', async () => {
+    const second: Board = {
+      id: 'second',
+      title: 'Second',
+      groups: [{ cells: [cell('C'), cell('D')] }, { cells: [cell('E')] }],
+    };
+    await draw({ groups: [{ cells: [cell('A'), cell('B')] }, { cells: [cell('F')] }] }, [second]);
+    const before = [...groups(), ...buttons()];
+    fixture.componentRef.setInput('id', 'second');
+    await fixture.whenStable();
+    expect(names()).toEqual(['C', 'D', 'E']);
+    const after = [...groups(), ...buttons()];
+    expect(after.filter((item) => before.includes(item))).toEqual([]);
   });
 
   it('S9: a tile that opens a board goes to that board', async () => {

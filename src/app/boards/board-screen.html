@@ -1,9 +1,11 @@
 @if (board(); as board) {
   <div class="grid" [attr.data-layout]="board.layout ?? layout.name()">
-    <!-- The groups are tracked by board, so a new board gets new cells and focus does not stay on an old one. -->
-    @for (group of board.groups; track id() + '/' + $index) {
+    <!-- Each group and each cell is tracked as itself, so a new board gets new cells. A reused cell -->
+    <!-- would fade from the old tile's colours to the new ones and keep focus from the old board. -->
+    <!-- A key built from the board id does not do this, because it reads the new id for the old groups too. -->
+    @for (group of board.groups; track group) {
       <div class="group">
-        @for (cell of group.cells; track $index) {
+        @for (cell of group.cells; track cell) {
           <app-cell
             [tile]="cell.tile"
             [style.flex-grow]="share(group, cell)"

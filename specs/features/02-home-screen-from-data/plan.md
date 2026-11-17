@@ -116,3 +116,8 @@ Run `make check` and fix what fails.
 - Changes `src/app/boards/board-data.spec.ts` to add cases D13 to D15 and to bring D2, D7, D8, D9 and D11 up to date.
 - Changes `e2e/keyboard.spec.ts` to add cases Y12 to Y14 and to bring Y1, Y6 and Y11 up to date. Changes `e2e/home.spec.ts` for case E8 and `e2e/support/boards.ts` for the list of boards.
 - No code outside the tests changes.
+
+### Step 20. Give each board cells of its own
+
+- Changes `src/app/boards/board-screen.html`. The groups and the cells are tracked as themselves. The old key was built from the board id, and it read the new id for the old groups too, so a move between two boards reused the old cells. The reused cells faded from the old tile's colours to the new ones and showed the old symbols until the new ones loaded.
+- Changes `src/app/boards/board-screen.spec.ts` to add case S18.

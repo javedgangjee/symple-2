@@ -249,6 +249,12 @@ The unit cases are in `src/app/boards/board-data.spec.ts` and the end to end cas
 | Y13 | On home, press Keyboards, then ABC. Type "hi", press 123, then 2, then ABC, then Back. | The rows hold the keys of requirement 55 in order. The `h1` reads "Numbers and symbols", then "ABC keyboard" with the message "hi2", then "Keyboards". |
 | Y14 | On home, press Keyboards, then Vowels. Type "hi.", press 123, then ABC. | The rows hold the keys of requirement 56 in order, and the thirty keys of the letter rows have the same size, within 2px. The `h1` reads "Vowel keyboard" again, with the message "hi.". |
 
+### A9. Each board gets cells of its own
+
+| Case | File | Input | Expected result |
+| --- | --- | --- | --- |
+| S18 | `src/app/boards/board-screen.spec.ts` | A screen shows one board, and its id changes to a second board. | The screen shows the cells of the second board. No group element and no button of the first board is still on the page. |
+
 ## Manual checks
 
 ### M1. The home screen matches the mockup (10)
