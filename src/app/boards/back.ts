@@ -36,7 +36,14 @@ export class Back {
 
   /** Goes to the previous screen, or to home when this is the first screen of the session. */
   back(): Promise<boolean> {
-    this.trail.pop();
-    return this.router.navigateByUrl(this.trail.at(-1) ?? '/');
+    // The list changes only when a navigation ends, so a second press that arrives
+    // before then asks for the same screen and does not skip one.
+    const previous = this.trail.at(-2);
+    if (previous === undefined) {
+      // No screen came before this one. The list starts again from home.
+      this.trail.length = 0;
+      return this.router.navigateByUrl('/');
+    }
+    return this.router.navigateByUrl(previous);
   }
 }

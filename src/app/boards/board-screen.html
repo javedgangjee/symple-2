@@ -15,4 +15,9 @@
   </div>
 }
 <!-- A screen reader hears the phrase or the message here after a press. -->
-<p class="sr-only" role="status">{{ status() }}</p>
+<!-- The text is drawn again for each press, so the same phrase twice is told twice. -->
+<p class="sr-only" role="status">
+  @for (said of [status()]; track said.press) {
+    <span>{{ said.text }}</span>
+  }
+</p>

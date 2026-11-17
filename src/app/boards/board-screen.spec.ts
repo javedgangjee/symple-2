@@ -136,6 +136,21 @@ describe('BoardScreen', () => {
     expect(names()).toEqual(['Help']);
   });
 
+  it('S17: a phrase that is picked twice changes the status region twice', async () => {
+    await draw({
+      groups: [{ cells: [cell('Help', undefined, { type: 'speak', phrase: 'I need help' })] }],
+    });
+    const said = () => element.querySelector('[role="status"] span');
+    const atFirst = said();
+    await press('Help');
+    const afterOne = said();
+    expect(afterOne).not.toBe(atFirst);
+    expect(status()).toBe('I need help');
+    await press('Help');
+    expect(said()).not.toBe(afterOne);
+    expect(status()).toBe('I need help');
+  });
+
   it('S9: a tile that opens a board goes to that board', async () => {
     await draw({
       groups: [{ cells: [cell('Food', undefined, { type: 'open', board: 'food' })] }],

@@ -158,7 +158,7 @@ The way back, in `src/app/boards/back.spec.ts`:
 
 Command: `npm run e2e`
 
-Every case runs in Chromium at 1024 by 768 and at 1440 by 900. "Both layouts" means the case runs once with nothing stored and once with `symple.layout` set to `rows`. "Every board" means home and the eleven other boards.
+Every case runs in Chromium at 1024 by 768 and at 1440 by 900. "Both layouts" means the case runs once with nothing stored and once with `symple.layout` set to `rows`. "Every board" means home and the thirteen other boards.
 
 Home, in `e2e/home.spec.ts`:
 
@@ -217,6 +217,24 @@ The cases of feature 1 in `e2e/shell.spec.ts` must still pass, except E6, which 
 Command: `make check`
 
 - The command runs lint, format-check, test, e2e and build in turn and ends with no errors.
+
+### A6. Cases added by the review on 2026-11-16
+
+The numbers in brackets are the findings in review.md. The unit cases run with `npm test` and the end to end cases with `npm run e2e`.
+
+| Case | File | Input | Expected result |
+| --- | --- | --- | --- |
+| K6 (1) | `src/app/boards/back.spec.ts` | Home, then `my-boards`, then `food`. Back is called twice, and the first call is not awaited. | The app shows `my-boards`. One more Back shows home. |
+| B17 (2) | `e2e/boards.spec.ts` | On Needs, press the pointer on the Pain symbol, move it 14px and release. | The status region reads "I am in pain". The image has `draggable` set to false. |
+| S17 (3) | `src/app/boards/board-screen.spec.ts` | A tile that speaks "I need help" is pressed twice. | The status region changes after each press, and reads "I need help" after each. |
+| R28 (4) | `src/app/boards/board-data.spec.ts` | The first tile with the id `help` has the colour `pink`. A second tile with the id `help` is sound. | Both are skipped, as before. The fault for the second holds `help` and does not hold the words "is kept". |
+| B18 (5) | `e2e/boards.spec.ts` | Request `/licenses/material-icons.txt`. | The file is served and holds the words "Apache License" and "Version 2.0". |
+
+### A7. Counts in the feature files (6)
+
+Command: `grep -n "twelve boards\|seven line icons\|eleven other boards" specs/features/02-home-screen-from-data/plan.md specs/features/02-home-screen-from-data/validation.md`
+
+- The command finds no line outside this check.
 
 ## Manual checks
 

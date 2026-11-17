@@ -8,7 +8,7 @@
   @let shown = tile();
   @switch (shown.style) {
     @case ('symbol') {
-      <span class="plate"><img [src]="'symbols/' + shown.symbol" alt="" /></span>
+      <span class="plate"><img [src]="'symbols/' + shown.symbol" alt="" draggable="false" /></span>
       <span class="label">{{ label() }}</span>
     }
     @case ('message') {

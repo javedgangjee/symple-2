@@ -108,6 +108,25 @@ test('B4: pressing Help tells screen readers the phrase and changes nothing on s
   expect(page.url()).toBe(url);
 });
 
+test('B17: a press on a symbol that moves a little before release still counts', async ({
+  page,
+}) => {
+  await openBoard(page, 'needs');
+  const image = cell(page, 'Pain').locator('img');
+  await expect(image).toHaveJSProperty('draggable', false);
+  const box = await image.boundingBox();
+  if (!box) {
+    throw new Error('The Pain symbol has no box.');
+  }
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 12, y + 8, { steps: 6 });
+  await page.mouse.up();
+  await expect(statusRegion(page)).toHaveText('I am in pain');
+});
+
 test('B5: Back on Needs shows home', async ({ page }) => {
   await openBoard(page, 'home');
   await cell(page, 'Needs').click();
@@ -362,6 +381,14 @@ test('B14: the label of Help uses Libre Franklin', async ({ page }) => {
       getComputedStyle(label).fontFamily.split(',')[0].replace(/["']/g, '').trim(),
     );
   expect(family).toBe('Libre Franklin');
+});
+
+test('B18: the licence of the Material icons is served', async ({ request }) => {
+  const response = await request.get('/licenses/material-icons.txt');
+  expect(response.ok()).toBe(true);
+  const text = await response.text();
+  expect(text).toContain('Apache License');
+  expect(text).toContain('Version 2.0');
 });
 
 test('B15: the symbol credit is served', async ({ request }) => {

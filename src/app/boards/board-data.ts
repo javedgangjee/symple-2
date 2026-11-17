@@ -272,7 +272,8 @@ function readBoardShell(value: Json, id: string): BoardShell | string {
  * Checks the contents of cells.json and boards.json and joins each cell to its tile.
  * Data that breaks a rule is skipped and the rest is kept. A faulty tile takes its cells with it,
  * a faulty cell leaves the other cells of its group, and a faulty board is left out whole.
- * When two tiles or two boards share an id, the first is kept.
+ * When two tiles or two boards share an id, the first is read and the others are skipped,
+ * even when the first turns out to be faulty.
  */
 export function loadBoards(tilesInput: unknown, boardsInput: unknown): LoadedBoards {
   const faults: string[] = [];
@@ -290,7 +291,7 @@ export function loadBoards(tilesInput: unknown, boardsInput: unknown): LoadedBoa
       continue;
     }
     if (seenTiles.has(id)) {
-      faults.push(`A second tile "${id}" was skipped: the first tile with that id is kept.`);
+      faults.push(`A second tile "${id}" was skipped: an earlier tile already uses that id.`);
       continue;
     }
     seenTiles.add(id);
@@ -315,7 +316,7 @@ export function loadBoards(tilesInput: unknown, boardsInput: unknown): LoadedBoa
       continue;
     }
     if (seenBoards.has(id)) {
-      faults.push(`A second board "${id}" was skipped: the first board with that id is kept.`);
+      faults.push(`A second board "${id}" was skipped: an earlier board already uses that id.`);
       continue;
     }
     seenBoards.add(id);

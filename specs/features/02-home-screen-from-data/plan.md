@@ -11,7 +11,7 @@ The steps run in order. Each step names the files it creates or changes.
 ## Step 2. Add the data files
 
 - Creates `src/data/cells.json` with the home tiles of requirement 31, the Back tile of requirement 32, the Needs tiles from the mockup, the tiles of requirement 24 with their phrases, and the message tile and the keys of requirements 44 to 48.
-- Creates `src/data/boards.json` with the twelve boards: `home`, `needs`, `quick-phrases`, `my-boards`, `food`, `drinks`, `feelings`, `people`, `places`, `activities`, `keyboard` and `keyboard-numbers`.
+- Creates `src/data/boards.json` with the fourteen boards: `home`, `needs`, `quick-phrases`, `my-boards`, `food`, `drinks`, `feelings`, `people`, `places`, `activities`, `yes-no`, `core-words`, `keyboard` and `keyboard-numbers`.
 - Changes `tsconfig.json` if JSON imports need to be turned on.
 
 ## Step 3. Add the board data loader
@@ -31,7 +31,7 @@ The steps run in order. Each step names the files it creates or changes.
 
 ## Step 6. Add the cell
 
-- Creates `src/app/cells/icon.ts`. It draws one of the seven line icons by name. Four are copied from `context/design/home.html`, two from the keyboard mockup, and the left arrow for Back is drawn new in the same style. The icon is hidden from screen readers.
+- Creates `src/app/cells/icon.ts`. It draws one of the eighteen line icons by name. Four are copied from `context/design/home.html` and two from the keyboard mockup. Back, trash, check and cross are drawn new in the same style. The other eight are outlined Material icons. The icon is hidden from screen readers.
 - Creates `src/app/cells/cell.ts`, `cell.html`, `cell.css` and `cell.spec.ts`. The cell is a button. Its name is the tile's `name`, or its label when it has no name. It takes its colour, hue and style classes from the tile. A symbol cell shows the symbol file as an image with empty alt text. A key cell shows its label or its icon, and a letter key shows a capital while caps lock is on. A message cell shows the message and a caret. The cell reports a press to its screen.
 - Changes `src/styles/cells.css` to add the cell colour `ink`, which uses `--ink` as the fill and `--light` for the label and the icon disc.
 - The bleed and signage rules are copied from the home mockup, with the glass fill, the rim, the shadows and the outline on hover and on focus. The symbol rules are copied from the Needs mockup, with the white plate. The dark picked look is left out. The key and message rules are copied from the keyboard mockup. The rules for `big`, `short`, `g1`, `g2`, `w2` and `w6` are left out, and the label and the icon are sized from the cell's own box.
@@ -62,5 +62,47 @@ The steps run in order. Each step names the files it creates or changes.
 - Changes `README.md` to credit the Mulberry symbols and name their licence.
 
 ## Step 11. Run everything
+
+Run `make check` and fix what fails.
+
+## Steps added by the review on 2026-11-16
+
+The numbers in brackets are the findings in review.md.
+
+### Step 12. Make a second press of Back harmless (1)
+
+- Changes `src/app/boards/back.ts`. `back()` no longer removes the current screen from the list. It goes to the screen before the current one, or to home when there is none. The list is still cut back when the navigation ends.
+- Changes `src/app/boards/back.spec.ts` to add case K6.
+
+### Step 13. Stop the symbol image from being dragged (2)
+
+- Changes `src/app/cells/cell.html` to set `draggable="false"` on the symbol image.
+- Changes `src/app/cells/cell.css` to set `pointer-events: none` on `.plate img`, so the press always reaches the button.
+- Changes `e2e/boards.spec.ts` to add case B17.
+
+### Step 14. Tell screen readers a repeated phrase (3)
+
+- Changes `src/app/boards/board-screen.ts` and `board-screen.html`. Each press that writes to the status region gets a new number, and the region draws its text again for each number, so the same text twice changes the page twice.
+- Changes `src/app/boards/board-screen.spec.ts` to add case S17.
+
+### Step 15. Correct the warning for an id that is used twice (4)
+
+- Changes `src/app/boards/board-data.ts`. The warning for a second tile or board says that the id is already used by an earlier one. It no longer says that the first is kept. Which items are kept does not change.
+- Changes `src/app/boards/board-data.spec.ts` to add case R28.
+
+### Step 16. Ship the licence of the Material icons (5)
+
+- Creates `public/licenses/material-icons.txt`. It holds the credit to Google, the source, and the full text of the Apache License 2.0.
+- Changes `README.md` to name that file.
+- Changes `specs/roadmap.md`. The feature 8 line gains the credit for the Material icons next to the Mulberry credit.
+- Changes `e2e/boards.spec.ts` to add case B18.
+
+### Step 17. Bring the counts in the feature files up to date (6)
+
+- Changes step 2 of this file to say fourteen boards and to add `yes-no` and `core-words` to the list.
+- Changes step 6 of this file to say eighteen line icons, with the sources that the comment in `src/app/cells/icon.ts` gives.
+- Changes `validation.md`. "Every board" means home and the thirteen other boards.
+
+### Step 18. Run everything again
 
 Run `make check` and fix what fails.

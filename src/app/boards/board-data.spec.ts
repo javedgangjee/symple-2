@@ -449,6 +449,18 @@ describe('Board data rules', () => {
     expect(loaded.faults[0]).toContain('needs');
   });
 
+  it('R28: a second tile is not said to be kept when the first with its id is faulty', () => {
+    const tiles = validTiles().map((tile) =>
+      tile['id'] === 'help' ? { ...tile, colour: 'pink' } : tile,
+    );
+    const loaded = loadBoards([...tiles, validTiles()[1]], validBoards());
+    expect(homeIds(loaded)).toEqual(['needs', 'key-a']);
+    expect(loaded.faults.length).toBe(2);
+    expect(loaded.faults[0]).toContain('pink');
+    expect(loaded.faults[1]).toContain('help');
+    expect(loaded.faults[1]).not.toContain('is kept');
+  });
+
   it('R3: the first of two boards with one id is kept', () => {
     const boards = [...validBoards(), { id: 'food', title: 'Second', groups: [] }];
     const loaded = loadBoards(validTiles(), boards);

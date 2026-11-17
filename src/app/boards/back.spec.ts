@@ -48,4 +48,15 @@ describe('Back', () => {
     await back.back();
     expect(router.url).toBe('/');
   });
+
+  it('K6: a second press of Back before the first has ended does not skip a screen', async () => {
+    await router.navigateByUrl('/');
+    await router.navigateByUrl('/board/my-boards');
+    await router.navigateByUrl('/board/food');
+    void back.back();
+    await back.back();
+    expect(router.url).toBe('/board/my-boards');
+    await back.back();
+    expect(router.url).toBe('/');
+  });
 });

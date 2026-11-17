@@ -29,8 +29,15 @@ export class BoardScreen {
 
   protected readonly board = computed(() => this.data.board(this.id()));
 
-  /** The text that screen readers hear after a press: the phrase of a cell, or the message. */
-  protected readonly status = signal('');
+  /**
+   * The text that screen readers hear after a press: the phrase of a cell, or the message.
+   * Each press gets a new number, so the page changes even when the text is the same as before.
+   */
+  protected readonly status = signal({ text: '', press: 0 });
+
+  private say(text: string): void {
+    this.status.update((said) => ({ text, press: said.press + 1 }));
+  }
 
   /**
    * The share of its group that a cell takes. A size given as a number is that many parts, and
@@ -51,28 +58,28 @@ export class BoardScreen {
     const action = tile.action;
     switch (action?.type) {
       case 'open':
-        this.status.set('');
+        this.say('');
         void this.router.navigate(['/board', action.board]);
         break;
       case 'back':
-        this.status.set('');
+        this.say('');
         void this.back.back();
         break;
       case 'speak':
         // Feature 5 adds the speech. Until then only screen readers get the phrase.
-        this.status.set(action.phrase);
+        this.say(action.phrase);
         break;
       case 'type':
         this.message.type(action.text);
-        this.status.set(this.message.text());
+        this.say(this.message.text());
         break;
       case 'backspace':
         this.message.backspace();
-        this.status.set(this.message.text());
+        this.say(this.message.text());
         break;
       case 'clear':
         this.message.clear();
-        this.status.set(this.message.text());
+        this.say(this.message.text());
         break;
       case 'caps':
         this.message.toggleCaps();

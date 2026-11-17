@@ -26,7 +26,7 @@ The app needs Node 22.22.3 or a later Node 22 release, and npm. Run `make instal
 
 The boards use the Mulberry Symbols set, copyright 2018-2026 Steve Lee, licensed under Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). The source is https://mulberrysymbols.org. The files in `public/symbols/` are unchanged apart from their names, and `public/symbols/ATTRIBUTION.txt` lists each file with its original name. One symbol, `stop.svg`, is from OpenMoji (https://openmoji.org) under the same licence.
 
-Some line icons in `src/app/cells/icon.ts` are the outlined Material icons by Google, used under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0). The source is https://fonts.google.com/icons.
+Some line icons in `src/app/cells/icon.ts` are the outlined Material icons by Google, used under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0). The source is https://fonts.google.com/icons. The licence text ships with the app in `public/licenses/material-icons.txt`.
 
 ## Specs
 
