@@ -7,13 +7,13 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 ## Core
 
 1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: done.
-2. **Home screen and boards from data.** The home screen, the communication boards and the keyboard are drawn from `boards.json` and `cells.json` as grids of cells, each with a colour, a label and an icon or a symbol. A cell on the home screen opens a board, and a Back tile leads back. The first boards are Needs, Quick phrases, My boards and the keyboard, whose letters are tiles that write a message. Covers: Capabilities (home screen, cell contents, communication boards), Product Purpose, Principles 3 and 4, the keyboard mockup, the data rule in tech-stack.md. Status: in progress.
+2. **Home screen and boards from data.** The home screen, the communication boards and the keyboard are drawn from `boards.json` and `cells.json` as grids of cells, each with a colour, a label and an icon or a symbol. A cell on the home screen opens a board, and a Back tile leads back. The first boards are Needs, Quick phrases, My boards and the keyboard, whose letters are tiles that write a message. Covers: Capabilities (home screen, cell contents, communication boards), Product Purpose, Principles 3 and 4, the keyboard mockup, the data rule in tech-stack.md. Status: done.
 3. **Sign in.** The caregiver signs in to Symple through Firebase Auth. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: planned.
-4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
+4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the dark picked look of the Needs mockup while it speaks, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: planned.
 6. **Removed.** Communication boards were merged into feature 2 on 2026-11-16, and speaking a phrase moved to feature 5. The number is kept so that the other feature numbers do not change.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
-8. **Settings.** The caregiver sets the scan time, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
+8. **Settings.** The caregiver sets the scan time, the post click delay, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
 9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
 
 ## Packaging
@@ -28,9 +28,9 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 ## Media
 
-14. **Music.** The user picks and plays music alone. Covers: Capabilities (activities), Product Purpose. Status: planned.
-15. **Photos.** The user looks through photos alone. Covers: Capabilities (activities), Product Purpose. Status: planned.
-16. **Video.** The user picks and watches a video alone. Covers: Capabilities (activities), Product Purpose. Status: planned.
+14. **Music, photos and video.** The user picks and plays music, looks through photos, and picks and watches a video, all alone. The three activities are built in one feature. Covers: Capabilities (activities), Product Purpose. Status: planned.
+15. **Removed.** Photos were merged into feature 14 on 2026-11-16. The number is kept so that the other feature numbers do not change.
+16. **Removed.** Video was merged into feature 14 on 2026-11-16. The number is kept so that the other feature numbers do not change.
 
 ## Activities
 
@@ -41,6 +41,8 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 ## Later
 
 20. **Streaming services on Mac and iPad.** The Mac and iPad apps play music from Spotify and Apple Music and video from YouTube, as the web version already does. Covers: the media decision of 2026-11-16. Status: planned.
+21. **OBF support.** The caregiver imports boards from Open Board Format files and exports Symple boards to that format, so boards can move between Symple and other AAC apps. Covers: added to scope on 2026-11-16, the data rule in tech-stack.md. Status: planned.
+22. **Ask a language model.** The user writes a question with the keyboard, sends it to a language model and reads the answer, on a screen laid out like the messaging screen. Covers: added to scope on 2026-11-16, the messaging mockup, the patent rule in tech-stack.md. Status: planned.
 
 ## Open questions
 
@@ -54,9 +56,13 @@ Each question must be answered in the plan of the feature it names.
 - Feature 13: which licence the public repo uses. The Mulberry symbols are CC BY-SA 4.0, so the choice must allow for that.
 - Feature 13: whether the Mac app also goes to the Mac App Store, or is offered only as a download.
 - Feature 13: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 7.
-- Feature 15: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
+- Feature 14: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
 - Feature 17: when the timed games are added, and how slow they run.
 - Feature 18: where the Twilio keys are kept and how incoming texts reach the app. The two candidates are Firebase functions with Firestore, and Twilio Conversations.
+- Feature 21: how an OBF grid of rows and columns maps to Symple's groups and cell sizes, and what happens to an OBF button that Symple cannot show.
+- Feature 21: whether the feature reads and writes single boards (`.obf`), board sets (`.obz`) or both, and what happens to symbols whose licence does not allow sharing.
+- Feature 22: the patent check. The plan must check the feature against the two generative patents before any code is written, and a patent attorney should confirm the result.
+- Feature 22: which model answers, what data goes to it, and whether the answer can be spoken aloud.
 
 ## Decisions made on 2026-11-16
 
@@ -81,8 +87,11 @@ Each question must be answered in the plan of the feature it names.
 - Feature 2: seven labels of the first boards were changed because Mulberry has no symbol for them. Please, Thank you and Goodbye became More, Good and Finished. Bored and Uncomfortable became Worried and Hungry. Friend and Everyone became Grandparents and Parents.
 - Feature 7: a language model generates the suggested words. The patent limits in tech-stack.md apply. There are three sources: the Apple model on the device, Claude and Gemini. The caregiver picks the source in settings, and a bundled word list is the fallback.
 - Feature 12: on iPad, the iPad's own pointer carries head tracking and eye gaze and does the dwell click. Symple receives a tap.
-- Features 14, 15 and 16: on the Mac and iPad apps, music, photos and videos come from the device's own libraries by default. Streaming services come later for those apps, in feature 20.
-- Features 14 and 16: the web version cannot read the device's libraries, so it gets streaming in these features. Music comes from Spotify and Apple Music, and video comes from YouTube.
+- Feature 14: music, photos and video are built in one feature. Features 15 and 16 were removed.
+- Feature 4: scanning has a post click delay. Feature 8 lets the caregiver set it.
+- Features 21 and 22: OBF support and a screen for asking a language model were added to scope as later work.
+- Feature 14: on the Mac and iPad apps, music, photos and videos come from the device's own libraries by default. Streaming services come later for those apps, in feature 20.
+- Feature 14: the web version cannot read the device's libraries, so it gets streaming in this feature. Music comes from Spotify and Apple Music, and video comes from YouTube.
 - Feature 17: the games cover four kinds. They are turn based board games, word games, card and matching games, and timed games with a slow mode for scanning.
 - Feature 17: the first set is untimed. It holds chess against the computer, a five letter word guessing game and memory pairs. Each is Symple's own version. The timed games wait until the slow mode has been tried with real users.
 - Feature 18: Twilio carries the messages as text messages (SMS), so contacts use their own messaging app. The caregiver sets which contacts the user can message.
@@ -92,4 +101,4 @@ Each question must be answered in the plan of the feature it names.
 
 - A second voice source is not on the roadmap, because none has been chosen.
 - Languages other than English are not on the roadmap.
-- Generative features other than the keyboard suggestions in feature 7 are not on the roadmap. Adding one needs the patent check first.
+- Generative features other than the keyboard suggestions in feature 7 and the language model screen in feature 22 are not on the roadmap. Adding one needs the patent check first.

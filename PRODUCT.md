@@ -69,6 +69,9 @@ This version is a rewrite of SYMPLE, which Javed Gangjee built at the SpeakYourM
 - The first public release comes after the core, the Mac app, the iPad app, and head tracker and eye gaze. It is a download link for the Mac app, a public repo with a licence, and an App Store submission for the iPad app. Decided on 2026-11-16.
 - Home control connects through a Home Assistant hub that the caregiver sets up. Decided on 2026-11-16.
 - Messaging uses text messages (SMS) carried by Twilio, so contacts reply from their own messaging app. Decided on 2026-11-16.
+- Scanning has a post click delay. After a pick, the scan waits for a set time before it starts again. Decided on 2026-11-16.
+- Later work adds Open Board Format (OBF) support, so boards can move between Symple and other AAC apps. Decided on 2026-11-16.
+- Later work adds a screen where the user asks a language model a question and reads the answer. It looks like the messaging screen, and it needs the patent check before it is built. Decided on 2026-11-16.
 
 **Speech output**
 
