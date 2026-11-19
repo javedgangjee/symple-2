@@ -8,23 +8,22 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: done.
 2. **Home screen and boards from data.** The home screen, the communication boards and the keyboard are drawn from `boards.json` and `cells.json` as grids of cells, each with a colour, a label and an icon or a symbol. A cell on the home screen opens a board, and a Back tile leads back. The first boards are Needs, Quick phrases, My boards and the keyboard, whose letters are tiles that write a message. Covers: Capabilities (home screen, cell contents, communication boards), Product Purpose, Principles 3 and 4, the keyboard mockup, the data rule in tech-stack.md. Status: done.
-3. **Sign in.** The caregiver signs in to Symple through Firebase Auth, and the theme and the layout sync to the caregiver's account through Firestore. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: in progress.
+3. **Sign in.** The caregiver signs in to Symple through Firebase Auth, and the theme and the layout sync to the caregiver's account through Firestore. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: done.
 4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the dark picked look of the Needs mockup while it speaks, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: planned.
-6. **Removed.** Communication boards were merged into feature 2 on 2026-11-16, and speaking a phrase moved to feature 5. The number is kept so that the other feature numbers do not change.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
 8. **Settings.** The caregiver sets the scan time, the post click delay, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
 9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved and join the sync of feature 3. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
+
+## Release
+
+13. **Public release.** Symple is released to the public with a download link for the Mac app, a link to the public repo with its licence, and an App Store submission for the iPad app. Covers: the release step added on 2026-11-16, Platform. Status: planned.
 
 ## Packaging
 
 10. **Mac app.** Electron packages the build as a Mac app that can stay open all day. Covers: Platform, Stack, Operating Context. Status: planned.
 11. **iPad app.** Capacitor packages the build as an iPad app with the iOS system voices. Covers: Platform, Stack, Speech output. Status: planned.
 12. **Head tracker and eye gaze.** Every screen can be used with a pointer that is driven by a head tracker or by eye gaze. Covers: Accessibility and Inclusion, Operating Context. Status: planned.
-
-## Release
-
-13. **Public release.** Symple is released to the public with a download link for the Mac app, a link to the public repo with its licence, and an App Store submission for the iPad app. Covers: the release step added on 2026-11-16, Platform. Status: planned.
 
 ## Media
 
@@ -59,6 +58,9 @@ Each question must be answered in the plan of the feature it names.
 - Feature 13: which licence the public repo uses. The Mulberry symbols are CC BY-SA 4.0, so the choice must allow for that.
 - Feature 13: whether the Mac app also goes to the Mac App Store, or is offered only as a download.
 - Feature 13: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 7.
+- Feature 13: what the release holds now that it comes before the Mac app and the iPad app. Its goal still names a download link for the Mac app and an App Store submission for the iPad app, and neither app exists until features 10 and 11.
+- Feature 9: whether the Firestore cache on the device is cleared at sign out. Today it keeps the theme and the layout of the account, and feature 9 adds the edited boards, which hold the user's own phrases. This was finding 5 of the review of feature 3.
+- Feature 9: whether `firestore.rules` checks the type and the size of what an account writes. Today the rules accept any field of any size in the account's own documents. This was finding 6 of the review of feature 3.
 - Feature 14: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
 - Feature 17: when the timed games are added, and how slow they run.
 - Feature 18: where the Twilio keys are kept and how incoming texts reach the app. The two candidates are Firebase functions with Firestore, and Twilio Conversations.

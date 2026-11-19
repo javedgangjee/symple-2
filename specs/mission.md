@@ -18,6 +18,8 @@ Symple shows a home screen with a few large cells. Each cell opens one activity.
 
 Symple speaks the user's words aloud with the voices of the device.
 
+The caregiver signs in once on each device. After that the app works with no network, and the settings sync to the caregiver's account.
+
 Every screen meant for the primary user works by scan, step, cursor or touch. Single switch scanning comes first. In scanning, the app highlights rows and then cells in turn, and the user triggers a switch to pick one.
 
 Symple runs as a Mac app, an iPad app and a web app in a browser on a Mac. It stays open for most of the day.

@@ -21,3 +21,18 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 2 adds the columns and rows layouts. The app reads the layout from `symple.layout` in local storage and falls back to `columns`.
 - Feature 2 adds the Mulberry symbols in `public/symbols/`, with their credit in `ATTRIBUTION.txt`.
 - Feature 2 adds unit tests and end to end tests for the boards, the cells, the keyboards and the layouts.
+- Feature 3 adds a sign in screen at `/sign-in`, where the caregiver signs in through Firebase Auth with an email address and a password. Every other route opens it until someone is signed in.
+- Feature 3 keeps the sign in on the device, so the app starts and works with no network after the first sign in.
+- Feature 3 adds a Forgot password control, which sends the Firebase password reset email to the address in the Email field.
+- Feature 3 adds a temporary Sign out button in the bottom right corner of the footer. One press signs the caregiver out.
+- Feature 3 syncs the theme and the layout to the Firestore document `users/{uid}` of the signed in account, and a change in that document reaches an open app.
+- Feature 3 adds `firestore.rules`, which let an account reach only its own document, with `firebase.json` and `.firebaserc` for the project `symple-2`.
+- Feature 3 adds the `firebase` npm package, version 13, and loads Firestore only after sign in.
+- Feature 3 adds unit tests with fakes of the auth source and the cloud store, and end to end tests that answer the Firebase Auth calls with canned replies and block the Firestore calls.
+- Feature 3 adds a Firebase section to `README.md` with the one time setup in the Firebase console and the command that deploys the rules.
+- Feature 3 adds `make stop`, which ends the dev server on port 4200.
+
+### Changed
+
+- Feature 3 marks the settings button and the Sign out button with the attribute `data-caregiver-control`, so that scanning in feature 4 can skip them.
+- Feature 3 makes the end to end tests start from a saved signed in browser state, which a Playwright setup project writes to `e2e/.auth/`.
