@@ -69,7 +69,7 @@ Every case runs in Chromium. The cases are in `e2e/shell.spec.ts`.
 | E4 | Store each of the five themes in turn and reload. | The title colour has a contrast of at least 4.5 to 1 against the page colour and against each of the three colour patches. |
 | E5 | Open `/` at 1024 by 768 and at 1440 by 900. | The page does not scroll in either direction. The header is at least 64px high and the footer is at least 48px high. The footer's bottom edge is inside the window. |
 | E6 | Open `/` and press Tab three times. | Focus does not land on any control. |
-| E7 | Open `/` and wait for the fonts. | The `h1` uses Libre Franklin, the font is loaded, and the page made no request to another host. |
+| E7 | Open `/` and wait for the fonts. | The `h1` uses Libre Franklin, the font is loaded, and the page made no font request to another host. Changed on 2026-11-17 for feature 3, because a signed in device calls Firebase Auth at each start. |
 | E8 | Open `/`. | The gap between the header and the main area equals the gap between the main area and the footer. |
 | E9 | Open `/some/unknown/path`. | The home screen shows with the `h1` "Home". |
 | E10 | In each of the five themes, add a test element with each of the classes `dark`, `light`, `soft1` and `grey`. | The element's `--on` colour has a contrast of at least 4.5 to 1 against its `--bg` colour. |

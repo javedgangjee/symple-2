@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { axeViolations } from './support/axe';
 import {
   LAYOUTS,
@@ -14,6 +14,7 @@ import {
   readGlass,
   statusRegion,
 } from './support/boards';
+import { test } from './support/firebase';
 
 // The names of the keys in the order of the data, with caps lock off.
 const KEY_NAMES = [

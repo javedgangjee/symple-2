@@ -6,6 +6,20 @@ Symple is an app that lets people who cannot speak or point use a computer alone
 
 The app needs Node 22.22.3 or a later Node 22 release, and npm. Run `make install` once. It installs the packages and the Chromium browser that the end to end tests use.
 
+## Firebase
+
+The caregiver signs in through Firebase Auth, and Firestore holds a copy of the settings. The Firebase project is `symple-2`, and its web config is in `src/app/firebase/firebase-config.ts`. The config is not a secret.
+
+The project needs this setup once, in the Firebase console.
+
+- Turn on the Email and Password sign in method.
+- Turn off account creation in the Auth settings, under User actions. The app has no sign up, and this stops anyone else from making an account with the web config.
+- Make each caregiver account by hand.
+
+The Firestore access rules are in `firestore.rules`. Deploy them with `npx firebase-tools deploy --only firestore:rules`. The deploy replaces the rules that the database has, so read those first.
+
+The tests never reach Firebase. The end to end tests answer the Firebase Auth calls with canned replies and block the Firestore calls.
+
 ## npm scripts
 
 - `npm start` serves the app at `http://localhost:4200`.
@@ -18,6 +32,7 @@ The app needs Node 22.22.3 or a later Node 22 release, and npm. Run `make instal
 ## Make targets
 
 - `make install` installs the packages and Chromium.
+- `make stop` ends the dev server on port 4200.
 - `make start`, `make build`, `make test`, `make e2e` and `make lint` call the npm script of the same name.
 - `make format-check` calls `npm run format:check`.
 - `make check` runs lint, format-check, test, e2e and build in turn.

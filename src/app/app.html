@@ -1,5 +1,9 @@
-<app-header [title]="screenTitle()" />
+@if (!bare()) {
+  <app-header [title]="screenTitle()" />
+}
 <main>
   <router-outlet />
 </main>
-<app-footer />
+@if (!bare()) {
+  <app-footer />
+}

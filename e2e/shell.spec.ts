@@ -1,6 +1,7 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { axeViolations } from './support/axe';
 import { contrastRatio } from './support/contrast';
+import { test } from './support/firebase';
 
 const THEMES = ['colours', 'blue', 'purple', 'teal', 'dark'] as const;
 type ThemeName = (typeof THEMES)[number];
@@ -143,8 +144,14 @@ test('E5: the page fits the window at both sizes', async ({ page }) => {
 // e2e/home.spec.ts replaces it.
 
 test('E7: the title uses Libre Franklin from the app itself', async ({ page, baseURL }) => {
+  // Only the font requests are checked. Since feature 3, a signed in device also asks Firebase Auth
+  // at each start whether the account still stands, and that request goes to a Google host.
   const hosts = new Set<string>();
-  page.on('request', (request) => hosts.add(new URL(request.url()).host));
+  page.on('request', (request) => {
+    if (request.resourceType() === 'font') {
+      hosts.add(new URL(request.url()).host);
+    }
+  });
 
   await page.goto('/');
   await page.waitForFunction(() =>

@@ -8,13 +8,13 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: done.
 2. **Home screen and boards from data.** The home screen, the communication boards and the keyboard are drawn from `boards.json` and `cells.json` as grids of cells, each with a colour, a label and an icon or a symbol. A cell on the home screen opens a board, and a Back tile leads back. The first boards are Needs, Quick phrases, My boards and the keyboard, whose letters are tiles that write a message. Covers: Capabilities (home screen, cell contents, communication boards), Product Purpose, Principles 3 and 4, the keyboard mockup, the data rule in tech-stack.md. Status: done.
-3. **Sign in.** The caregiver signs in to Symple through Firebase Auth. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: planned.
-4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
+3. **Sign in.** The caregiver signs in to Symple through Firebase Auth, and the theme and the layout sync to the caregiver's account through Firestore. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: in progress.
+4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: planned.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the dark picked look of the Needs mockup while it speaks, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: planned.
 6. **Removed.** Communication boards were merged into feature 2 on 2026-11-16, and speaking a phrase moved to feature 5. The number is kept so that the other feature numbers do not change.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
-8. **Settings.** The caregiver sets the scan time, the post click delay, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
-9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
+8. **Settings.** The caregiver sets the scan time, the post click delay, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
+9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved and join the sync of feature 3. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
 
 ## Packaging
 
@@ -50,9 +50,12 @@ Each question must be answered in the plan of the feature it names.
 
 - Feature 10: how Electron loads the build. `src/index.html` uses a base href of `/`, so the app may not load from disk as it is. The plan must also test that the font loads in the packaged Mac app.
 - Feature 10: whether the symbol images load in the packaged Mac app. Their addresses are relative, such as `symbols/help.svg`.
+- Feature 10: whether Firebase Auth keeps the sign in inside Electron.
 - Feature 11: how switches reach the app on iPad.
+- Feature 11: whether Firebase Auth keeps the sign in inside Capacitor.
 - Feature 11: whether the iPad app works in portrait. Features before it are built and tested in landscape only.
 - Feature 11: the end to end tests run in Chromium only until then. The plan must add WebKit.
+- Feature 13: whether a caregiver can sign up in the app. Until then the user makes each account in the Firebase console.
 - Feature 13: which licence the public repo uses. The Mulberry symbols are CC BY-SA 4.0, so the choice must allow for that.
 - Feature 13: whether the Mac app also goes to the Mac App Store, or is offered only as a download.
 - Feature 13: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 7.
@@ -96,6 +99,24 @@ Each question must be answered in the plan of the feature it names.
 - Feature 17: the first set is untimed. It holds chess against the computer, a five letter word guessing game and memory pairs. Each is Symple's own version. The timed games wait until the slow mode has been tried with real users.
 - Feature 18: Twilio carries the messages as text messages (SMS), so contacts use their own messaging app. The caregiver sets which contacts the user can message.
 - Feature 19: home control connects through a Home Assistant hub in the home. The caregiver sets up the hub and links it to Symple.
+
+## Decisions made on 2026-11-17
+
+- Feature 3: the sync is built in feature 3. It covers the theme and the layout, and it uses Firestore. Feature 8 adds the other settings, and feature 9 adds the edited boards.
+- Feature 3: the user makes each caregiver account by hand in the Firebase console. The app has no way to make an account, and account creation is turned off in the Firebase project.
+- Feature 3: the Firebase project is `symple-2`.
+- Feature 3: a temporary Sign out button sits in the bottom right corner of the footer. One press signs out. Feature 8 moves it into the settings panel.
+- Feature 3: the tests do not use the Firebase emulator. The end to end tests answer the Firebase Auth calls with canned replies and block the Firestore calls. The Firestore access rules are checked by hand.
+- Feature 3: one account holds one set of settings, in the Firestore document `users/{uid}`. A clinician with several clients needs one account for each client.
+- Feature 3: a caregiver control carries the attribute `data-caregiver-control`. The settings button and the Sign out button carry it, and feature 4 skips every control that does.
+- Feature 3: the sign in screen shows the blue logo of the mockup in every theme.
+
+## Skipped checks
+
+Each line is a check that was skipped during validation, with the requirement that has no passing check until it is run. A check is removed from this list when it is run and passes.
+
+- Feature 3, skipped on 2026-11-17: check H8 of its validation.md, which listens with VoiceOver for the wrong password message on the sign in screen. Requirement 23, which says that the message is announced to screen readers, has only automated checks of the alert and status roles until then.
+- Feature 3, skipped on 2026-11-19: check H6 of its validation.md, which tests the Firestore access rules in the Rules Playground. Requirement 29, which says that an account can reach only its own document `users/{uid}`, has no passing check until then. No automated test covers the rules, because the tests do not use the Firebase emulator.
 
 ## Not on the roadmap
 

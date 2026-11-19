@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { contrastRatio } from './support/contrast';
 import {
   LAYOUTS,
@@ -13,6 +13,7 @@ import {
   resolveColours,
   type ScreenLayout,
 } from './support/boards';
+import { test } from './support/firebase';
 
 const HOME_CELLS = ['My boards', 'Needs', 'Quick phrases', 'Keyboards'];
 

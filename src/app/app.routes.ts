@@ -1,5 +1,7 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, ResolveFn, Router, Routes } from '@angular/router';
+import { SignInScreen } from './auth/sign-in-screen';
+import { signedInGuard, signedOutGuard } from './auth/signed-in-guard';
 import { BoardData, HOME_BOARD_ID } from './boards/board-data';
 import { BoardScreen } from './boards/board-screen';
 
@@ -16,9 +18,30 @@ const boardTitle: ResolveFn<string> = (route) =>
 const boardExists: CanActivateFn = (route) =>
   inject(BoardData).board(boardId(route)) ? true : inject(Router).createUrlTree(['/']);
 
+/** The route data that marks a screen drawn alone, with no header and no footer. */
+export const BARE_SCREEN = 'bare';
+
 export const routes: Routes = [
-  { path: '', component: BoardScreen, data: { id: HOME_BOARD_ID }, title: boardTitle },
-  { path: 'board/:id', component: BoardScreen, canActivate: [boardExists], title: boardTitle },
+  // Every screen but the sign in screen needs a signed in caregiver.
+  {
+    path: '',
+    component: BoardScreen,
+    canActivate: [signedInGuard],
+    data: { id: HOME_BOARD_ID },
+    title: boardTitle,
+  },
+  {
+    path: 'board/:id',
+    component: BoardScreen,
+    canActivate: [signedInGuard, boardExists],
+    title: boardTitle,
+  },
+  {
+    path: 'sign-in',
+    component: SignInScreen,
+    canActivate: [signedOutGuard],
+    data: { [BARE_SCREEN]: true },
+  },
   // Any unknown path opens the home screen.
   { path: '**', redirectTo: '' },
 ];

@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { App } from './app';
+import { AUTH_SOURCE } from './auth/auth';
+import { FakeAuthSource } from './auth/fake-auth-source';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([])],
+      // The footer holds the Sign out button, which needs an auth source.
+      providers: [provideRouter([]), { provide: AUTH_SOURCE, useValue: new FakeAuthSource() }],
     }).compileComponents();
   });
 

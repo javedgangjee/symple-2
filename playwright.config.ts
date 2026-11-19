@@ -4,12 +4,14 @@ import { defineConfig, devices } from '@playwright/test';
 // Every test runs at the two landscape window sizes from the requirements.
 // The tests start their own dev server on a port of their own, so they never test another app
 // that happens to run on the usual port 4200.
+// The tests never reach Firebase. `e2e/support/firebase.ts` answers the Firebase Auth calls and blocks the rest.
+// A setup project signs in once and saves the browser state, and the other projects start from it.
 const PORT = 4301;
 const BASE_URL = `http://localhost:${PORT}`;
+const SIGNED_IN_STATE = 'e2e/.auth/caregiver.json';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: '**/*.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 1 : 0,
@@ -19,13 +21,26 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
+    { name: 'setup', testMatch: '**/*.setup.ts', use: { ...devices['Desktop Chrome'] } },
     {
       name: 'chromium-1024x768',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 768 } },
+      testMatch: '**/*.spec.ts',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1024, height: 768 },
+        storageState: SIGNED_IN_STATE,
+      },
     },
     {
       name: 'chromium-1440x900',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+      testMatch: '**/*.spec.ts',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        storageState: SIGNED_IN_STATE,
+      },
     },
   ],
   webServer: {

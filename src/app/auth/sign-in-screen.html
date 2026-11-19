@@ -1,0 +1,69 @@
+<form novalidate (submit)="$event.preventDefault(); signIn(email, password)">
+  <img class="logo" src="symple-logo.png" width="720" height="387" alt="Symple" />
+  <h1>Sign in</h1>
+  <div>
+    <label for="sign-in-email">Email</label>
+    <input
+      #email
+      id="sign-in-email"
+      name="email"
+      type="email"
+      autocomplete="email"
+      autocapitalize="none"
+      spellcheck="false"
+      placeholder="name@example.com"
+      required
+      [attr.aria-invalid]="invalid() === 'email' ? 'true' : null"
+      [attr.aria-describedby]="invalid() === 'email' ? 'sign-in-message' : null"
+    />
+  </div>
+  <div>
+    <label for="sign-in-password">Password</label>
+    <input
+      #password
+      id="sign-in-password"
+      name="password"
+      type="password"
+      autocomplete="current-password"
+      required
+      [attr.aria-invalid]="invalid() === 'password' ? 'true' : null"
+      [attr.aria-describedby]="invalid() === 'password' ? 'sign-in-message' : null"
+    />
+  </div>
+  <div>
+    <!-- The one message of the screen. It keeps room for two lines, so a message does not move the rest of the card. -->
+    <!-- A fault goes in the alert region, which a screen reader tells at once. The reset message reports no fault, -->
+    <!-- so it goes in the status region, which waits its turn. Both regions are always on the page, -->
+    <!-- so a screen reader hears each change. -->
+    <!-- The text is drawn again for each message, so the same message twice is told twice. -->
+    <div class="message">
+      <p id="sign-in-message" role="alert">
+        @for (said of [message()]; track said.count) {
+          @if (said.text && said.error) {
+            <span class="said">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 7v6" />
+                <circle class="dot" cx="12" cy="16.75" r="1.25" />
+              </svg>
+              <span>{{ said.text }}</span>
+            </span>
+          }
+        }
+      </p>
+      <p role="status">
+        @for (said of [message()]; track said.count) {
+          @if (said.text && !said.error) {
+            <span>{{ said.text }}</span>
+          }
+        }
+      </p>
+    </div>
+    <button class="primary" type="submit" [disabled]="busy() !== null">
+      {{ busy() === 'sign-in' ? 'Signing in' : 'Sign in' }}
+    </button>
+  </div>
+  <button class="link" type="button" [disabled]="busy() !== null" (click)="forgotPassword(email)">
+    Forgot password
+  </button>
+</form>
