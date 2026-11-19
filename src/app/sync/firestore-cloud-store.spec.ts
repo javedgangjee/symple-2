@@ -30,6 +30,20 @@ class FakeDocuments implements FirestoreDocuments {
     return () => undefined;
   }
 
+  /** The fields that the server holds, or null when there is no document. */
+  held: Record<string, unknown> | null = null;
+
+  async mergeAfterRead(
+    collection: string,
+    id: string,
+    choose: (held: Readonly<Record<string, unknown>> | null) => Readonly<Record<string, string>>,
+  ): Promise<void> {
+    const fields = choose(this.held);
+    if (Object.keys(fields).length > 0) {
+      await this.merge(collection, id, fields);
+    }
+  }
+
   async merge(
     collection: string,
     id: string,
@@ -159,5 +173,27 @@ describe('FirestoreCloudStore', () => {
     } finally {
       process.off('unhandledRejection', unhandled);
     }
+  });
+
+  it('C8: a save of missing fields leaves out a field that the server holds', async () => {
+    documents.held = { theme: 'teal' };
+    await store.saveIfMissing(ACCOUNT_ID, { theme: 'blue', layout: 'columns' });
+    expect(documents.merges).toEqual([
+      { path: `users/${ACCOUNT_ID}`, fields: { layout: 'columns' } },
+    ]);
+  });
+
+  it('C9: a save of missing fields writes nothing when the server holds them all', async () => {
+    documents.held = { theme: 'teal', layout: 'rows' };
+    await store.saveIfMissing(ACCOUNT_ID, { theme: 'blue', layout: 'columns' });
+    expect(documents.merges).toEqual([]);
+  });
+
+  it('C10: a save of missing fields writes them all when there is no document', async () => {
+    documents.held = null;
+    await store.saveIfMissing(ACCOUNT_ID, { theme: 'blue', layout: 'columns' });
+    expect(documents.merges).toEqual([
+      { path: `users/${ACCOUNT_ID}`, fields: { theme: 'blue', layout: 'columns' } },
+    ]);
   });
 });

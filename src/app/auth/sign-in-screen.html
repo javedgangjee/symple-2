@@ -31,15 +31,34 @@
     />
   </div>
   <div>
-    <!-- The one message of the screen. The region is always on the page, so a screen reader hears each change. -->
+    <!-- The one message of the screen. It keeps room for two lines, so a message does not move the rest of the card. -->
+    <!-- A fault goes in the alert region, which a screen reader tells at once. The reset message reports no fault, -->
+    <!-- so it goes in the status region, which waits its turn. Both regions are always on the page, -->
+    <!-- so a screen reader hears each change. -->
     <!-- The text is drawn again for each message, so the same message twice is told twice. -->
-    <p id="sign-in-message" class="message" role="status">
-      @for (said of [message()]; track said.count) {
-        @if (said.text) {
-          <span>{{ said.text }}</span>
+    <div class="message">
+      <p id="sign-in-message" role="alert">
+        @for (said of [message()]; track said.count) {
+          @if (said.text && said.error) {
+            <span class="said">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 7v6" />
+                <circle class="dot" cx="12" cy="16.75" r="1.25" />
+              </svg>
+              <span>{{ said.text }}</span>
+            </span>
+          }
         }
-      }
-    </p>
+      </p>
+      <p role="status">
+        @for (said of [message()]; track said.count) {
+          @if (said.text && !said.error) {
+            <span>{{ said.text }}</span>
+          }
+        }
+      </p>
+    </div>
     <button class="primary" type="submit" [disabled]="busy() !== null">
       {{ busy() === 'sign-in' ? 'Signing in' : 'Sign in' }}
     </button>

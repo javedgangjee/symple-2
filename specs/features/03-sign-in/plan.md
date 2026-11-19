@@ -102,6 +102,7 @@ This fixes finding 3, which says that screen readers may not announce a message,
 - Changes `src/app/auth/sign-in-screen.css`. The rule `.message:empty { display: none; }` goes. The empty region stays rendered with no height, and the gap around it is taken out another way, so the card looks as it does now.
 - Changes `src/app/auth/sign-in-screen.html` only if the region must move to make that work.
 - Changes `e2e/sign-in.spec.ts` to add case N18.
+- The user asked on 2026-11-17 that a message move nothing on the card and that an error carry a small icon. The region now keeps room for two lines in place of a height of 0. `sign-in-screen.ts` marks each message as an error or not, and `sign-in-screen.html` draws the icon for an error.
 
 ## Step 15. Let the sync recover and leave a trace (5, 27)
 
@@ -113,3 +114,14 @@ This fixes finding 4, which says that one Firestore failure stops the sync until
 ## Step 16. Run everything again
 
 Run `make check` and fix what fails.
+
+## Step 17. A device's own value never replaces a value that the cloud holds (27)
+
+Check H5 of validation.md, which changes the theme to teal in the Firebase console, was reported as a fail on 2026-11-17. A trace later showed that the cloud had held `blue` all along and no device had written over it, so there was no fault. This step stays as a safeguard. The only write that can put a value of the device over a value of the cloud is the one that fills a field the document lacks, so that write now asks the server first.
+
+- Changes `src/app/sync/cloud-store.ts`. The store gains a save that writes only the fields the cloud does not hold.
+- Changes `src/app/sync/firestore-cloud-store.ts`. That save reads the document from the server and writes the missing fields in one Firestore transaction. It fails with no network, so no fill waits on the device to be sent later.
+- Changes `src/app/sync/settings-sync.ts` to use that save for the fields a document lacks. A setting that the caregiver changes on the device is saved as before.
+- Changes `src/app/sync/settings-sync.spec.ts` and `src/app/sync/firestore-cloud-store.spec.ts` to add cases Y15 and C8 to C10 of validation.md.
+- Run `make check`, and the user runs check H5 again.
+

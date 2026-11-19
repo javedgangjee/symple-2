@@ -107,8 +107,10 @@ export class SettingsSync {
     }
     // The copy on the device can lack a field that the cloud holds,
     // so a field is filled only when the cloud itself says it is missing.
-    if (document.fromCloud) {
-      this.save(accountId, missing);
+    // The store then asks the cloud once more before it writes, so a value of the device
+    // never replaces a value that the cloud holds, and nothing waits on the device to be sent later.
+    if (document.fromCloud && Object.keys(missing).length > 0) {
+      this.store.saveIfMissing(accountId, missing).catch(() => undefined);
     }
   }
 

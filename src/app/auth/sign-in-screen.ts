@@ -14,7 +14,7 @@ const FAILURE_MESSAGES: Readonly<Record<AuthFailureKind, string>> = {
 const ENTER_EMAIL = 'Enter your email address.';
 const ENTER_PASSWORD = 'Enter your password.';
 const ENTER_EMAIL_FOR_RESET = 'Enter your email address, then press Forgot password.';
-const RESET_SENT = 'If an account uses this address, a reset email is on its way.';
+const RESET_SENT = 'An email has been sent to the associated account.';
 
 function failureOf(error: unknown): AuthFailureKind {
   return error instanceof AuthFailure ? error.kind : 'unknown';
@@ -46,8 +46,9 @@ export class SignInScreen {
   /**
    * The one message on screen. Each new message gets a new number, so a screen reader
    * hears a message again when it is the same as the one before.
+   * A message that reports a fault carries the error icon. The reset message does not.
    */
-  protected readonly message = signal({ text: '', count: 0 });
+  protected readonly message = signal({ text: '', count: 0, error: false });
 
   /** The field that the message is about, if any. It is marked invalid. */
   protected readonly invalid = signal<'email' | 'password' | null>(null);
@@ -112,13 +113,17 @@ export class SignInScreen {
     // An address with no account and an account that is turned off get the same message
     // as a reset that was sent, so the screen does not reveal who has an account.
     const sent = failure === null || failure === 'wrong' || failure === 'disabled';
-    this.say(sent ? RESET_SENT : FAILURE_MESSAGES[failure ?? 'unknown']);
+    if (sent) {
+      this.say(RESET_SENT, null, false);
+    } else {
+      this.say(FAILURE_MESSAGES[failure ?? 'unknown']);
+    }
     this.keepFocus(email);
   }
 
-  private say(text: string, invalid: 'email' | 'password' | null = null): void {
+  private say(text: string, invalid: 'email' | 'password' | null = null, error = true): void {
     this.invalid.set(invalid);
-    this.message.update((said) => ({ text, count: said.count + 1 }));
+    this.message.update((said) => ({ text, count: said.count + 1, error }));
   }
 
   /**

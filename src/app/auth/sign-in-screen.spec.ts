@@ -8,7 +8,7 @@ import { SignInScreen } from './sign-in-screen';
 @Component({ template: '' })
 class Blank {}
 
-const RESET_SENT = 'If an account uses this address, a reset email is on its way.';
+const RESET_SENT = 'An email has been sent to the associated account.';
 const NO_NETWORK = 'Symple cannot reach the network. Connect and try again.';
 
 describe('SignInScreen', () => {
@@ -43,7 +43,13 @@ describe('SignInScreen', () => {
     return button;
   };
   const regions = () => Array.from(element.querySelectorAll('[role="status"], [role="alert"]'));
-  const message = () => regions()[0]?.textContent?.trim();
+  const alertRegion = () => element.querySelector('[role="alert"]');
+  const statusRegion = () => element.querySelector('[role="status"]');
+  /** The one message on screen, from whichever region holds it. */
+  const message = () =>
+    regions()
+      .map((region) => region.textContent?.trim() ?? '')
+      .join('');
 
   function fill(email: string, password = ''): void {
     field('Email').value = email;
@@ -194,16 +200,27 @@ describe('SignInScreen', () => {
   });
 
   it('F15: a message sits in one region that screen readers announce', async () => {
+    // A fault sits in the alert region, and the status region stays empty.
     await pressSignIn();
-    expect(regions().length).toBe(1);
-    expect(message()).toBe('Enter your email address.');
+    expect(regions().length).toBe(2);
+    expect(alertRegion()?.textContent?.trim()).toBe('Enter your email address.');
+    expect(statusRegion()?.textContent?.trim()).toBe('');
 
     // A second message takes the place of the first.
     source.failWith = 'wrong';
     fill('anna@example.com', 'secret12');
     await pressSignIn();
-    await vi.waitFor(() => expect(message()).toBe('The email or password is wrong.'));
-    expect(regions().length).toBe(1);
-    expect(regions()[0].children.length).toBe(1);
+    await vi.waitFor(() =>
+      expect(alertRegion()?.textContent?.trim()).toBe('The email or password is wrong.'),
+    );
+    expect(alertRegion()?.children.length).toBe(1);
+    expect(statusRegion()?.children.length).toBe(0);
+
+    // The reset message reports no fault. It sits in the status region and takes the place of the fault.
+    source.failWith = null;
+    await pressForgot();
+    await vi.waitFor(() => expect(statusRegion()?.textContent?.trim()).toBe(RESET_SENT));
+    expect(alertRegion()?.children.length).toBe(0);
+    expect(statusRegion()?.children.length).toBe(1);
   });
 });

@@ -46,7 +46,7 @@ Items 18 to 31 are my choices, apart from item 26, which the user confirmed.
     | The account is disabled. | This account is turned off. |
     | Any other failure. | Sign in failed. Try again. |
     | Forgot password is pressed with an empty email. | Enter your email address, then press Forgot password. |
-    | A reset email was requested. | If an account uses this address, a reset email is on its way. |
+    | A reset email was requested. | An email has been sent to the associated account. |
 
 24. Forgot password sends the Firebase password reset email to the address in the Email field. The message is the same whether or not an account uses that address, so the screen does not reveal who has an account.
 25. A device stays signed in across restarts. If Firebase ends the session, for example when the account is disabled or its password changes, the app shows the sign in screen.

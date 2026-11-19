@@ -25,6 +25,17 @@ export interface FirestoreDocuments {
 
   /** Saves fields to a document and keeps its other fields. */
   merge(collection: string, id: string, fields: Readonly<Record<string, string>>): Promise<void>;
+
+  /**
+   * Reads a document from the server and saves the fields that `choose` returns, as one step.
+   * `choose` gets the fields that the server holds, or null when there is no document.
+   * Nothing is saved when it returns no fields. The step fails with no network.
+   */
+  mergeAfterRead(
+    collection: string,
+    id: string,
+    choose: (held: Readonly<Record<string, unknown>> | null) => Readonly<Record<string, string>>,
+  ): Promise<void>;
 }
 
 /**
@@ -46,6 +57,15 @@ async function loadFirestore(app: FirebaseApp): Promise<FirestoreDocuments> {
       ),
     merge: (collection, id, fields) =>
       api.setDoc(api.doc(db, collection, id), fields, { merge: true }),
+    mergeAfterRead: (collection, id, choose) =>
+      api.runTransaction(db, async (transaction) => {
+        const reference = api.doc(db, collection, id);
+        const snapshot = await transaction.get(reference);
+        const fields = choose(snapshot.exists() ? snapshot.data() : null);
+        if (Object.keys(fields).length > 0) {
+          transaction.set(reference, fields, { merge: true });
+        }
+      }),
   };
 }
 
@@ -103,11 +123,10 @@ export class FirestoreCloudStore implements CloudStore {
           USERS,
           accountId,
           // A report from the cache is told apart, because the cache can lack what the cloud holds.
-          (snapshot) =>
-            listener({
-              fields: snapshot.exists() ? (snapshot.data() ?? null) : null,
-              fromCloud: !snapshot.metadata.fromCache,
-            }),
+          (snapshot) => {
+            const fields = snapshot.exists() ? (snapshot.data() ?? null) : null;
+            listener({ fields, fromCloud: !snapshot.metadata.fromCache });
+          },
           // Firestore ends the watch when the account loses access, as it does at sign out.
           // The settings on the device stay in use.
           (error) => this.warn('Symple stopped the sync of the settings', error),
@@ -125,6 +144,17 @@ export class FirestoreCloudStore implements CloudStore {
   async save(accountId: string, fields: Readonly<Record<string, string>>): Promise<void> {
     const documents = await this.firestore();
     await documents.merge(USERS, accountId, fields);
+  }
+
+  async saveIfMissing(accountId: string, fields: Readonly<Record<string, string>>): Promise<void> {
+    const documents = await this.firestore();
+    await documents.mergeAfterRead(USERS, accountId, (held) =>
+      Object.fromEntries(
+        Object.entries(fields).filter(
+          ([field]) => held?.[field] === undefined || held[field] === null,
+        ),
+      ),
+    );
   }
 
   /** Leaves a trace of a failure in the console. It holds the error code and nothing else of the error. */

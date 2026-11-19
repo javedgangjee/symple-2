@@ -111,6 +111,13 @@ Each question must be answered in the plan of the feature it names.
 - Feature 3: a caregiver control carries the attribute `data-caregiver-control`. The settings button and the Sign out button carry it, and feature 4 skips every control that does.
 - Feature 3: the sign in screen shows the blue logo of the mockup in every theme.
 
+## Skipped checks
+
+Each line is a check that was skipped during validation, with the requirement that has no passing check until it is run. A check is removed from this list when it is run and passes.
+
+- Feature 3, skipped on 2026-11-17: check H8 of its validation.md, which listens with VoiceOver for the wrong password message on the sign in screen. Requirement 23, which says that the message is announced to screen readers, has only automated checks of the alert and status roles until then.
+- Feature 3, skipped on 2026-11-19: check H6 of its validation.md, which tests the Firestore access rules in the Rules Playground. Requirement 29, which says that an account can reach only its own document `users/{uid}`, has no passing check until then. No automated test covers the rules, because the tests do not use the Firebase emulator.
+
 ## Not on the roadmap
 
 - A second voice source is not on the roadmap, because none has been chosen.

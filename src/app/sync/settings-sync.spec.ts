@@ -33,6 +33,14 @@ class FakeCloudStore implements CloudStore {
     }
   }
 
+  /** The saves that were asked for only where the cloud lacks the field. They are in `saves` too. */
+  readonly fills: { accountId: string; fields: Record<string, string> }[] = [];
+
+  async saveIfMissing(accountId: string, fields: Readonly<Record<string, string>>): Promise<void> {
+    this.fills.push({ accountId, fields: { ...fields } });
+    await this.save(accountId, fields);
+  }
+
   /** Reports the document of an account as the cloud holds it. Null means there is no document. */
   report(accountId: string, fields: Record<string, unknown> | null): void {
     this.watched.get(accountId)?.({ fields, fromCloud: true });
@@ -210,5 +218,16 @@ describe('SettingsSync', () => {
     store.report(ANNA.id, { theme: 'dark' });
     TestBed.tick();
     expect(store.saves).toEqual([{ accountId: ANNA.id, fields: { layout: 'columns' } }]);
+  });
+
+  it('Y15: a field that the document lacks is saved only if the cloud still lacks it', () => {
+    signIn(ANNA, { theme: 'dark' });
+    expect(store.fills).toEqual([{ accountId: ANNA.id, fields: { layout: 'columns' } }]);
+
+    // A setting that changes on the device is saved whatever the cloud holds.
+    theme.set('teal');
+    TestBed.tick();
+    expect(store.fills.length).toBe(1);
+    expect(store.saves.at(-1)).toEqual({ accountId: ANNA.id, fields: { theme: 'teal' } });
   });
 });

@@ -27,7 +27,8 @@ const WRONG = 'The email or password is wrong.';
 const card = (page: Page) => page.locator('app-sign-in-screen');
 const signInButton = (page: Page) => page.getByRole('button', { name: 'Sign in' });
 const signOutButton = (page: Page) => page.getByRole('button', { name: 'Sign out' });
-const message = (page: Page) => card(page).getByRole('status');
+/** The box that holds the one message of the screen, in its alert region or its status region. */
+const message = (page: Page) => card(page).locator('.message');
 
 /** Opens the app on a device with no stored sign in and waits for the sign in screen. */
 async function openSignIn(page: Page, theme?: ThemeName): Promise<void> {
@@ -152,9 +153,7 @@ test.describe('on a device with no stored sign in', () => {
     await openSignIn(page);
     await page.getByLabel('Email').fill(ACCOUNT.email);
     await page.getByRole('button', { name: 'Forgot password' }).click();
-    await expect(message(page)).toHaveText(
-      'If an account uses this address, a reset email is on its way.',
-    );
+    await expect(message(page)).toHaveText('An email has been sent to the associated account.');
     expect(resets).toEqual([
       expect.objectContaining({ requestType: 'PASSWORD_RESET', email: ACCOUNT.email }),
     ]);
@@ -227,16 +226,47 @@ test.describe('on a device with no stored sign in', () => {
     expect(surface.backdropFilter).toBe('none');
   });
 
-  test('N18: the empty message region is rendered and takes no height', async ({ page }) => {
+  test('N18: the message region is always rendered, and a message moves nothing', async ({
+    page,
+  }) => {
+    await refuseSignIn(page);
     await openSignIn(page);
-    const region = await message(page).evaluate((element) => ({
-      display: getComputedStyle(element).display,
-      height: element.getBoundingClientRect().height,
-      text: element.textContent?.trim() ?? '',
-    }));
-    expect(region.text).toBe('');
-    expect(region.display).not.toBe('none');
-    expect(region.height).toBe(0);
+    /** The places of the parts of the card that sit above and below the message. */
+    const places = () =>
+      page.evaluate(() =>
+        ['app-sign-in-screen', '#sign-in-password', 'button[type=submit]', 'button.link'].map(
+          (selector) => {
+            const box = document.querySelector(selector)?.getBoundingClientRect();
+            if (!box) {
+              throw new Error(`No element matches ${selector}`);
+            }
+            return { top: box.top, bottom: box.bottom };
+          },
+        ),
+      );
+
+    await expect(message(page)).toHaveText('');
+    expect(await message(page).evaluate((element) => getComputedStyle(element).display)).not.toBe(
+      'none',
+    );
+    const empty = await places();
+
+    await fillSignIn(page);
+    await signInButton(page).click();
+    await expect(message(page)).toHaveText(WRONG);
+    await expect(card(page).getByRole('alert')).toHaveText(WRONG);
+    await expect(message(page).locator('svg')).toHaveCount(1);
+    expect(await places()).toEqual(empty);
+
+    // The longest message of the screen. It reports no fault, so it has no error icon.
+    await page.getByRole('button', { name: 'Forgot password' }).click();
+    await expect(message(page)).toHaveText('An email has been sent to the associated account.');
+    await expect(card(page).getByRole('status')).toHaveText(
+      'An email has been sent to the associated account.',
+    );
+    await expect(card(page).getByRole('alert')).toHaveText('');
+    await expect(message(page).locator('svg')).toHaveCount(0);
+    expect(await places()).toEqual(empty);
   });
 });
 

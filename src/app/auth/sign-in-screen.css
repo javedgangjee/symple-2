@@ -86,16 +86,37 @@ input[aria-invalid='true'] {
   box-shadow: inset 0 0 0 1px var(--ink);
 }
 
-/* The message shares one row of the form with the Sign in button. The empty message stays rendered */
-/* with no height, because a screen reader can miss a region that appears with its text already in it. */
+/* The message shares one row of the form with the Sign in button. It always keeps room for two lines, */
+/* so a message that appears does not move the fields above it or the buttons below it. */
+/* The empty region stays rendered, because a screen reader can miss a region that appears with its text. */
 .message {
+  min-height: calc(2 * 1.3em);
+  margin-bottom: 0.75rem;
+  font-size: 0.9375rem;
   font-weight: 620;
   line-height: 1.3;
 }
 
-/* The space under a message is the gap of the form plus the top margin of the button. */
-.message:not(:empty) {
-  margin-bottom: 1.5rem;
+.said {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+/* The error icon is as tall as one line of the message and sits beside its first line. */
+.icon {
+  flex: none;
+  width: 1.3em;
+  height: 1.3em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.icon .dot {
+  fill: currentColor;
+  stroke: none;
 }
 
 .primary {

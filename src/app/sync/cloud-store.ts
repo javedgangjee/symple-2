@@ -24,6 +24,12 @@ export interface CloudStore {
 
   /** Saves fields to the settings document of an account. The other fields of the document are kept. */
   save(accountId: string, fields: Readonly<Record<string, string>>): Promise<void>;
+
+  /**
+   * Saves only the fields that the cloud itself does not hold yet. It asks the cloud first,
+   * so a value that the cloud holds is never replaced, and it fails with no network.
+   */
+  saveIfMissing(accountId: string, fields: Readonly<Record<string, string>>): Promise<void>;
 }
 
 /** The cloud store in use. The app config provides the Firestore store, and the unit tests provide a fake. */
