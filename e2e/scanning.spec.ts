@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import {
   LAYOUTS,
+  SELECTION_MODES,
   THEMES,
   cell,
   cells,
@@ -9,12 +10,12 @@ import {
   measure,
   resolveColours,
   statusRegion,
+  type StoredSettings,
 } from './support/boards';
 import { SIGNED_OUT_STATE } from './support/firebase';
 import {
   POST_CLICK_DELAY,
   SCAN_TIME,
-  SELECTION_MODES,
   axeWithClock,
   boardCells,
   cellAt,
@@ -31,7 +32,6 @@ import {
   switchKey,
   test,
   type OpenBoard,
-  type StoredSettings,
 } from './support/scan';
 
 interface BoardEntry {
@@ -606,6 +606,21 @@ test('K27: the bar is still drawn and still empties for people who ask for less 
   expect((await readBar(groups(page).nth(0), 'track')).filled).toBeCloseTo(1, 2);
   await holdAnimationsAt(page, 900);
   expect((await readBar(groups(page).nth(0), 'track')).filled).toBeCloseTo(0.1, 2);
+});
+
+test('K32: the bar of a group and the bar of a cell are as tall as each other', async ({
+  open,
+}) => {
+  const page = await open('home', 'Home', { selectionMode: 'scan', showProgressBar: true });
+  const barHeight = (target: Locator) =>
+    target.evaluate((element) => getComputedStyle(element, '::after').height);
+  await switchKey(page, 'Enter');
+  const ofGroup = await barHeight(groups(page).nth(0));
+  await switchKey(page, 'Enter');
+  await expect(cellAt(page, 0, 0)).toHaveAttribute('data-scan-bar', '');
+  const ofCell = await barHeight(cell(page, 'My boards'));
+  expect(parseFloat(ofGroup)).toBeGreaterThan(0);
+  expect(ofCell).toBe(ofGroup);
 });
 
 test('K28: the progress bar is hidden by default, on a group and on a cell', async ({ open }) => {

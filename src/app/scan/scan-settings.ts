@@ -1,4 +1,5 @@
-import { DOCUMENT, Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { LocalStore } from '../storage/local-store';
 
 /**
  * The ways the primary user can select. `scan` is for one switch and `step` is for two.
@@ -24,26 +25,6 @@ export interface ScanSettingValues {
   /** Whether the highlight shows the bar that counts down the scan time in `scan` mode. */
   readonly showProgressBar: boolean;
 }
-
-/** The local storage key of each value. */
-export const SCAN_STORAGE_KEYS = {
-  scanTime: 'symple.scanTime',
-  postClickDelay: 'symple.postClickDelay',
-  selectionMode: 'symple.selectionMode',
-  dwellTime: 'symple.dwellTime',
-  dwellStyle: 'symple.dwellStyle',
-  showProgressBar: 'symple.showProgressBar',
-} as const satisfies Record<keyof ScanSettingValues, string>;
-
-/** The values used when nothing usable is stored. */
-export const DEFAULT_SCAN_SETTINGS: ScanSettingValues = {
-  scanTime: 1500,
-  postClickDelay: 500,
-  selectionMode: 'scan',
-  dwellTime: 1000,
-  dwellStyle: 'grow',
-  showProgressBar: false,
-};
 
 /** Whether the mode is one where Tab and Enter are switches and the app highlights the groups and the cells. */
 export function isSwitchMode(mode: SelectionMode): boolean {
@@ -73,23 +54,51 @@ function oneOf<T extends string>(names: readonly T[]): Parser<T> {
 const yesOrNo: Parser<boolean> = (stored) =>
   stored === 'true' ? true : stored === 'false' ? false : undefined;
 
-const PARSERS: { readonly [K in keyof ScanSettingValues]: Parser<ScanSettingValues[K]> } = {
-  scanTime: time(500, 5000),
-  postClickDelay: time(0, 5000),
-  selectionMode: oneOf(SELECTION_MODES),
-  dwellTime: time(500, 5000),
-  dwellStyle: oneOf(DWELL_STYLES),
-  showProgressBar: yesOrNo,
+/** What the app knows of one stored value: its local storage key, its default and how it is read. */
+interface Setting<T> {
+  readonly key: string;
+  /** The value used when nothing usable is stored. */
+  readonly fallback: T;
+  readonly parse: Parser<T>;
+}
+
+/** The one table of the stored values. `load` and `set` go through it, so a new value is added here. */
+const SETTINGS: { readonly [K in keyof ScanSettingValues]: Setting<ScanSettingValues[K]> } = {
+  scanTime: { key: 'symple.scanTime', fallback: 1500, parse: time(500, 5000) },
+  postClickDelay: { key: 'symple.postClickDelay', fallback: 500, parse: time(0, 5000) },
+  selectionMode: { key: 'symple.selectionMode', fallback: 'scan', parse: oneOf(SELECTION_MODES) },
+  dwellTime: { key: 'symple.dwellTime', fallback: 1000, parse: time(500, 5000) },
+  dwellStyle: { key: 'symple.dwellStyle', fallback: 'grow', parse: oneOf(DWELL_STYLES) },
+  showProgressBar: { key: 'symple.showProgressBar', fallback: false, parse: yesOrNo },
 };
 
-const SETTING_NAMES = [
-  'scanTime',
-  'postClickDelay',
-  'selectionMode',
-  'dwellTime',
-  'dwellStyle',
-  'showProgressBar',
-] as const satisfies readonly (keyof ScanSettingValues)[];
+type SettingName = keyof ScanSettingValues;
+
+function isSettingName(name: string): name is SettingName {
+  return Object.hasOwn(SETTINGS, name);
+}
+
+const SETTING_KEYS = Object.keys(SETTINGS).filter(isSettingName);
+
+/** The local storage key of each value. */
+export const SCAN_STORAGE_KEYS: Readonly<Record<SettingName, string>> = {
+  scanTime: SETTINGS.scanTime.key,
+  postClickDelay: SETTINGS.postClickDelay.key,
+  selectionMode: SETTINGS.selectionMode.key,
+  dwellTime: SETTINGS.dwellTime.key,
+  dwellStyle: SETTINGS.dwellStyle.key,
+  showProgressBar: SETTINGS.showProgressBar.key,
+};
+
+/** The values used when nothing usable is stored. */
+export const DEFAULT_SCAN_SETTINGS: ScanSettingValues = {
+  scanTime: SETTINGS.scanTime.fallback,
+  postClickDelay: SETTINGS.postClickDelay.fallback,
+  selectionMode: SETTINGS.selectionMode.fallback,
+  dwellTime: SETTINGS.dwellTime.fallback,
+  dwellStyle: SETTINGS.dwellStyle.fallback,
+  showProgressBar: SETTINGS.showProgressBar.fallback,
+};
 
 /**
  * Reads the stored scan settings. The values are stored on the device and are not synced yet.
@@ -97,7 +106,7 @@ const SETTING_NAMES = [
  */
 @Injectable({ providedIn: 'root' })
 export class ScanSettings {
-  private readonly document = inject(DOCUMENT);
+  private readonly store = inject(LocalStore);
   private readonly values = signal(DEFAULT_SCAN_SETTINGS);
 
   readonly scanTime = computed(() => this.values().scanTime);
@@ -112,14 +121,11 @@ export class ScanSettings {
    * gives its default, and so does a storage that fails.
    */
   load(): void {
-    this.values.set({
-      scanTime: this.read('scanTime'),
-      postClickDelay: this.read('postClickDelay'),
-      selectionMode: this.read('selectionMode'),
-      dwellTime: this.read('dwellTime'),
-      dwellStyle: this.read('dwellStyle'),
-      showProgressBar: this.read('showProgressBar'),
-    });
+    let values = DEFAULT_SCAN_SETTINGS;
+    for (const name of SETTING_KEYS) {
+      values = this.read(values, name);
+    }
+    this.values.set(values);
   }
 
   /**
@@ -127,42 +133,35 @@ export class ScanSettings {
    * The values are used even when storage fails.
    */
   set(changes: Partial<ScanSettingValues>): void {
-    const accepted: Partial<ScanSettingValues> = { ...changes };
-    for (const name of SETTING_NAMES) {
-      const value = accepted[name];
-      if (value === undefined) {
-        continue;
-      }
-      const text = String(value);
-      if (PARSERS[name](text) === undefined) {
-        delete accepted[name];
-        continue;
-      }
-      this.store(SCAN_STORAGE_KEYS[name], text);
+    let values = this.values();
+    for (const name of SETTING_KEYS) {
+      values = this.accept(values, name, changes);
     }
-    this.values.update((values) => ({ ...values, ...accepted }));
+    this.values.set(values);
   }
 
-  private read<K extends keyof ScanSettingValues>(name: K): ScanSettingValues[K] {
-    const stored = this.stored(SCAN_STORAGE_KEYS[name]);
-    const value = stored === null ? undefined : PARSERS[name](stored);
-    return value ?? DEFAULT_SCAN_SETTINGS[name];
+  /** The values with one of them read from storage, when what is stored is usable. */
+  private read<K extends SettingName>(values: ScanSettingValues, name: K): ScanSettingValues {
+    const stored = this.store.read(SETTINGS[name].key);
+    const value = stored === null ? undefined : SETTINGS[name].parse(stored);
+    return value === undefined ? values : { ...values, [name]: value };
   }
 
-  private stored(key: string): string | null {
-    try {
-      return this.document.defaultView?.localStorage.getItem(key) ?? null;
-    } catch {
-      // Storage can be blocked. The default is used.
-      return null;
+  /** The values with one of them changed and stored, when the change holds a usable value for it. */
+  private accept<K extends SettingName>(
+    values: ScanSettingValues,
+    name: K,
+    changes: Partial<ScanSettingValues>,
+  ): ScanSettingValues {
+    const value = changes[name];
+    if (value === undefined) {
+      return values;
     }
-  }
-
-  private store(key: string, text: string): void {
-    try {
-      this.document.defaultView?.localStorage.setItem(key, text);
-    } catch {
-      // Storage can be full or blocked. The value still applies for this session.
+    const text = String(value);
+    if (SETTINGS[name].parse(text) === undefined) {
+      return values;
     }
+    this.store.write(SETTINGS[name].key, text);
+    return { ...values, [name]: value };
   }
 }

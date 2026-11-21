@@ -174,6 +174,15 @@ describe('Scan', () => {
       scan.show([3, 3]);
       expect(scan.state()).toEqual(REST);
     });
+
+    it('S22: a change of the selection mode sends the scan to rest', () => {
+      toGroupTwo();
+      TestBed.inject(ScanSettings).set({ selectionMode: 'touch' });
+      TestBed.tick();
+      expect(scan.state()).toEqual(REST);
+      pass(10_000);
+      expect(scan.state()).toEqual(REST);
+    });
   });
 
   it('S14: with no post click delay the scan starts again at once after a pick', () => {
@@ -296,6 +305,46 @@ describe('Scan', () => {
       scan.press();
       pass(500);
       expect(scan.state()).toEqual(group(1));
+    });
+
+    it('S23: a change of the selection mode to scan sends the scan to rest too', () => {
+      toFirstCellOfGroupTwo();
+      TestBed.inject(ScanSettings).set({ selectionMode: 'scan' });
+      TestBed.tick();
+      expect(scan.state()).toEqual(REST);
+      pass(10_000);
+      expect(scan.state()).toEqual(REST);
+    });
+
+    it('P10: a move back on cell 2 highlights cell 1', () => {
+      toFirstCellOfGroupTwo();
+      scan.move();
+      expect(scan.state()).toEqual(cell(2, 2));
+      scan.move(-1);
+      expect(scan.state()).toEqual(cell(2, 1));
+    });
+
+    it('P11: a move back on the first cell shows the groups again', () => {
+      toFirstCellOfGroupTwo();
+      scan.move();
+      scan.move(-1);
+      scan.move(-1);
+      expect(scan.state()).toEqual(group(2));
+    });
+
+    it('P12: a move back on the first group goes round to the last', () => {
+      scan.move();
+      expect(scan.state()).toEqual(group(1));
+      scan.move(-1);
+      expect(scan.state()).toEqual(group(2));
+    });
+
+    it('P13: a move back on the first cell of a board with one group goes round to the last cell', () => {
+      setUp('step', [3]);
+      scan.move();
+      expect(scan.state()).toEqual(cell(1, 1));
+      scan.move(-1);
+      expect(scan.state()).toEqual(cell(1, 3));
     });
   });
 });

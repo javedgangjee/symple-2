@@ -1,13 +1,9 @@
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { Subject } from 'rxjs';
-import { CellPosition } from './scan';
+import { CellPosition, sameCell } from './scan';
 import { ScanSettings } from './scan-settings';
 
 type Timer = ReturnType<typeof setTimeout> | undefined;
-
-function same(a: CellPosition | null, b: CellPosition): boolean {
-  return a !== null && a.group === b.group && a.cell === b.cell;
-}
 
 /**
  * The dwell press. In `dwell` mode a pointer that rests on a cell for the dwell time presses
@@ -47,6 +43,17 @@ export class Dwell {
       clearTimeout(this.dwellTimer);
       clearTimeout(this.delayTimer);
     });
+
+    // A change of the selection mode stops the dwell, so a dwell that began in `dwell` mode
+    // presses nothing in another mode.
+    let mode = this.settings.selectionMode();
+    effect(() => {
+      const next = this.settings.selectionMode();
+      if (next !== mode) {
+        mode = next;
+        untracked(() => this.stop());
+      }
+    });
   }
 
   /**
@@ -83,7 +90,7 @@ export class Dwell {
 
   /** The pointer left a cell. The dwell on it stops, and nothing is pressed. */
   leave(position: CellPosition): void {
-    if (same(this.runningOn(), position)) {
+    if (sameCell(this.runningOn(), position)) {
       this.stop();
     }
   }
@@ -106,7 +113,7 @@ export class Dwell {
       this.settings.selectionMode() !== 'dwell' ||
       this.delayTimer !== undefined ||
       this.mustMove ||
-      same(this.runningOn(), position)
+      sameCell(this.runningOn(), position)
     ) {
       return;
     }

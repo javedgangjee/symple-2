@@ -392,6 +392,19 @@ describe('BoardScreen', () => {
       await expectUrl('/board/keyboards');
     });
 
+    it('R16: a change of the selection mode sends the scan to rest with nothing in focus', async () => {
+      await drawWithScan();
+      switchKey('Enter');
+      expect(groupsWith('data-scan')).toEqual(['Column 1 of 2']);
+      TestBed.inject(ScanSettings).set({ selectionMode: 'touch' });
+      TestBed.tick();
+      fixture.detectChanges();
+      expect(scanState()).toBe('rest');
+      expect(groupsWith('data-scan')).toEqual([]);
+      expect(cellsWith('data-scan')).toEqual([]);
+      expect(grid()?.contains(document.activeElement)).toBe(false);
+    });
+
     it('R7: in the rows layout the groups are the rows', async () => {
       await drawWithScan({}, { ...HOME, layout: 'rows' });
       switchKey('Enter');

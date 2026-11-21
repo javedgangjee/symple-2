@@ -20,7 +20,7 @@ import { Message } from '../keyboard/message';
 import { Layout } from '../layout/layout';
 import { Dwell } from '../scan/dwell';
 import { PointerPlace } from '../scan/pointer-place';
-import { CellPosition, Scan } from '../scan/scan';
+import { CellPosition, Scan, sameCell } from '../scan/scan';
 import { ScanSettings, isSwitchMode } from '../scan/scan-settings';
 import { Switches } from '../scan/switches';
 import { Back } from './back';
@@ -159,9 +159,8 @@ export class BoardScreen {
     return on ? '' : null;
   }
 
-  protected isAt(position: CellPosition | null, group: number, cell: number): boolean {
-    return position !== null && position.group === group && position.cell === cell;
-  }
+  /** Whether a place, such as the highlight of the scan, is a given cell. */
+  protected readonly sameCell = sameCell;
 
   /**
    * A cell was pressed with a pointer or a finger, or with a key that the browser turned into

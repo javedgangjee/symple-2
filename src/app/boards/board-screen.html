@@ -27,20 +27,21 @@
         [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'groups' && scanned.group === g)"
       >
         @for (cell of group.cells; track cell; let c = $index) {
-          @let highlighted = scanned.group === g && scanned.cell === c;
+          @let place = { group: g, cell: c };
+          @let highlighted = sameCell(scanned, place);
           <app-cell
             [tile]="cell.tile"
             [style.flex-grow]="share(group, cell)"
             [attr.data-scan]="mark(highlighted)"
             [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'cells' && highlighted)"
             [attr.data-confirmed]="
-              mark((scanned.phase === 'confirmed' && highlighted) || isAt(pressed, g, c))
+              mark((scanned.phase === 'confirmed' && highlighted) || sameCell(pressed, place))
             "
-            [attr.data-dwell]="isAt(dwelt, g, c) ? settings.dwellStyle() : null"
+            [attr.data-dwell]="sameCell(dwelt, place) ? settings.dwellStyle() : null"
             (press)="onCellPress($event)"
             (pointerenter)="onPointer($event, g, c)"
             (pointermove)="onPointer($event, g, c)"
-            (pointerleave)="dwell.leave({ group: g, cell: c })"
+            (pointerleave)="dwell.leave(place)"
           />
         }
       </div>

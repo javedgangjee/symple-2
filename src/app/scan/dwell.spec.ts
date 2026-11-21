@@ -155,4 +155,16 @@ describe('Dwell', () => {
       expect(presses, mode).toEqual([]);
     }
   });
+
+  it('D12: a change of the selection mode stops the dwell and presses nothing', () => {
+    setUp();
+    dwell.enter(A);
+    pass(400);
+    TestBed.inject(ScanSettings).set({ selectionMode: 'touch' });
+    TestBed.tick();
+    expect(dwell.running()).toBeNull();
+    pass(5000);
+    expect(dwell.running()).toBeNull();
+    expect(presses).toEqual([]);
+  });
 });

@@ -20,7 +20,6 @@ import {
   refuseSignIn,
   test,
 } from './support/firebase';
-import { storeAndReload } from './support/scan';
 
 const HOME_CELLS = ['My boards', 'Needs', 'Quick phrases', 'Keyboards'];
 const WRONG = 'The email or password is wrong.';
@@ -296,7 +295,8 @@ test.describe('on a signed in device', () => {
     page,
   }) => {
     for (const id of ['home', 'needs']) {
-      await openBoard(page, id);
+      // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
+      await openBoard(page, id, { selectionMode: 'touch' });
       const boxes = await page.evaluate(() => {
         const box = (selector: string) => {
           const element = document.querySelector(selector);
@@ -324,9 +324,8 @@ test.describe('on a signed in device', () => {
       expect(button.width, id).toBeGreaterThanOrEqual(24);
       expect(button.height, id).toBeGreaterThanOrEqual(24);
 
-      // Sign out is a caregiver control, so it is not in the tab order. In `touch` mode Tab
-      // goes from cell to cell, and one press more than there are cells does not land on it.
-      await storeAndReload(page, { selectionMode: 'touch' });
+      // Sign out is a caregiver control, so it is not in the tab order. One press more than
+      // there are cells does not land on it.
       const names = await cellNames(page);
       for (const name of names) {
         await page.keyboard.press('Tab');

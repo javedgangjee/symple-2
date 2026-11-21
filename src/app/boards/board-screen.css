@@ -16,51 +16,7 @@
 }
 
 .group {
-  position: relative;
   flex: 1 1 0;
-  /* The outline is copied from context/design/home.html. It shows while the scan highlights the group. */
-  border-radius: calc(var(--radius) + 3px);
-  outline: var(--ring) solid transparent;
-  outline-offset: 3px;
-  transition: outline-color 160ms var(--ease);
-}
-
-/* The highlighted group also lies on a plate in the dark grey of the theme. The plate reaches out */
-/* to the ink outline, so the whole group reads as one dark block with its cells on it. */
-.grid[data-state='groups'] .group[data-scan] {
-  outline-color: var(--ink);
-  background-color: var(--grey);
-  box-shadow: 0 0 0 3px var(--grey);
-}
-
-/* When the scan time bar is shown, each group keeps room under its cells for it, so the outline */
-/* wraps the cells and the bar, and nothing moves when the highlight comes. The room is there all */
-/* the time. In the rows layout it makes the space between two rows bigger than the gap. */
-.grid[data-bar-room] {
-  /* The bar is as tall as the bar of a cell, which runs from 4px to 8px, and is inset from the */
-  /* sides by the same corner radius, so the two bars match on a cell that fills its column. */
-  --scan-bar: clamp(4px, 0.9vmin, 8px);
-  --scan-bar-gap: 3px;
-}
-
-.grid[data-bar-room] .group {
-  padding-bottom: calc(var(--scan-bar) + var(--scan-bar-gap));
-}
-
-/* The bar lies under the cells and inside the outline, with the same small space above it as the */
-/* outline keeps below it. It starts full and empties over the scan time. */
-/* The scan-bar keyframes are in src/styles/cells.css, with the bar of a highlighted cell. */
-.group[data-scan-bar]::after {
-  content: '';
-  position: absolute;
-  inset: auto var(--radius) 0;
-  height: var(--scan-bar);
-  border-radius: 99px;
-  /* The bar is light, because it lies on the grey plate of the highlighted group. */
-  background: linear-gradient(var(--light) 0 0) left / 100% 100% no-repeat
-    color-mix(in oklab, var(--light) 20%, transparent);
-  pointer-events: none;
-  animation: scan-bar var(--scan-time) linear forwards;
 }
 
 /* The share of each cell is set as flex-grow by the screen. */
@@ -76,25 +32,6 @@ app-cell {
 /* In the rows layout each group is a row, read left to right. */
 .grid[data-layout='rows'] {
   flex-direction: column;
-}
-
-/* In `cursor` mode a round cursor takes the place of the arrow of the system over the whole page. */
-/* The arrow is hidden in src/styles/cells.css. */
-/* The cursor is an ink ring with a light line inside and outside it, so it shows on a cell of any */
-/* colour and on the page. A dot marks its middle, which is the place that presses. */
-.cursor {
-  position: fixed;
-  z-index: 2;
-  width: clamp(36px, 6vmin, 56px);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border: var(--ring) solid var(--ink);
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--ink) 0 3px, var(--light) 3px 5px, transparent 5px);
-  box-shadow:
-    0 0 0 2px var(--light),
-    inset 0 0 0 2px var(--light);
-  pointer-events: none;
 }
 
 /* This text is for screen readers only. */

@@ -20,7 +20,6 @@ import {
   type LayoutName,
 } from './support/boards';
 import { test } from './support/firebase';
-import { storeAndReload } from './support/scan';
 
 const BOARD_IDS = Object.keys(BOARDS);
 const MY_BOARDS = [
@@ -191,9 +190,11 @@ test('B8: Tab reaches the thirteen cells of Needs in order and never a caregiver
   page,
 }) => {
   for (const layout of LAYOUTS) {
-    await openBoard(page, 'needs', layout === 'rows' ? { layout } : {});
     // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
-    await storeAndReload(page, { selectionMode: 'touch' });
+    await openBoard(page, 'needs', {
+      selectionMode: 'touch',
+      ...(layout === 'rows' && { layout }),
+    });
     for (const name of ['Back', ...NEEDS_LABELS]) {
       await page.keyboard.press('Tab');
       expect(await focusedName(page), layout).toBe(name);

@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ScanSettings } from './scan-settings';
 
@@ -6,6 +6,17 @@ import { ScanSettings } from './scan-settings';
 export interface CellPosition {
   readonly group: number;
   readonly cell: number;
+}
+
+/**
+ * Whether two places are the same cell. A place with no group or no cell, as the scan state has
+ * at rest or on a group, is no cell.
+ */
+export function sameCell(
+  a: { readonly group: number | null; readonly cell: number | null } | null,
+  b: CellPosition,
+): boolean {
+  return a !== null && a.group === b.group && a.cell === b.cell;
 }
 
 /**
@@ -54,6 +65,17 @@ export class Scan {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.stopTimer());
+
+    // A change of the selection mode sends the scan to rest, so no highlight is left behind
+    // in a mode that has none, and no scan time runs on from the old mode.
+    let mode = this.settings.selectionMode();
+    effect(() => {
+      const next = this.settings.selectionMode();
+      if (next !== mode) {
+        mode = next;
+        untracked(() => this.rest());
+      }
+    });
   }
 
   /**

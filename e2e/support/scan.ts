@@ -7,25 +7,54 @@ import {
 } from '@playwright/test';
 import { axeViolations } from './axe';
 import { standInForFirebase } from './firebase';
-import type { LayoutName, ThemeName } from './boards';
+import { writeStored, type StoredSettings } from './boards';
 
 /** The scan time and the post click delay that the scanning tests store, in milliseconds. */
 export const SCAN_TIME = 1000;
 export const POST_CLICK_DELAY = 500;
 
-export const SELECTION_MODES = ['scan', 'step', 'cursor', 'touch', 'dwell'] as const;
-export type SelectionMode = (typeof SELECTION_MODES)[number];
+const SIGN_IN_TITLE = 'Sign in';
 
-/** The values that a test can store before the app starts. Each is stored under `symple.` and its name. */
-export interface StoredSettings {
-  scanTime?: number;
-  postClickDelay?: number;
-  selectionMode?: SelectionMode;
-  dwellTime?: number;
-  dwellStyle?: 'grow' | 'bar';
-  showProgressBar?: boolean;
-  layout?: LayoutName;
-  theme?: ThemeName;
+/** What a page held of the saved browser state before the app started. */
+interface StateAtStart {
+  /** Whether local storage held the flag that says the device was signed in. */
+  flag: boolean;
+  /** Whether the IndexedDB database of Firebase Auth was there. */
+  database: Promise<boolean>;
+}
+
+/**
+ * Notes, before the app starts, whether the saved browser state is in place. It runs in the page.
+ * A test reads the note only when a board shows the sign in screen.
+ */
+function noteStateAtStart(): void {
+  const note: StateAtStart = {
+    flag: localStorage.getItem('symple.signedIn') === '1',
+    database: indexedDB
+      .databases()
+      .then((list) => list.some((database) => database.name === 'firebaseLocalStorageDb')),
+  };
+  Object.assign(window, { stateAtStart: note });
+}
+
+/** Reads the note of `noteStateAtStart` as a sentence for the error of a lost sign in. */
+async function stateAtStart(page: Page): Promise<string> {
+  const held = await page.evaluate(async () => {
+    const note: unknown = Reflect.get(window, 'stateAtStart');
+    if (typeof note !== 'object' || note === null) {
+      return null;
+    }
+    return {
+      flag: Reflect.get(note, 'flag') === true,
+      database: (await Reflect.get(note, 'database')) === true,
+    };
+  });
+  if (held === null) {
+    return 'Nothing was noted before the app started.';
+  }
+  return held.flag && held.database
+    ? 'The saved browser state was in place before the app started, so the app or Firebase lost the sign in.'
+    : `The saved browser state was not in place before the app started (signed in flag: ${held.flag}, Firebase database: ${held.database}), so the test setup lost the sign in.`;
 }
 
 /** Opens a board in a page of its own, with stored settings and a stopped clock. */
@@ -43,19 +72,24 @@ export type OpenBoard = (id: string, title: string, stored?: StoredSettings) => 
 export const test = base.extend<{ open: OpenBoard }>({
   open: async ({ browser, baseURL, viewport, storageState }, use, testInfo) => {
     let context: BrowserContext | undefined;
+    let tracing = false;
 
     /** Loads the app once in a new context, with the values stored before the app starts. */
     const load = async (id: string, stored: StoredSettings): Promise<Page> => {
       await context?.close();
       context = await browser.newContext({ baseURL, viewport, storageState });
-      await context.addInitScript(
-        (values) => {
-          for (const [name, value] of Object.entries(values)) {
-            localStorage.setItem(`symple.${name}`, String(value));
-          }
-        },
-        { scanTime: SCAN_TIME, postClickDelay: POST_CLICK_DELAY, ...stored },
+      // The trace is kept only for a load that shows the sign in screen. Playwright refuses a
+      // second trace when the config already records one, and that one is kept on a failure.
+      tracing = await context.tracing.start({ snapshots: true }).then(
+        () => true,
+        () => false,
       );
+      await context.addInitScript(writeStored, {
+        scanTime: SCAN_TIME,
+        postClickDelay: POST_CLICK_DELAY,
+        ...stored,
+      });
+      await context.addInitScript(noteStateAtStart);
       const page = await context.newPage();
       await standInForFirebase(page);
       await page.goto(id === 'home' ? '/' : `/board/${id}`);
@@ -64,16 +98,29 @@ export const test = base.extend<{ open: OpenBoard }>({
     };
 
     await use(async (id, title, stored = {}) => {
-      let page = await load(id, stored);
-      if ((await page.locator('h1').textContent()) === 'Sign in') {
-        // About one new context in a hundred starts with no stored sign in when the whole
-        // suite runs. The cause was not found. It is in the test setup, before the app is
-        // scanned, so the board is loaded once more and the event is noted on the test.
-        testInfo.annotations.push({
-          type: 'lost sign in',
-          description: `The first load of ${id} showed the sign in screen.`,
-        });
-        page = await load(id, stored);
+      const page = await load(id, stored);
+      if (title !== SIGN_IN_TITLE && (await page.locator('h1').textContent()) === SIGN_IN_TITLE) {
+        // A board showed the sign in screen on a device with a stored sign in. The primary user
+        // cannot sign in again, so this fails the test. The board is not loaded a second time.
+        //
+        // This was seen twice in 348 tests on 2026-11-21, both times in `dwell` mode. Each time
+        // the Firebase store of the page was empty and the app had made no call to Firebase.
+        // The cause was not found. It did not come back in 800 contexts made with no app, in
+        // 3100 loads of the home screen in new contexts, or in 826 more runs of these tests.
+        // The error says whether the saved state was in place before the app started, and the
+        // trace of the load is kept, so the next time shows which side lost the sign in.
+        const state = await stateAtStart(page);
+        const trace = testInfo.outputPath(`lost-sign-in-${id}.zip`);
+        if (tracing) {
+          await context?.tracing.stop({ path: trace });
+          await testInfo.attach('lost sign in', { path: trace });
+        }
+        throw new Error(
+          `The board "${id}" showed the sign in screen on a device with a stored sign in. ${state}`,
+        );
+      }
+      if (tracing) {
+        await context?.tracing.stop();
       }
       await expect(page.locator('h1')).toHaveText(title);
       // The app starts on the real clock, as in the other tests. The clock is taken over once
@@ -90,17 +137,6 @@ export const test = base.extend<{ open: OpenBoard }>({
 async function stopClock(page: Page): Promise<void> {
   const now = await page.evaluate(() => Date.now());
   await page.clock.pauseAt(now + 2000);
-}
-
-/** Stores scan settings on a page that is already open and starts the app again with them. */
-export async function storeAndReload(page: Page, stored: StoredSettings): Promise<void> {
-  await page.evaluate((values) => {
-    for (const [name, value] of Object.entries(values)) {
-      localStorage.setItem(`symple.${name}`, String(value));
-    }
-  }, stored);
-  await page.reload();
-  await expect(page.locator('main button').first()).toBeVisible();
 }
 
 /** Lets the app draw what the last event changed. The clock is stopped, so the app waits for it. */

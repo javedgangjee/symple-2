@@ -123,4 +123,18 @@ describe('ScanSettings', () => {
     expect(settings.scanTime()).toBe(3000);
     expect(localStorage.getItem(SCAN_STORAGE_KEYS.scanTime)).toBe('3000');
   });
+
+  it('T14: refuses a scan time that is out of range and stores nothing', () => {
+    settings.set({ scanTime: 100 });
+    expect(settings.scanTime()).toBe(1500);
+    expect(localStorage.getItem(SCAN_STORAGE_KEYS.scanTime)).toBeNull();
+  });
+
+  it('T15: uses a scan time that is set when writing storage throws', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('Storage is full.');
+    });
+    expect(() => settings.set({ scanTime: 3000 })).not.toThrow();
+    expect(settings.scanTime()).toBe(3000);
+  });
 });
