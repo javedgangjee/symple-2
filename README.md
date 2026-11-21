@@ -20,6 +20,12 @@ The Firestore access rules are in `firestore.rules`. Deploy them with `npx fireb
 
 The tests never reach Firebase. The end to end tests answer the Firebase Auth calls with canned replies and block the Firestore calls.
 
+## Scanning
+
+Sign in, then press Enter on the home screen. The first column is outlined, and the outline moves by itself. Press Enter to pick the outlined column, and again to pick the outlined cell. Tab moves the outline by one, and Shift with Tab moves it back.
+
+The settings screen does not exist yet, so the scan settings are changed in the local storage of the browser, followed by a reload. `symple.selectionMode` is `scan`, `step`, `cursor`, `touch` or `dwell`. `symple.scanTime`, `symple.postClickDelay` and `symple.dwellTime` are times in milliseconds. `symple.dwellStyle` is `grow` or `bar`. `symple.showProgressBar` is `true` to show a bar that counts down the scan time, and the bar is hidden without it.
+
 ## npm scripts
 
 - `npm start` serves the app at `http://localhost:4200`.

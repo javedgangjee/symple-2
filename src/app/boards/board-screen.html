@@ -1,20 +1,56 @@
 @if (board(); as board) {
-  <div class="grid" [attr.data-layout]="board.layout ?? layout.name()">
+  @let scanned = scan.state();
+  @let dwelt = dwell.running();
+  @let pressed = dwell.confirmed();
+  <!-- The grid carries the scan state and the two times, and the styles draw the rest from them. -->
+  <div
+    #grid
+    class="grid"
+    [attr.data-layout]="board.layout ?? layout.name()"
+    [attr.data-state]="scanState()"
+    [attr.data-bar-room]="mark(showsBar())"
+    [attr.data-dwell-style]="settings.dwellStyle()"
+    [style.--scan-time]="settings.scanTime() + 'ms'"
+    [style.--dwell-time]="settings.dwellTime() + 'ms'"
+  >
     <!-- Each group and each cell is tracked as itself, so a new board gets new cells. A reused cell -->
     <!-- would fade from the old tile's colours to the new ones and keep focus from the old board. -->
     <!-- A key built from the board id does not do this, because it reads the new id for the old groups too. -->
-    @for (group of board.groups; track group) {
-      <div class="group">
-        @for (cell of group.cells; track cell) {
+    @for (group of board.groups; track group; let g = $index) {
+      <!-- A group takes the focus when the scan highlights it, but Tab does not stop on it. -->
+      <div
+        class="group"
+        role="group"
+        tabindex="-1"
+        [attr.aria-label]="groupName(g)"
+        [attr.data-scan]="mark(scanned.group === g)"
+        [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'groups' && scanned.group === g)"
+      >
+        @for (cell of group.cells; track cell; let c = $index) {
+          @let highlighted = scanned.group === g && scanned.cell === c;
           <app-cell
             [tile]="cell.tile"
             [style.flex-grow]="share(group, cell)"
-            (press)="onPress($event)"
+            [attr.data-scan]="mark(highlighted)"
+            [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'cells' && highlighted)"
+            [attr.data-confirmed]="
+              mark((scanned.phase === 'confirmed' && highlighted) || isAt(pressed, g, c))
+            "
+            [attr.data-dwell]="isAt(dwelt, g, c) ? settings.dwellStyle() : null"
+            (press)="onCellPress($event)"
+            (pointerenter)="onPointer($event, g, c)"
+            (pointermove)="onPointer($event, g, c)"
+            (pointerleave)="dwell.leave({ group: g, cell: c })"
           />
         }
       </div>
     }
   </div>
+}
+<!-- The round cursor of `cursor` mode lies over the whole page, at the place of the pointer. -->
+<!-- It is a drawing only: the pointer under it does the pressing. -->
+@if (cursor(); as at) {
+  <div class="cursor" aria-hidden="true" [style.left.px]="at.x" [style.top.px]="at.y"></div>
 }
 <!-- A screen reader hears the phrase or the message here after a press. -->
 <!-- The text is drawn again for each press, so the same phrase twice is told twice. -->

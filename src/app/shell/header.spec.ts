@@ -21,10 +21,11 @@ describe('Header', () => {
     expect(element.querySelector('[role="img"][aria-label="Symple"]')).not.toBeNull();
   });
 
-  it('H3: holds a disabled button named "Settings"', async () => {
+  it('H3: holds a disabled button named "Settings" that is not a tab stop', async () => {
     const element = await draw();
     const button = element.querySelector('button[aria-label="Settings"]');
     expect(button).toBeInstanceOf(HTMLButtonElement);
     expect(button?.hasAttribute('disabled')).toBe(true);
+    expect(button?.getAttribute('tabindex')).toBe('-1');
   });
 });

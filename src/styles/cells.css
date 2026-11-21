@@ -1,5 +1,5 @@
 /* The cell colours, copied from context/design/home.html. Feature 2 draws the cells. */
-/* This file holds colours only. The layout of a cell and the rules for one kind of cell come with the feature that draws it. */
+/* This file holds the colours and the scan and dwell looks. The layout of a cell and the rules for one kind of cell come with the feature that draws it. */
 
 /* The four cell colours are one dark, one light, one soft and one grey. */
 .dark {
@@ -106,4 +106,97 @@
   --bg: oklch(0.4 0.19 285);
   --chip-on: oklch(0.4 0.19 285);
   --bleed: color-mix(in oklab, oklch(0.4 0.19 285) 52%, oklch(0.83 0.085 295));
+}
+
+/* The scan and dwell looks. The board screen marks each cell on its host element, app-cell. */
+/* The outline and the picked look are copied from context/design/home.html. The mockup also dims */
+/* the cells that are not highlighted. That is left out, because the dimmed labels fail 4.5:1. */
+app-cell[data-scan] .cell {
+  outline-color: var(--ink);
+}
+
+/* A highlighted group lies on a dark grey plate. Its cells are solid, because a see-through cell would */
+/* let the plate darken its fill and its label would lose contrast. */
+.grid[data-state='groups'] .group[data-scan] .cell {
+  background-color: var(--bg);
+}
+
+/* In `cursor` mode the board screen draws a round cursor over the whole page, and marks the page. */
+/* Nothing on the page then shows the arrow or the hand of the system, whatever cursor it asks for. */
+:root[data-cursor],
+:root[data-cursor] * {
+  cursor: none !important;
+}
+
+/* A picked cell swaps its two colours for the length of the post click delay. The cell keeps */
+/* its colours under other names, and everything inside it reads them the other way round. */
+app-cell[data-confirmed] .cell {
+  --was-bg: var(--bg);
+  --was-on: var(--on);
+  --was-chip: var(--chip);
+  --was-chip-on: var(--chip-on);
+  background-color: var(--on);
+  color: var(--bg);
+  outline-color: var(--ink);
+}
+
+app-cell[data-confirmed] .cell * {
+  --on: var(--was-bg);
+  --chip: var(--was-chip-on);
+  --chip-on: var(--was-chip);
+  --bleed: color-mix(in oklab, var(--was-on) 78%, var(--was-bg));
+}
+
+app-cell[data-confirmed] .caret {
+  background: currentColor;
+}
+
+/* The progress bar lies across the bottom of the cell, in the colour of the label. In `scan` mode */
+/* it starts full and empties over the scan time. In the `bar` dwell style it fills over the dwell time. */
+app-cell[data-scan-bar] .cell::after,
+app-cell[data-dwell='bar'] .cell::after {
+  content: '';
+  position: absolute;
+  inset: auto var(--radius) clamp(2px, 1.6cqmin, 6px);
+  height: clamp(4px, 2.4cqmin, 8px);
+  border-radius: 99px;
+  background: linear-gradient(currentColor 0 0) left / 100% 100% no-repeat
+    color-mix(in oklab, currentColor 22%, transparent);
+  pointer-events: none;
+}
+
+app-cell[data-scan-bar] .cell::after {
+  animation: scan-bar var(--scan-time) linear forwards;
+}
+
+app-cell[data-dwell='bar'] .cell::after {
+  animation: dwell-bar var(--dwell-time) linear forwards;
+}
+
+/* In the `grow` dwell style the cell grows over the dwell time, above the cells next to it. */
+app-cell[data-dwell='grow'] {
+  z-index: 1;
+}
+
+app-cell[data-dwell='grow'] .cell {
+  animation: dwell-grow var(--dwell-time) linear forwards;
+}
+
+/* The board screen uses scan-bar for the bar of a highlighted group too. */
+@keyframes scan-bar {
+  to {
+    background-size: 0% 100%;
+  }
+}
+
+@keyframes dwell-bar {
+  from {
+    background-size: 0% 100%;
+  }
+}
+
+@keyframes dwell-grow {
+  to {
+    scale: 1.08;
+  }
 }

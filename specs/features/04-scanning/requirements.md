@@ -9,21 +9,21 @@
 5. The sign in screen is not scanned. Source: roadmap.md, feature 4.
 6. After a pick, the scan waits for a set time, called the post click delay, before it starts again. Switch presses in that time are ignored. Source: roadmap.md, feature 4. PRODUCT.md, Capabilities.
 7. A switch reaches the app as a key press or a pointer press. Scanning is built in the app and does not use the scanning of the operating system. Source: tech-stack.md, Input.
-8. The highlight follows the scan states of the home mockup, `context/design/home.html`. A highlighted group or cell has an ink outline. The cells outside the highlighted group are dimmed. While the cells of a group are scanned, the other cells of that group are dimmed less. A picked cell takes the confirmed look, with its colours swapped. Source: the home mockup.
+8. The highlight follows the scan states of the home mockup, `context/design/home.html`, apart from the dimming. A highlighted group or cell has an ink outline. A highlighted group also lies on a plate in the dark grey of the theme, `--grey`, which reaches out to the outline, and its cells are solid so the plate does not show through them. The user set the plate on 2026-11-20, and the mockup has none. A picked cell takes the confirmed look, with its colours swapped. No cell is dimmed. The mockup dims the cells that are not highlighted, and its dimmed labels fail the contrast of 4.5 to 1 on dark, grey and ink cells in every theme, so the user removed the dimming on 2026-11-19. Source: the home mockup.
 9. Every screen for the primary user has an end to end test that reaches each target by single switch scanning. Today these screens are the home screen, the boards and the keyboards. Source: tech-stack.md, Tests.
-10. Every scan state passes WCAG 2.2 Level AA in every theme. This covers the contrast of dimmed labels and of the outline. Source: PRODUCT.md, Accessibility and Inclusion.
+10. Every scan state passes WCAG 2.2 Level AA in every theme. This covers the contrast of the outline. Source: PRODUCT.md, Accessibility and Inclusion.
 11. Every cell can be reached and pressed with the keyboard alone, in the order it has on screen, and can be pressed with a pointer. Source: feature 2, requirement 6. WCAG 2.1.1.
 12. The caregiver sets the scan time and the post click delay in feature 8. This feature reads the stored values and shows no control for them. Source: roadmap.md, features 4 and 8.
 
 ## Not in the specs. Assumed, and open to change
 
-Items 13 to 36 are my choices, apart from the parts the user set on 2026-11-19. Those parts are the names of the selection modes in items 14 and 15, the keys and the tab order of items 13 and 23, the dwell press of item 28, the two dwell styles of item 30 and the scan time bar of item 36. Each other one needs the user's yes or a change. There is no item 35, because the user removed it on 2026-11-19.
+Items 13 to 38 are my choices, apart from the parts the user set on 2026-11-19 and on 2026-11-20. Those parts are the names of the selection modes in items 14 and 15, the keys and the tab order of items 13 and 23, the dwell press of item 28, the two dwell styles of item 30 and the scan time bar of item 36. Each other one needs the user's yes or a change. There is no item 35, because the user removed it on 2026-11-19.
 
 13. **The switch keys.** Tab and Enter are the switches. Tab moves the highlight and Enter picks. Shift with Tab moves the highlight back by one. Space is not a switch, and on a board in `scan` and `step` mode it does nothing. A key that is held down counts once. The user set Tab in place of Space on 2026-11-19.
 14. **The selection mode.** A stored setting named the selection mode says how the primary user selects. It has five values, which are `scan`, `step`, `cursor`, `touch` and `dwell`. The first four are in mission.md, and the user added `dwell` on 2026-11-19. It is stored on the device under `symple.selectionMode`, and `scan` is used when nothing is stored. Feature 8 needs a picker for it, which the roadmap line of feature 8 does not list yet.
     - **`scan`, for one switch.** The highlight moves by itself after each scan time, and Enter picks. Tab also moves the highlight on by one, and the scan time then starts again.
     - **`step`, for two switches.** Tab moves the highlight by one and Enter picks. Nothing moves by itself.
-15. **`cursor`, `touch` and `dwell`.** In these three modes no group and no cell gets the scan highlight, and Tab and Enter are not switches. Tab moves the focus from cell to cell in the order of the data, with no group step, and Enter and Space press the focused cell, as the browser does by itself. The user presses a cell with a pointer or a finger, as today. `cursor` and `touch` behave the same in this feature, and feature 12, head tracker and eye gaze, gives `cursor` its own behaviour. `dwell` adds the dwell press of items 28 to 34.
+15. **`cursor`, `touch` and `dwell`.** In these three modes no group and no cell gets the scan highlight, and Tab and Enter are not switches. Tab moves the focus from cell to cell in the order of the data, with no group step, and Enter and Space press the focused cell, as the browser does by itself. The user presses a cell with a pointer or a finger, as today. `cursor` adds the round cursor of item 38, and is otherwise the same as `touch`. Feature 12, head tracker and eye gaze, covers what else a pointer driven by a head tracker or by eye gaze needs. `dwell` adds the dwell press of items 28 to 34.
 16. **Pointer press in `scan` and `step`.** A pointer press on a cell presses that cell at once, as it does today, and the scan goes to rest with nothing in focus. A pointer press anywhere else does nothing. This feature does not treat a pointer press as a switch, although requirement 7 allows it, because the app cannot tell a switch from a tap on a cell.
 17. **Rest.** When the app starts, nothing is highlighted and nothing moves. This is the rest state of the mockup. The first press starts the scan at the first group, and that press picks nothing.
 18. **Passes with no pick.** In `scan` mode, when the highlight has gone through the cells of a group twice with no pick, the scan returns to the groups and carries on from that group. When it has gone through the groups twice with no pick, the scan goes to rest.
@@ -38,7 +38,7 @@ Items 13 to 36 are my choices, apart from the parts the user set on 2026-11-19. 
 24. **Other keys and fields.** The scan takes no key but Tab and Enter. It takes neither while the focus is in a text field.
 25. **Screen readers.** A screen reader tells the name of each group and cell as the highlight reaches it, because the highlight is the focus. The status text of feature 2, which tells the phrase or the message after a press, also follows a pick.
 26. **Motion.** The highlight changes with the short colour transition that cells already have, and with no transition for people who ask for less motion.
-27. **Sync.** The five stored values of items 14, 22, 29 and 30 are not synced in this feature. Feature 8 adds them to the sync of feature 3.
+27. **Sync.** The six stored values of items 14, 22, 29, 30 and 37 are not synced in this feature. Feature 8 adds them to the sync of feature 3.
 
 ## The dwell press
 
@@ -54,24 +54,35 @@ Items 13 to 36 are my choices, apart from the parts the user set on 2026-11-19. 
 
 ## The scan time bar
 
-36. **The scan time bar.** In `scan` mode, the progress bar of the `bar` dwell style counts down the scan time. Set by the user on 2026-11-19. The parts below are my choices.
-    - The bar is drawn across the bottom of what is highlighted, which is the group while the groups are scanned and the cell while the cells are scanned.
+36. **The scan time bar.** In `scan` mode, the progress bar of the `bar` dwell style counts down the scan time, when the setting of item 37 says to show it. Set by the user on 2026-11-19. The parts below are my choices.
+    - The bar is drawn across the bottom of what is highlighted, which is the group while the groups are scanned and the cell while the cells are scanned. The bar of a cell is inside the cell, in the colour of its label. The bar of a group is white on the grey plate of the group. It is under the cells and inside the outline, as tall as the bar of a cell and inset from the sides by the same corner radius, with a small space above and below it. While the bar is shown, each group keeps room for it all the time, so nothing moves when the highlight comes. In the rows layout this makes the space between two rows bigger than the gap. Set by the user on 2026-11-20.
     - The bar starts full and empties over the scan time. It starts full again each time the highlight moves, by itself or by Tab.
     - The bar is shown whatever the dwell style is, because the dwell style belongs to the `dwell` mode.
-    - No bar is shown at rest, in the confirmed look, or in `step` mode, where no time runs.
+    - No bar is shown at rest, in the confirmed look, or in `step` mode, where no time runs. No room is kept for the bar in `step` mode or while the bar is hidden.
     - The bar is still shown for people who ask for less motion, and it meets the contrast of item 34.
+
+37. **Show progress bar.** A stored setting named show progress bar says whether the scan time bar of item 36 is shown, on a group and on a cell. It is stored on the device under `symple.showProgressBar` as `true` or `false`. The bar is hidden when nothing is stored, and for any other stored value. Set by the user on 2026-11-20. The parts below are my choices.
+    - The setting does not change the `bar` dwell style of item 30, which the dwell style already turns on and off.
+    - Feature 8 needs a control for it, which the roadmap line of feature 8 now lists.
+
+38. **The cursor of `cursor` mode.** In `cursor` mode a round cursor lies over the whole page of a board screen, at the place of the pointer, so the trackpad or the mouse moves it left, right, up and down. Set by the user on 2026-11-20. The parts below are my choices.
+    - The cursor is an ink ring with a light line inside and outside it and a dot in its middle, so it shows on a cell of any colour. The dot is the place that presses.
+    - The arrow of the system is hidden over the whole page, which includes the header and the footer, so the round cursor is the only one. The sign in screen is not a board screen and keeps the arrow.
+    - The cursor is a drawing only. A press of the trackpad or the mouse presses the cell under it, as in `touch` mode, and the cell under it has the ink outline that a cell under a pointer already has.
+    - A finger has no cursor. The cursor is not announced to screen readers.
 
 ## File names
 
 - `src/app/scan/scan.ts` holds the scan service, which keeps the state and the timer.
-- `src/app/scan/scan-settings.ts` reads the five stored values.
+- `src/app/scan/scan-settings.ts` reads the six stored values.
 - `src/app/scan/switches.ts` turns key presses into switch presses.
 - `src/app/scan/dwell.ts` holds the dwell service, which keeps the dwell timer.
+- `src/app/scan/pointer-place.ts` keeps the place of the pointer for the round cursor of item 38, so the cursor stays where it is when a cell opens another screen.
 - `e2e/scanning.spec.ts` holds the end to end tests, with helpers in `e2e/support/scan.ts`.
 
 ## Left for later features
 
 - Feature 5, speech, speaks the phrase of a picked cell and shows the picked look of the Needs mockup while it speaks.
-- Feature 8, settings, adds the controls for the scan time, the post click delay, the selection mode, the dwell time and the dwell style, and syncs them.
+- Feature 8, settings, adds the controls for the scan time, the post click delay, the selection mode, the dwell time, the dwell style and show progress bar, and syncs them.
 - Feature 11, the iPad app, decides how switches reach the app on iPad.
 - Feature 12, head tracker and eye gaze, covers the pointer that is driven by a head tracker or by eye gaze. It can reuse the dwell press of this feature. On iPad the iPad's own pointer does the dwell click, so the `dwell` mode is not needed there.

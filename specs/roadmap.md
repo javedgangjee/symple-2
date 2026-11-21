@@ -12,7 +12,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: in progress.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the dark picked look of the Needs mockup while it speaks, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: planned.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
-8. **Settings.** The caregiver sets the scan time, the post click delay, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
+8. **Settings.** The caregiver sets the scan time, the post click delay, the selection mode, the dwell time, the dwell style, whether the progress bar is shown, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
 9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved and join the sync of feature 3. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
 
 ## Release
@@ -23,7 +23,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 10. **Mac app.** Electron packages the build as a Mac app that can stay open all day. Covers: Platform, Stack, Operating Context. Status: planned.
 11. **iPad app.** Capacitor packages the build as an iPad app with the iOS system voices. Covers: Platform, Stack, Speech output. Status: planned.
-12. **Head tracker and eye gaze.** Every screen can be used with a pointer that is driven by a head tracker or by eye gaze. Covers: Accessibility and Inclusion, Operating Context. Status: planned.
+12. **Head tracker and eye gaze.** Every screen can be used with a pointer that is driven by a head tracker or by eye gaze. The dwell press was built in feature 4. Covers: Accessibility and Inclusion, Operating Context. Status: planned.
 
 ## Media
 

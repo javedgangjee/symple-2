@@ -56,6 +56,12 @@ The versions below were set on 2026-11-16.
 ## Input
 
 - A switch reaches the app as a key press or a pointer press. Scanning is built in the app and does not rely on the scanning of the operating system.
+- Tab and Enter are the switch keys. Tab moves the highlight, Shift with Tab moves it back, and Enter picks. The keyboard focus moves with the highlight.
+- A stored setting, the selection mode, says how the primary user selects. It has five values, and `scan` is the default. In `scan` the highlight moves by itself after each scan time, for one switch. In `step` Tab moves it, for two switches. In `cursor` and `touch` the user presses a cell with a pointer or a finger, and `cursor` draws a round cursor over the whole page at the place of the pointer. `dwell` adds the dwell press.
+- In the dwell press, a pointer that rests on a cell for the dwell time presses it. The dwell style says how the cell shows the time running, and is `grow` or `bar`.
+- The settings button, the Sign out button and anything else outside the grid are not in the tab order.
+- Six values are stored on the device and are not synced yet. They are `symple.scanTime`, `symple.postClickDelay`, `symple.selectionMode`, `symple.dwellTime`, `symple.dwellStyle` and `symple.showProgressBar`. The times are in milliseconds.
+- Show progress bar says whether the highlight shows a bar that counts down the scan time in `scan` mode. It is off by default.
 - On iPad, the iPad's own pointer carries head tracking and eye gaze and does the dwell click. Symple receives a tap.
 - How switches reach the app on iPad is not decided.
 
@@ -66,7 +72,7 @@ The versions below were set on 2026-11-16.
 - Red Hat Display is stored next to it in `context/design/mockups/home/fonts/` for later use. No screen uses it until the user says so.
 - The boards use the Mulberry symbol set, which is licensed CC BY-SA 4.0. The app must credit it, and any changed symbol must be shared under the same licence.
 - A group of cells is a column or a row. In the columns layout each group is a column, read top to bottom. In the rows layout each group is a row, read left to right. A stored setting picks the layout, and columns are the default. A board can fix its own layout, as the keyboard does with rows. Scan order follows the groups and then the cells of a group.
-- One gap size is used across a screen.
+- One gap size is used across a screen. While the scan time bar is shown, each group also keeps room under its cells for it, so in the rows layout the space between two rows is bigger than the gap.
 
 ## Patents
 

@@ -33,6 +33,8 @@ describe('Footer', () => {
     expect(buttons.length).toBe(1);
     expect(buttons[0].textContent?.trim()).toBe('Sign out');
     expect(buttons[0].hasAttribute('data-caregiver-control')).toBe(true);
+    // A caregiver control is not a tab stop.
+    expect(buttons[0].getAttribute('tabindex')).toBe('-1');
 
     // The settings button carries the same mark.
     const header = TestBed.createComponent(Header);

@@ -14,6 +14,7 @@ import {
   type ScreenLayout,
 } from './support/boards';
 import { test } from './support/firebase';
+import { storeAndReload } from './support/scan';
 
 const HOME_CELLS = ['My boards', 'Needs', 'Quick phrases', 'Keyboards'];
 
@@ -56,15 +57,17 @@ test('E3: with rows stored home is two rows of two equal cells', async ({ page }
   expectEqualCells(layout);
 });
 
-test('E4: Tab reaches the four cells in order and skips the settings button', async ({ page }) => {
+test('E4: Tab reaches the four cells in order and never a caregiver control', async ({ page }) => {
   for (const layout of LAYOUTS) {
     await openBoard(page, 'home', layout === 'rows' ? { layout } : {});
+    // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
+    await storeAndReload(page, { selectionMode: 'touch' });
     for (const name of HOME_CELLS) {
       await page.keyboard.press('Tab');
       expect(await focusedName(page), layout).toBe(name);
     }
     await page.keyboard.press('Tab');
-    expect(await focusedName(page), layout).not.toBe('Settings');
+    expect(['Settings', 'Sign out'], layout).not.toContain(await focusedName(page));
   }
 });
 
@@ -94,6 +97,9 @@ test('E6: the Colours theme gives the home cells their hues', async ({ page }) =
 
 test('E7: the focused cell has an ink outline at least 4px wide', async ({ page }) => {
   await openBoard(page, 'home');
+  // In `scan` mode Tab stops on a group first. In `touch` mode it goes to the first cell.
+  // Case K8 of feature 4 checks the outline of the highlight in `scan` mode.
+  await storeAndReload(page, { selectionMode: 'touch' });
   await page.keyboard.press('Tab');
   const focused = cell(page, 'My boards');
   await expect(focused).toBeFocused();

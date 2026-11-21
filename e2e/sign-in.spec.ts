@@ -20,6 +20,7 @@ import {
   refuseSignIn,
   test,
 } from './support/firebase';
+import { storeAndReload } from './support/scan';
 
 const HOME_CELLS = ['My boards', 'Needs', 'Quick phrases', 'Keyboards'];
 const WRONG = 'The email or password is wrong.';
@@ -291,7 +292,7 @@ test.describe('on a signed in device', () => {
     await expect(card(page)).toBeVisible();
   });
 
-  test('N15: Sign out sits in the bottom right corner and comes after every cell', async ({
+  test('N15: Sign out sits in the bottom right corner, and Tab does not reach it', async ({
     page,
   }) => {
     for (const id of ['home', 'needs']) {
@@ -323,14 +324,16 @@ test.describe('on a signed in device', () => {
       expect(button.width, id).toBeGreaterThanOrEqual(24);
       expect(button.height, id).toBeGreaterThanOrEqual(24);
 
-      // Tab goes through every cell first and lands on Sign out after the last one.
+      // Sign out is a caregiver control, so it is not in the tab order. In `touch` mode Tab
+      // goes from cell to cell, and one press more than there are cells does not land on it.
+      await storeAndReload(page, { selectionMode: 'touch' });
       const names = await cellNames(page);
       for (const name of names) {
         await page.keyboard.press('Tab');
         expect(await focusedName(page), id).toBe(name);
       }
       await page.keyboard.press('Tab');
-      await expect(signOutButton(page)).toBeFocused();
+      await expect(signOutButton(page)).not.toBeFocused();
     }
   });
 

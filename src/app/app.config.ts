@@ -14,6 +14,7 @@ import { routes } from './app.routes';
 import { AUTH_SOURCE, Auth } from './auth/auth';
 import { FirebaseAuthSource } from './auth/firebase-auth-source';
 import { Layout } from './layout/layout';
+import { ScanSettings } from './scan/scan-settings';
 import { ScreenTitle } from './shell/screen-title';
 import { CLOUD_STORE } from './sync/cloud-store';
 import { FirestoreCloudStore } from './sync/firestore-cloud-store';
@@ -40,6 +41,8 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => inject(Theme).load()),
     // The layout is read before the first screen is drawn.
     provideAppInitializer(() => inject(Layout).load()),
+    // The scan settings are read before the first screen is drawn.
+    provideAppInitializer(() => inject(ScanSettings).load()),
     // The stored sign in is read before the first screen is drawn.
     provideAppInitializer(() => inject(Auth).ready()),
     // The sync starts when the service is made.
