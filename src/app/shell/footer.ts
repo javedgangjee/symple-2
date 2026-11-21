@@ -10,7 +10,14 @@ import { Auth } from '../auth/auth';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer>
-      <button class="sign-out" type="button" data-caregiver-control (click)="signOut()">
+      <!-- A caregiver control is not in the tab order, so Tab never leaves the grid. -->
+      <button
+        class="sign-out"
+        type="button"
+        data-caregiver-control
+        tabindex="-1"
+        (click)="signOut()"
+      >
         Sign out
       </button>
     </footer>

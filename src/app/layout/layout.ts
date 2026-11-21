@@ -1,4 +1,5 @@
-import { DOCUMENT, Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { LocalStore } from '../storage/local-store';
 
 /** The two layouts. In `columns` each group of cells is a column. In `rows` each group is a row. */
 export const LAYOUT_NAMES = ['columns', 'rows'] as const;
@@ -21,7 +22,7 @@ export function isLayoutName(value: unknown): value is LayoutName {
  */
 @Injectable({ providedIn: 'root' })
 export class Layout {
-  private readonly document = inject(DOCUMENT);
+  private readonly store = inject(LocalStore);
   private readonly current = signal<LayoutName>(DEFAULT_LAYOUT);
 
   /** The layout in use. */
@@ -29,26 +30,13 @@ export class Layout {
 
   /** Reads the stored layout. Columns are used when the value is missing or unknown, or when storage fails. */
   load(): void {
-    const stored = this.readStored();
+    const stored = this.store.read(LAYOUT_STORAGE_KEY);
     this.current.set(isLayoutName(stored) ? stored : DEFAULT_LAYOUT);
   }
 
   /** Uses a layout and stores it. The layout is used even when storage fails. */
   set(name: LayoutName): void {
     this.current.set(name);
-    try {
-      this.document.defaultView?.localStorage.setItem(LAYOUT_STORAGE_KEY, name);
-    } catch {
-      // Storage can be full or blocked. The layout still applies for this session.
-    }
-  }
-
-  private readStored(): string | null {
-    try {
-      return this.document.defaultView?.localStorage.getItem(LAYOUT_STORAGE_KEY) ?? null;
-    } catch {
-      // Storage can be blocked. The default layout is used.
-      return null;
-    }
+    this.store.write(LAYOUT_STORAGE_KEY, name);
   }
 }

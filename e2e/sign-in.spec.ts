@@ -291,11 +291,12 @@ test.describe('on a signed in device', () => {
     await expect(card(page)).toBeVisible();
   });
 
-  test('N15: Sign out sits in the bottom right corner and comes after every cell', async ({
+  test('N15: Sign out sits in the bottom right corner, and Tab does not reach it', async ({
     page,
   }) => {
     for (const id of ['home', 'needs']) {
-      await openBoard(page, id);
+      // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
+      await openBoard(page, id, { selectionMode: 'touch' });
       const boxes = await page.evaluate(() => {
         const box = (selector: string) => {
           const element = document.querySelector(selector);
@@ -323,14 +324,15 @@ test.describe('on a signed in device', () => {
       expect(button.width, id).toBeGreaterThanOrEqual(24);
       expect(button.height, id).toBeGreaterThanOrEqual(24);
 
-      // Tab goes through every cell first and lands on Sign out after the last one.
+      // Sign out is a caregiver control, so it is not in the tab order. One press more than
+      // there are cells does not land on it.
       const names = await cellNames(page);
       for (const name of names) {
         await page.keyboard.press('Tab');
         expect(await focusedName(page), id).toBe(name);
       }
       await page.keyboard.press('Tab');
-      await expect(signOutButton(page)).toBeFocused();
+      await expect(signOutButton(page)).not.toBeFocused();
     }
   });
 

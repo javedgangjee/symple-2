@@ -60,25 +60,43 @@ export interface ScreenLayout {
   groups: { box: Box; cells: { name: string; box: Box }[] }[];
 }
 
+export const SELECTION_MODES = ['scan', 'step', 'cursor', 'touch', 'dwell'] as const;
+export type SelectionMode = (typeof SELECTION_MODES)[number];
+
+/** The values that a test can store before the app starts. Each is stored under `symple.` and its name. */
+export interface StoredSettings {
+  scanTime?: number;
+  postClickDelay?: number;
+  selectionMode?: SelectionMode;
+  dwellTime?: number;
+  dwellStyle?: 'grow' | 'bar';
+  showProgressBar?: boolean;
+  layout?: LayoutName;
+  theme?: ThemeName;
+}
+
 /**
- * Opens a board with a stored layout and theme, as a caregiver's choice would be read on the next start.
+ * Writes settings to local storage. It runs in the page, so it uses nothing from this file.
+ * Every helper that stores a setting passes this to the page.
+ */
+export function writeStored(values: StoredSettings): void {
+  for (const [name, value] of Object.entries(values)) {
+    localStorage.setItem(`symple.${name}`, String(value));
+  }
+}
+
+/**
+ * Opens a board with stored settings, as a caregiver's choices would be read on the next start.
  * Nothing is stored for a value that is left out.
  */
 export async function openBoard(
   page: Page,
   id: string,
-  stored: { layout?: LayoutName; theme?: ThemeName } = {},
+  stored: StoredSettings = {},
 ): Promise<void> {
   await page.goto('/');
-  await page.evaluate(({ layout, theme }) => {
-    localStorage.clear();
-    if (layout) {
-      localStorage.setItem('symple.layout', layout);
-    }
-    if (theme) {
-      localStorage.setItem('symple.theme', theme);
-    }
-  }, stored);
+  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(writeStored, stored);
   await page.goto(id === 'home' ? '/' : `/board/${id}`);
   await expect(page.locator('h1')).toHaveText(BOARDS[id]);
 }

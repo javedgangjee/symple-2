@@ -186,17 +186,21 @@ test('B7: Back on a board opened by its address, and an unknown board, both show
   await expect(page).toHaveURL(/\/$/);
 });
 
-test('B8: Tab reaches the thirteen cells of Needs in order and skips the settings button', async ({
+test('B8: Tab reaches the thirteen cells of Needs in order and never a caregiver control', async ({
   page,
 }) => {
   for (const layout of LAYOUTS) {
-    await openBoard(page, 'needs', layout === 'rows' ? { layout } : {});
+    // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
+    await openBoard(page, 'needs', {
+      selectionMode: 'touch',
+      ...(layout === 'rows' && { layout }),
+    });
     for (const name of ['Back', ...NEEDS_LABELS]) {
       await page.keyboard.press('Tab');
       expect(await focusedName(page), layout).toBe(name);
     }
     await page.keyboard.press('Tab');
-    expect(await focusedName(page), layout).not.toBe('Settings');
+    expect(['Settings', 'Sign out'], layout).not.toContain(await focusedName(page));
   }
 });
 
@@ -213,6 +217,12 @@ test('B9: each sample board fills the main area, does not scroll and cuts off no
       const { main, groups } = layout;
       const gap = main.top - layout.header.bottom;
       const columns = drawnLayout(id, stored) === 'columns';
+      // A group keeps room under its cells for the scan time bar when the bar is shown.
+      // The bar is hidden by default, and the room is then nothing.
+      const barRoom = await page
+        .locator('main .group')
+        .first()
+        .evaluate((group) => parseFloat(getComputedStyle(group).paddingBottom));
 
       const scroll = await page.evaluate(() => ({
         width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
@@ -236,12 +246,13 @@ test('B9: each sample board fills the main area, does not scroll and cuts off no
         const across = columns ? group.box.height : group.box.width;
         expect(Math.abs(across - (columns ? main.height : main.width)), label).toBeLessThan(1);
 
-        // The cells fill their group, with only the gaps left over.
+        // The cells fill their group, with only the gaps and the room for the bar left over.
+        // The room is under the cells, so it is along the line of a column and across a row.
         const alongCells = group.cells.reduce(
           (sum, item) => sum + (columns ? item.box.height : item.box.width),
           0,
         );
-        const groupAlong = columns ? group.box.height : group.box.width;
+        const groupAlong = columns ? group.box.height - barRoom : group.box.width;
         expect(
           Math.abs(alongCells + gap * (group.cells.length - 1) - groupAlong),
           label,
@@ -249,7 +260,7 @@ test('B9: each sample board fills the main area, does not scroll and cuts off no
 
         for (const item of group.cells) {
           const cellAcross = columns ? item.box.width : item.box.height;
-          const groupAcross = columns ? group.box.width : group.box.height;
+          const groupAcross = columns ? group.box.width : group.box.height - barRoom;
           expect(Math.abs(cellAcross - groupAcross), `${label} ${item.name}`).toBeLessThan(1);
           expect(item.box.left, `${label} ${item.name}`).toBeGreaterThanOrEqual(main.left - 0.5);
           expect(item.box.top, `${label} ${item.name}`).toBeGreaterThanOrEqual(main.top - 0.5);

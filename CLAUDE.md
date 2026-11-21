@@ -6,7 +6,7 @@ Symple is an app that lets people who cannot speak or point use a computer alone
 
 - `specs/mission.md`, `specs/tech-stack.md` and `specs/roadmap.md` are the source of truth for what to build.
 - `specs/features/` holds the plan, the requirements and the checks for each feature.
-- `PRODUCT.md` is the product brief. If the specs and the brief disagree, stop and ask.
+- `PRODUCT.md` is the product brief. It is initial context only. If it disagrees with the roadmap, follow the roadmap.
 - `context/design/` holds the mockups. They are a guide to the look and layout and can be changed with a reason.
 - `context/patents/` holds three patents. Check any feature that generates content or suggestions against them before writing code.
 

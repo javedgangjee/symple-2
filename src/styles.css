@@ -2,6 +2,7 @@
 @import './styles/themes.css';
 @import './styles/glass.css';
 @import './styles/cells.css';
+@import './styles/scan.css';
 
 /* The font file ships with the app, so it works offline. */
 /* The URL is relative, so the builder copies the font into the build and the built URL does not start with a slash. */

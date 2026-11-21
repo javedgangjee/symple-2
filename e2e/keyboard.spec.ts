@@ -180,17 +180,18 @@ test('Y7: pressing the message changes nothing and asks for no speech', async ({
   ).toEqual({ spoken: 0 });
 });
 
-test('Y8: Tab reaches the thirty five cells in order and skips the settings button', async ({
+test('Y8: Tab reaches the thirty five cells in order and never a caregiver control', async ({
   page,
 }) => {
-  await openBoard(page, 'keyboard');
+  // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
+  await openBoard(page, 'keyboard', { selectionMode: 'touch' });
   // The message is named "Message" until something has been written.
   for (const name of ['Back', 'Message', ...KEY_NAMES]) {
     await page.keyboard.press('Tab');
     expect(await focusedName(page)).toBe(name);
   }
   await page.keyboard.press('Tab');
-  expect(await focusedName(page)).not.toBe('Settings');
+  expect(['Settings', 'Sign out']).not.toContain(await focusedName(page));
 });
 
 test('Y9: a long message stays inside its cell with its end in view', async ({ page }) => {

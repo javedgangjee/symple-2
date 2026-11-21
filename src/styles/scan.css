@@ -1,0 +1,156 @@
+/* The looks of the five selection modes: the scan highlight, the confirmed look, the dwell styles, */
+/* the progress bars and the cursor of `cursor` mode. The board screen marks its grid, its groups */
+/* and the host element of each cell, app-cell, and the rules here draw from those marks. */
+/* The outline and the confirmed look are copied from context/design/home.html. The mockup also dims */
+/* the cells that are not highlighted. That is left out, because the dimmed labels fail 4.5:1. */
+
+/* A group has an outline that shows only while the scan highlights the group. */
+/* It is also what the bar of a group is placed against. */
+.group {
+  position: relative;
+  border-radius: calc(var(--radius) + 3px);
+  outline: var(--ring) solid transparent;
+  outline-offset: 3px;
+  transition: outline-color 160ms var(--ease);
+}
+
+/* The highlighted group also lies on a plate in the dark grey of the theme. The plate reaches out */
+/* to the ink outline, so the whole group reads as one dark block with its cells on it. */
+.grid[data-state='groups'] .group[data-scan] {
+  outline-color: var(--ink);
+  background-color: var(--grey);
+  box-shadow: 0 0 0 3px var(--grey);
+}
+
+/* The cells of a highlighted group are solid, because a see-through cell would let the plate */
+/* darken its fill and its label would lose contrast. */
+.grid[data-state='groups'] .group[data-scan] .cell {
+  background-color: var(--bg);
+}
+
+app-cell[data-scan] .cell {
+  outline-color: var(--ink);
+}
+
+/* A picked cell swaps its two colours for the length of the post click delay. The cell keeps */
+/* its colours under other names, and everything inside it reads them the other way round. */
+app-cell[data-confirmed] .cell {
+  --was-bg: var(--bg);
+  --was-on: var(--on);
+  --was-chip: var(--chip);
+  --was-chip-on: var(--chip-on);
+  background-color: var(--on);
+  color: var(--bg);
+  outline-color: var(--ink);
+}
+
+app-cell[data-confirmed] .cell * {
+  --on: var(--was-bg);
+  --chip: var(--was-chip-on);
+  --chip-on: var(--was-chip);
+  --bleed: color-mix(in oklab, var(--was-on) 78%, var(--was-bg));
+}
+
+app-cell[data-confirmed] .caret {
+  background: currentColor;
+}
+
+/* When the scan time bar is shown, each group keeps room under its cells for it, so the outline */
+/* wraps the cells and the bar, and nothing moves when the highlight comes. The room is there all */
+/* the time. In the rows layout it makes the space between two rows bigger than the gap. */
+.grid[data-bar-room] {
+  /* The one height of the scan time bar, on a group and on a cell. */
+  --scan-bar: clamp(4px, 0.9vmin, 8px);
+  --scan-bar-gap: 3px;
+}
+
+.grid[data-bar-room] .group {
+  padding-bottom: calc(var(--scan-bar) + var(--scan-bar-gap));
+}
+
+/* The progress bar. It lies across the bottom of a highlighted group or cell in `scan` mode, where */
+/* it starts full and empties over the scan time, and across the bottom of a cell in the `bar` dwell */
+/* style, where it fills over the dwell time. It is inset from the sides by the corner radius. */
+/* As written here it is the bar of a cell: inside the cell, in the colour of the label. */
+.group[data-scan-bar]::after,
+app-cell[data-scan-bar] .cell::after,
+app-cell[data-dwell='bar'] .cell::after {
+  content: '';
+  position: absolute;
+  inset: auto var(--radius) var(--bar-bottom, clamp(2px, 1.6cqmin, 6px));
+  height: var(--bar-height, clamp(4px, 2.4cqmin, 8px));
+  border-radius: 99px;
+  background: linear-gradient(var(--bar-colour, currentColor) 0 0) left / 100% 100% no-repeat
+    color-mix(in oklab, var(--bar-colour, currentColor) 20%, transparent);
+  pointer-events: none;
+  animation: scan-bar var(--scan-time) linear forwards;
+}
+
+/* The bar of a group lies under the cells and inside the outline, in the room the group keeps. */
+/* It is light, because it lies on the grey plate of the highlighted group. */
+.group[data-scan-bar]::after {
+  --bar-colour: var(--light);
+  --bar-bottom: 0px;
+  --bar-height: var(--scan-bar);
+}
+
+/* In `scan` mode the bar of a cell is as tall as the bar of a group. */
+app-cell[data-scan-bar] .cell::after {
+  --bar-height: var(--scan-bar);
+}
+
+app-cell[data-dwell='bar'] .cell::after {
+  animation: dwell-bar var(--dwell-time) linear forwards;
+}
+
+/* In the `grow` dwell style the cell grows over the dwell time, above the cells next to it. */
+app-cell[data-dwell='grow'] {
+  z-index: 1;
+}
+
+app-cell[data-dwell='grow'] .cell {
+  animation: dwell-grow var(--dwell-time) linear forwards;
+}
+
+@keyframes scan-bar {
+  to {
+    background-size: 0% 100%;
+  }
+}
+
+@keyframes dwell-bar {
+  from {
+    background-size: 0% 100%;
+  }
+}
+
+@keyframes dwell-grow {
+  to {
+    scale: 1.08;
+  }
+}
+
+/* In `cursor` mode a round cursor takes the place of the arrow of the system over the whole page. */
+/* The board screen draws it and marks the page. Nothing on the page then shows the arrow or the */
+/* hand of the system, whatever cursor it asks for. */
+:root[data-cursor],
+:root[data-cursor] * {
+  cursor: none !important;
+}
+
+/* The cursor is an ink ring with a light line inside and outside it, so it shows on a cell of any */
+/* colour and on the page. A dot marks its middle, which is the place that presses. */
+.cursor {
+  position: fixed;
+  z-index: 2;
+  width: clamp(36px, 6vmin, 56px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: var(--ring) solid var(--ink);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ink) 0 3px, var(--light) 3px 5px, transparent 5px);
+  box-shadow:
+    0 0 0 2px var(--light),
+    inset 0 0 0 2px var(--light);
+  pointer-events: none;
+}
