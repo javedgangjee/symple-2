@@ -126,3 +126,69 @@ Five voters checked each finding against the code. No voter called any finding i
 ### Dropped findings
 
 None.
+
+# Second review, 2026-11-21
+
+This review looked at the code as it stands after the fixes of the first review. It looked at code practice and quality, and it left out small points. It does not raise again the five findings of the first review that the user chose not to fix.
+
+## What was run and what was only read
+
+- I ran `npm test` with Node 22.23.5. All 262 unit tests passed.
+- I ran `npm run lint`, `npm run format:check` and `npm run build`. All three passed.
+- I did not run `npm run e2e`. The end to end tests were only read.
+- I read the diff against `main`, and in full every file in `src/app/scan/`, `src/app/storage/local-store.ts`, the board screen, `src/styles/scan.css`, `e2e/scanning.spec.ts` and `e2e/support/scan.ts`.
+- For finding B1 I took the two lines 92 and 93 out of `src/app/scan/scan.ts`, ran `npm test`, and put them back. All 262 tests still passed.
+- No finding below was shown in a running browser.
+
+## Findings
+
+### B1. No test covers a board that arrives after the scan has started again
+
+- Level: medium.
+- File: `src/app/scan/scan.ts` lines 92 and 93, with the `resumed` flag at lines 59, 105, 123, 144, 185 and 238.
+- Case: A pick opens a board. When the post click delay is 0, or when the new board arrives later than the delay, the scan has already started again on the old board. The `resumed` flag is there so that `show` then starts the scan on the new board and does not send it to rest. With those two lines removed, every unit test passes. Unit case S13, which gives a new board inside the delay, takes the other branch, and unit case S14, which sets the delay to 0, gives no new board. The end to end tests store a delay of 500 ms, so they most likely take the other branch too. If this branch broke, a primary user with a delay of 0 would have to press once more after every cell that opens a board, and no test would say so.
+- Fix: Add two unit cases to `scan.spec.ts`. One sets the delay to 0, picks, gives a new board and expects the first group of the new board. The other gives the new board after the delay has ended. Add one for the path through an empty board, which is what the closing screen gives first.
+
+### B2. The cause of the lost sign in is still not known, and the check in validation.md says it is
+
+- Level: medium.
+- Files: `e2e/support/scan.ts` lines 18 to 58 and 100 to 124, `specs/features/04-scanning/validation.md` line 323.
+- Case: Plan step 10, which was to find why a first load can show the sign in screen, ended with a comment that says "The cause was not found". Check V5 in validation.md, which covers the end to end tests after the helper changes, expects that "the cause of the lost sign in is written in a comment in the helper, next to its fix". That check cannot pass as written. The helper now keeps about 60 lines to note the browser state and to trace the load, and it starts a Playwright trace on every load of every scanning test and throws it away. I did not measure what that costs.
+- Fix: The user decides one of two things. Either the question stays open, and then check V5 is reworded to say so and the question gets a line in the roadmap so it is not lost. Or the search goes on before the merge. In both cases, measure the run time of `e2e/scanning.spec.ts` with and without the trace, and drop the trace if it costs much.
+
+### B3. The switch listener and the board of the scan belong to no screen, so a second board screen would break the first
+
+- Level: low.
+- Files: `src/app/scan/switches.ts` lines 62 to 71, `src/app/boards/board-screen.ts` lines 90 to 97.
+- Case: `Switches`, `Scan` and `Dwell` are single services for the whole app, and each board screen starts them when it is made and stops them when it is destroyed. This works only because the router destroys the old screen before it makes the new one. If two board screens are alive for a moment, the first to close removes the key listeners of the other, because both use the same handler, and it gives the scan an empty board. The switches then do nothing until the next screen opens. A route animation would do this, and so would a board drawn inside the settings panel of feature 8.
+- Fix: Have `start` return a function that stops only that start, or count the starts. Have the closing screen clear the board only if the scan still holds the board that this screen gave. A comment that states the rule is the smallest fix.
+
+### B4. The focus finds its target by a class name and by counting buttons
+
+- Level: low.
+- File: `src/app/boards/board-screen.ts` lines 210 and 211.
+- Case: `moveFocus` takes the group as the nth element with the class `group`, and the cell as the nth `button` inside it. That is right only while each cell draws exactly one button. A cell that later holds a second button, such as a message cell with its own clear button, moves every later cell by one, and the focus and the screen reader then name the wrong cell while the outline shows the right one. The screen already knows its cells as components.
+- Fix: Read the groups and the cells with `viewChildren`, and give the cell component a `focus()` method. Or have `moveFocus` count `app-cell` elements and focus the button inside the one it wants.
+
+### B5. `src/styles/scan.css` sets rules for the bare class names `.group` and `.cursor` on every page
+
+- Level: low.
+- File: `src/styles/scan.css` lines 9 to 15 and 143 to 156.
+- Case: The file is global, because it must reach into the cells. Its rules for `.group` and `.cursor` are not tied to the grid of a board. Any later element with the class `group`, such as a group of fields in the settings panel of feature 8, gets `position: relative`, the rounded corners and a see-through outline with no warning. The other rules in the file start at `.grid` or at `app-cell` and do not leak.
+- Fix: Write `.grid .group` at line 9, and give the cursor a name of its own, such as `.scan-cursor`.
+
+## Votes on the second review, 2026-11-21
+
+Five voters checked each finding against the code. No voter called any finding invalid, so all five are kept. The level of each is the middle of the five levels the voters gave. Within a level the order follows the average place the voters gave. No voter ran the tests, so the result of taking out lines 92 and 93 rests on the reviewer's run.
+
+### Kept findings, in order
+
+1. **Finding B1, the board that arrives after the scan has started again, which no test covers.** Five voters said valid. Level: medium. Four voters gave medium and one gave low. Correction: the sentence that the end to end tests most likely take the other branch is a guess, and no voter could check it. One voter called the extra case for the empty board padding.
+2. **Finding B2, the cause of the lost sign in that is still not known while validation.md says it is.** Three voters said valid and two said partly. Level: low, where the reviewer gave medium. Four voters gave low and one gave medium. The voters agree that check V5, which covers the end to end tests after the helper changes, cannot pass as written. They see the fix as a new wording of that check and a note of the open question. Plan step 10, which was to find the cause, planned the trace, so the helper follows the plan.
+3. **Finding B3, the switch listener and the board of the scan that belong to no screen.** Five voters said partly. Level: low. Three voters gave low and two gave none. Correction: no second board screen can be alive today, and the route animation and the board inside the settings panel are guesses about later work. The comment at lines 93 and 94 of `board-screen.ts` already states part of the rule. The voters say a comment is fix enough.
+4. **Finding B5, the bare class names `.group` and `.cursor` in the global style file.** Five voters said partly. Level: low. Three voters gave low and two gave none. Correction: the sentence that the other rules in the file do not leak is overstated, because lines 75 and 91 of `scan.css` also start at a bare `.group`. Only `board-screen.html` uses the two class names today, so nothing is hurt now.
+5. **Finding B4, the focus that finds its target by a class name and by counting buttons.** Five voters said partly. Level: none. Three voters gave none and two gave low. Each cell draws one button today, and the cell with a second button is a guess. The voters say to fix it when such a cell is planned.
+
+### Dropped findings
+
+None.
