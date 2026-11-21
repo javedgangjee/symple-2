@@ -4,7 +4,7 @@ The steps run in order. Each step names the files it creates or changes. The num
 
 ## Step 1. Read the stored scan settings (12, 14, 15, 22, 27, 29, 30)
 
-- Creates `src/app/scan/scan-settings.ts` and `scan-settings.spec.ts`. The service reads the scan time, the post click delay, the selection mode, the dwell time and the dwell style from local storage, in the way that `src/app/layout/layout.ts` reads the layout. It gives each one as a signal and has a `set` for feature 8 to call. A value that is missing, not a number, out of range or unknown gives the default, and so does a storage that fails.
+- Creates `src/app/scan/scan-settings.ts` and `scan-settings.spec.ts`. The service reads the scan time, the post click delay, the selection mode, the dwell time, the dwell style and show progress bar from local storage, in the way that `src/app/layout/layout.ts` reads the layout. It gives each one as a signal and has a `set` for feature 8 to call. A value that is missing, not a number, out of range or unknown gives the default, and so does a storage that fails.
 - Changes `src/app/app.config.ts` to load the settings at start, next to the theme and the layout.
 
 ## Step 2. Add the scan service (1, 2, 3, 6, 14, 15, 17, 18, 19, 20, 21)
@@ -34,9 +34,9 @@ The steps run in order. Each step names the files it creates or changes. The num
 
 ## Step 6. Draw the scan states, the dwell styles and the scan time bar (8, 10, 26, 30, 34, 36)
 
-- Changes `src/app/boards/board-screen.css`, `src/app/cells/cell.css` and `src/styles/cells.css`. The rules for the outline, the two levels of dimming and the confirmed look are copied from `context/design/home.html` and use the theme tokens of feature 1.
+- Changes `src/app/boards/board-screen.css`, `src/app/cells/cell.css` and `src/styles/cells.css`. The rules for the outline and the confirmed look are copied from `context/design/home.html` and use the theme tokens of feature 1. The dimming of the mockup is left out, because the user removed it on 2026-11-19.
 - The same files get the two dwell styles. In `grow`, the marked cell scales up to 1.08 over the dwell time and is drawn above its neighbours. In `bar`, a strip across the bottom of the marked cell fills over the dwell time. Both run as CSS animations that last the dwell time.
-- The same bar is drawn in `scan` mode across the bottom of the highlighted group or cell. It empties over the scan time, which the grid gets as a CSS variable, and the animation starts again each time the highlight moves. No mockup shows the dwell styles, so the user checks the look by hand in check H7 of validation.md, which tries the dwell press.
+- The same bar is drawn in `scan` mode across the bottom of the highlighted group or cell, when show progress bar is on. It is off by default. It empties over the scan time, which the grid gets as a CSS variable, and the animation starts again each time the highlight moves. No mockup shows the dwell styles, so the user checks the look by hand in check H7 of validation.md, which tries the dwell press.
 - If a dimmed label, an outline or the progress bar fails the contrast of WCAG 2.2 Level AA in any theme, implement stops and asks before it changes the look of the mockup.
 
 ## Step 7. Write the end to end tests (9, 10, 11, 28 to 34, 36)
@@ -52,5 +52,55 @@ The steps run in order. Each step names the files it creates or changes. The num
 - Changes `README.md` with one short section on how to try scanning.
 
 ## Step 9. Run everything
+
+- Runs `make check` and fixes the failures.
+
+## Steps from the review of 2026-11-20
+
+The user picked eight findings of review.md to fix. Each step below names its finding. The steps change how the code is written and add tests. Apart from steps 11 and 15, they do not change what the app does.
+
+## Step 10. Find why a first load can lose the stored sign in (finding 2)
+
+- Changes `e2e/support/scan.ts`. The `open` helper no longer loads the board a second time when the first load shows the sign in screen. It fails the test with a message that names the board, and it keeps a trace of that load.
+- Finds the cause with the trace. If the cause is in the test setup, the fix goes in `e2e/support/scan.ts` or `e2e/support/firebase.ts`. If the cause is in the app, implement stops and asks before it changes any file in `src/`.
+
+## Step 11. Send the scan to rest and stop the dwell when the selection mode changes (finding 1)
+
+- Changes `src/app/scan/scan.ts` and `scan.spec.ts`. When the selection mode changes, the scan goes to rest.
+- Changes `src/app/scan/dwell.ts` and `dwell.spec.ts`. When the selection mode changes, the dwell stops and nothing is pressed.
+- Changes `src/app/boards/board-screen.spec.ts` with one case for the screen.
+
+## Step 12. Add the unit cases for the move back and for `set` (finding 6)
+
+- Changes `src/app/scan/scan.spec.ts` and `src/app/scan/scan-settings.spec.ts` with the cases of validation.md. No source file changes unless a case shows a fault. If one does, implement stops and asks.
+
+## Step 13. Keep the safe local storage code in one place (finding 5)
+
+- Creates `src/app/storage/local-store.ts` and `local-store.spec.ts`. The service has `read(key)`, which gives the stored text or nothing, and `write(key, text)`. Neither throws when storage fails. The file name is my choice.
+- Changes `src/app/theme/theme.ts`, `src/app/layout/layout.ts` and `src/app/scan/scan-settings.ts` to use it. Their own tests stay as they are and must still pass.
+- `src/app/auth/auth.ts` holds a fourth copy, which also removes a key. The review missed it, so it is left as it is unless the user asks for it.
+
+## Step 14. Name each scan setting once (finding 4)
+
+- Changes `src/app/scan/scan-settings.ts`. One table holds the storage key, the default and the parser of each setting. `load` and `set` loop over the table, and the separate list `SETTING_NAMES` is removed. The exported names `SCAN_STORAGE_KEYS` and `DEFAULT_SCAN_SETTINGS` and the six signals stay, so no other file changes.
+
+## Step 15. Put the scan, dwell and cursor looks in one file and write the bar once (finding 9)
+
+- Creates `src/styles/scan.css` and changes `src/styles.css` to import it.
+- Changes `src/app/boards/board-screen.css` and `src/styles/cells.css`. The rules for the highlight, the grey plate, the confirmed look, the two dwell styles, the bars and the hidden arrow of `cursor` mode move to the new file. `cells.css` holds colours only again.
+- The bar is written once for a group, for a cell in `scan` mode and for a cell in the `bar` dwell style. Custom properties give its colour and its distance from the bottom. The bar of a group and the bar of a cell in `scan` mode take one height from one property, so they are as tall as each other, as item 36 of requirements.md says. The track of every bar is mixed at one strength. This is the one change of look in these steps, and it is small.
+- Plan step 6 named `src/app/cells/cell.css`. That file was not changed and is not changed here.
+
+## Step 16. Write the stored settings of the end to end tests in one place (finding 3)
+
+- Changes `e2e/support/boards.ts` and `e2e/support/scan.ts`. One function writes a `StoredSettings` object to local storage. `openBoard` and the `open` helper both use it, and `openBoard` takes any stored setting. `storeAndReload` is removed.
+- Changes `e2e/home.spec.ts`, `e2e/boards.spec.ts`, `e2e/keyboard.spec.ts` and `e2e/sign-in.spec.ts`. Cases E4, E7, B8, Y8 and N15, which press Tab through the cells, pass the selection mode `touch` to `openBoard`. What each case checks does not change.
+
+## Step 17. Compare two cell places with one function (finding 10)
+
+- Changes `src/app/scan/scan.ts` to export one function that says whether two places are the same cell.
+- Changes `src/app/scan/dwell.ts`, `src/app/boards/board-screen.ts` and `board-screen.html` to use it in place of `same`, `isAt` and the test written in the template.
+
+## Step 18. Run everything again
 
 - Runs `make check` and fixes the failures.
