@@ -134,16 +134,22 @@ The checks ran on Node 22.23.5, the version in `.nvmrc`, after the fixes for fin
 
 ### Manual checks
 
-None of the five manual checks has a result yet. They are check M1, a real voice in Chrome on a Mac, check M2, Safari on a Mac, check M3, `dwell` mode after a reload, check M4, no network, and check M7, a Google voice in Chrome.
+The user ran each check and reported a pass for each one, with no other detail.
+
+- Check M1, a real voice in Chrome on a Mac: pass.
+- Check M2, Safari on a Mac: pass.
+- Check M3, `dwell` mode after a reload: pass. The user did not report what Chrome did in step 2, before the first click, so the limit of item 24 of requirements.md is still recorded as "as far as I know".
+- Check M4, no network: pass. The user did not report which browser was used.
+- Check M7, a Google voice in Chrome: pass. The user did not report whether the long text was cut off, so the note about a cut after about 15 seconds is still not confirmed.
 
 ### Requirements
 
 - Items 1, 3 to 7, 17, 19, 20, 23, 25, 26, 27 and 30 each have a passing automated check.
 - Item 8, that speech adds no new look, passes through the contrast and axe cases of feature 4 in check A4.
 - Item 12, that no feature 5 code calls Firebase, has no check in this file. A search of `src/app/speech`, `e2e/speech.spec.ts` and `e2e/support/speech.ts` for "firebase" and "firestore" found nothing.
-- Items 2, 9, 11, 18 and 24 depend on a real voice. Their unit cases pass, and they wait for manual checks M1, M2, M3, M4 and M7.
+- Items 2, 9, 11, 18 and 24 depend on a real voice. Their unit cases pass, and manual checks M1, M2, M3, M4 and M7 pass.
 - Items 10, 13, 14, 28 and 33 have no check of their own. Item 10 says that this feature shows no voice control, items 13 and 14 record decisions, item 28 keeps the status text that case BS1 reads, and item 33 names files that exist.
 
 ### Verdict
 
-The feature is not ready yet, because the five manual checks have no result.
+Every check passes, and every requirement that has a check has a passing one. The feature is ready for merge.
