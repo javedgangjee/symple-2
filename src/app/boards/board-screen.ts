@@ -23,6 +23,7 @@ import { PointerPlace } from '../scan/pointer-place';
 import { CellPosition, Scan, sameCell } from '../scan/scan';
 import { ScanSettings, isSwitchMode } from '../scan/scan-settings';
 import { Switches } from '../scan/switches';
+import { Speech } from '../speech/speech';
 import { Back } from './back';
 import { BoardData, Cell, Group, HOME_BOARD_ID, NAMED_SIZES, Tile } from './board-data';
 
@@ -48,6 +49,7 @@ export class BoardScreen {
   private readonly router = inject(Router);
   private readonly back = inject(Back);
   private readonly message = inject(Message);
+  private readonly speech = inject(Speech);
   private readonly switches = inject(Switches);
   protected readonly layout = inject(Layout);
   protected readonly settings = inject(ScanSettings);
@@ -128,8 +130,15 @@ export class BoardScreen {
    */
   protected readonly status = signal({ text: '', press: 0 });
 
-  private say(text: string): void {
-    this.status.update((said) => ({ text, press: said.press + 1 }));
+  /** Tells screen readers a text through the status region. */
+  private tell(text: string): void {
+    this.status.update((told) => ({ text, press: told.press + 1 }));
+  }
+
+  /** Speaks a text aloud and tells it to screen readers. An empty text makes no sound. */
+  private speak(text: string): void {
+    this.tell(text);
+    this.speech.say(text);
   }
 
   /**
@@ -226,33 +235,36 @@ export class BoardScreen {
   protected onPress(tile: Tile): void {
     const action = tile.action;
     if (!action) {
-      // A tile with no action does nothing. The message tile is one until feature 5.
+      // A tile with no action does nothing.
       return;
     }
+    // Only a tile that speaks starts or stops a speech. The other actions let it run on.
     switch (action.type) {
       case 'open':
-        this.say('');
+        this.tell('');
         void this.router.navigate(['/board', action.board]);
         break;
       case 'back':
-        this.say('');
+        this.tell('');
         void this.back.back();
         break;
       case 'speak':
-        // Feature 5 adds the speech. Until then only screen readers get the phrase.
-        this.say(action.phrase);
+        this.speak(action.phrase);
+        break;
+      case 'speak-message':
+        this.speak(this.message.text());
         break;
       case 'type':
         this.message.type(action.text);
-        this.sayMessage();
+        this.tellMessage();
         break;
       case 'backspace':
         this.message.backspace();
-        this.sayMessage();
+        this.tellMessage();
         break;
       case 'clear':
         this.message.clear();
-        this.sayMessage();
+        this.tellMessage();
         break;
       case 'caps':
         this.message.toggleCaps();
@@ -264,7 +276,7 @@ export class BoardScreen {
   }
 
   /** Tells screen readers the message as it stands after a key has changed it. */
-  private sayMessage(): void {
-    this.say(this.message.text());
+  private tellMessage(): void {
+    this.tell(this.message.text());
   }
 }

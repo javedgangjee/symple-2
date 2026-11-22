@@ -314,6 +314,11 @@ describe('Board data with the real files', () => {
     expect(sizes(board.groups[4].cells)).toEqual([2, 6, 2]);
   });
 
+  it('BD3: the message tile speaks the message, and the shipped files have no faults', () => {
+    expect(tile('message').action).toEqual({ type: 'speak-message' });
+    expect(loaded.faults).toEqual([]);
+  });
+
   it('D10: the keys of the keyboard board type, erase, lock and open as they should', () => {
     const cells = boardOf(loaded, 'keyboard').groups.flatMap((group) => group.cells);
     const byLabel = (label: string) => {
@@ -661,6 +666,18 @@ describe('Board data rules', () => {
 
   it('R23: a tile with an unknown action type is skipped', () => {
     expectSkipped(withTile('help', { action: { type: 'enter' } }), 'help', 'enter');
+  });
+
+  it('BD1: a tile whose action speaks the message is read with no fault', () => {
+    const loaded = withTile('key-a', { action: { type: 'speak-message' } });
+    expect(loaded.faults).toEqual([]);
+    const read = boardOf(loaded, 'home').groups[0].cells.find((cell) => cell.tile.id === 'key-a');
+    expect(read?.tile.action).toEqual({ type: 'speak-message' });
+  });
+
+  it('BD2: an action that speaks the message takes no other field', () => {
+    const loaded = withTile('key-a', { action: { type: 'speak-message', phrase: 'Hi' } });
+    expectSkipped(loaded, 'key-a', 'the unknown field "phrase"');
   });
 
   it('R24: an open action with no board and a speak action with no phrase are skipped', () => {

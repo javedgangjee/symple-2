@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import { standInForSpeech } from './speech';
 
 export const THEMES = ['colours', 'blue', 'purple', 'teal', 'dark'] as const;
 export type ThemeName = (typeof THEMES)[number];
@@ -87,13 +88,15 @@ export function writeStored(values: StoredSettings): void {
 
 /**
  * Opens a board with stored settings, as a caregiver's choices would be read on the next start.
- * Nothing is stored for a value that is left out.
+ * Nothing is stored for a value that is left out. The page gets the stand-in for the Web Speech
+ * API, so a cell that speaks makes no sound.
  */
 export async function openBoard(
   page: Page,
   id: string,
   stored: StoredSettings = {},
 ): Promise<void> {
+  await standInForSpeech(page);
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.evaluate(writeStored, stored);

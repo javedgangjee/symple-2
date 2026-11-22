@@ -16,6 +16,8 @@ import { FirebaseAuthSource } from './auth/firebase-auth-source';
 import { Layout } from './layout/layout';
 import { ScanSettings } from './scan/scan-settings';
 import { ScreenTitle } from './shell/screen-title';
+import { SystemVoiceSource } from './speech/system-voice-source';
+import { VOICE_SOURCE } from './speech/voice-source';
 import { CLOUD_STORE } from './sync/cloud-store';
 import { FirestoreCloudStore } from './sync/firestore-cloud-store';
 import { SettingsSync } from './sync/settings-sync';
@@ -37,6 +39,8 @@ export const appConfig: ApplicationConfig = {
     // Firebase Auth holds the caregiver accounts, and Firestore holds the cloud copy of the settings.
     { provide: AUTH_SOURCE, useClass: FirebaseAuthSource },
     { provide: CLOUD_STORE, useClass: FirestoreCloudStore },
+    // The system voices speak the phrases and the message.
+    { provide: VOICE_SOURCE, useClass: SystemVoiceSource },
     // The theme is applied before the first screen is drawn.
     provideAppInitializer(() => inject(Theme).load()),
     // The layout is read before the first screen is drawn.

@@ -45,13 +45,24 @@ export type CellSize = keyof typeof NAMED_SIZES | number;
 export type TileAction =
   | { readonly type: 'open'; readonly board: string }
   | { readonly type: 'speak'; readonly phrase: string }
+  /** Speaks the message that the keyboard has written. */
+  | { readonly type: 'speak-message' }
   | { readonly type: 'type'; readonly text: string }
   | { readonly type: 'back' }
   | { readonly type: 'backspace' }
   | { readonly type: 'clear' }
   | { readonly type: 'caps' };
 
-const ACTION_TYPES = ['open', 'speak', 'type', 'back', 'backspace', 'clear', 'caps'] as const;
+const ACTION_TYPES = [
+  'open',
+  'speak',
+  'speak-message',
+  'type',
+  'back',
+  'backspace',
+  'clear',
+  'caps',
+] as const;
 
 export interface Tile {
   readonly id: string;
