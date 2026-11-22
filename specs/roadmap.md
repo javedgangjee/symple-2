@@ -9,10 +9,10 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 1. **App shell and themes.** The Angular project builds, runs its tests and shows an empty screen with the shared header, the footer and the colour themes. Covers: Stack, Accessibility and Inclusion. Status: done.
 2. **Home screen and boards from data.** The home screen, the communication boards and the keyboard are drawn from `boards.json` and `cells.json` as grids of cells, each with a colour, a label and an icon or a symbol. A cell on the home screen opens a board, and a Back tile leads back. The first boards are Needs, Quick phrases, My boards and the keyboard, whose letters are tiles that write a message. Covers: Capabilities (home screen, cell contents, communication boards), Product Purpose, Principles 3 and 4, the keyboard mockup, the data rule in tech-stack.md. Status: done.
 3. **Sign in.** The caregiver signs in to Symple through Firebase Auth, and the theme and the layout sync to the caregiver's account through Firestore. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: done.
-4. **Scanning.** The app highlights rows and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: in progress.
+4. **Scanning.** The app highlights groups and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. The feature also built the five selection modes, the dwell press and the scan time bar. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: done.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the dark picked look of the Needs mockup while it speaks, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: planned.
-7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
 8. **Settings.** The caregiver sets the scan time, the post click delay, the selection mode, the dwell time, the dwell style, whether the progress bar is shown, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
+7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
 9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved and join the sync of feature 3. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
 
 ## Release
@@ -23,13 +23,10 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 10. **Mac app.** Electron packages the build as a Mac app that can stay open all day. Covers: Platform, Stack, Operating Context. Status: planned.
 11. **iPad app.** Capacitor packages the build as an iPad app with the iOS system voices. Covers: Platform, Stack, Speech output. Status: planned.
-12. **Head tracker and eye gaze.** Every screen can be used with a pointer that is driven by a head tracker or by eye gaze. The dwell press was built in feature 4. Covers: Accessibility and Inclusion, Operating Context. Status: planned.
 
 ## Media
 
 14. **Music, photos and video.** The user picks and plays music, looks through photos, and picks and watches a video, all alone. The three activities are built in one feature. Covers: Capabilities (activities), Product Purpose. Status: planned.
-15. **Removed.** Photos were merged into feature 14 on 2026-11-16. The number is kept so that the other feature numbers do not change.
-16. **Removed.** Video was merged into feature 14 on 2026-11-16. The number is kept so that the other feature numbers do not change.
 
 ## Activities
 
@@ -47,6 +44,10 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 Each question must be answered in the plan of the feature it names.
 
+- Feature 5: why a first load can show the sign in screen in the end to end tests. It was seen twice in 348 tests on 2026-11-21, and the cause was not found. If the cause is in the app, a primary user could meet a sign in screen they cannot pass. Check V5 of the validation.md of feature 4, which covers the end to end tests after the helper changes, expects the cause to be written down, so it cannot pass as written. This was finding B2 of the second review of feature 4.
+- Feature 5: which findings of the second review of feature 4 are fixed. The user has not picked from its five findings. The highest is finding B1 at level medium, which says that no test covers a board that arrives after the scan has started again.
+- Feature 8: how the caregiver reaches the settings button and the settings panel with the keyboard. Feature 4 took the settings button and the Sign out button out of the tab order, which does not meet WCAG 2.1.1 for those two controls.
+- Feature 8: whether a change of a scan setting takes effect at once or after a reload. Today the scan goes to rest when the selection mode changes.
 - Feature 10: how Electron loads the build. `src/index.html` uses a base href of `/`, so the app may not load from disk as it is. The plan must also test that the font loads in the packaged Mac app.
 - Feature 10: whether the symbol images load in the packaged Mac app. Their addresses are relative, such as `symbols/help.svg`.
 - Feature 10: whether Firebase Auth keeps the sign in inside Electron.
@@ -113,15 +114,29 @@ Each question must be answered in the plan of the feature it names.
 - Feature 3: a caregiver control carries the attribute `data-caregiver-control`. The settings button and the Sign out button carry it, and feature 4 skips every control that does.
 - Feature 3: the sign in screen shows the blue logo of the mockup in every theme.
 
+## Decisions made from 2026-11-19 to 2026-11-21
+
+- Feature 4: Tab and Enter are the switch keys. Tab took the place of Space.
+- Feature 4: the selection mode has five values, which are `scan`, `step`, `cursor`, `touch` and `dwell`. The user added `dwell`.
+- Feature 4: the keyboard focus moves with the highlight, and nothing outside the grid is in the tab order.
+- Feature 4: no cell is dimmed during a scan. The dimmed labels of the home mockup fail the contrast of 4.5 to 1.
+- Feature 4: a highlighted group lies on a dark grey plate, which the home mockup does not have.
+- Feature 4: the dwell press has the two styles `grow` and `bar`.
+- Feature 4: a bar can count down the scan time in `scan` mode. It is off unless `symple.showProgressBar` is `true`.
+- Feature 4: `cursor` mode draws a round cursor in place of the system arrow.
+- Feature 4: a pointer press on a cell presses that cell and is not treated as a switch, because the app cannot tell a switch from a tap on a cell.
+
 ## Skipped checks
 
 Each line is a check that was skipped during validation, with the requirement that has no passing check until it is run. A check is removed from this list when it is run and passes.
 
 - Feature 3, skipped on 2026-11-17: check H8 of its validation.md, which listens with VoiceOver for the wrong password message on the sign in screen. Requirement 23, which says that the message is announced to screen readers, has only automated checks of the alert and status roles until then.
 - Feature 3, skipped on 2026-11-19: check H6 of its validation.md, which tests the Firestore access rules in the Rules Playground. Requirement 29, which says that an account can reach only its own document `users/{uid}`, has no passing check until then. No automated test covers the rules, because the tests do not use the Firebase emulator.
+- Feature 4, merged on 2026-11-21 with no validate run: its validation.md has no Results section, so no check of it is recorded as passed. The manual checks H1 to H8, which try the scan, the look, a real switch, the modes and the dwell press by hand, were not recorded. Until validate is run, none of its requirements has a recorded passing check.
 
 ## Not on the roadmap
 
 - A second voice source is not on the roadmap, because none has been chosen.
+- Head tracker and eye gaze, which was feature 12, was removed from the roadmap on 2026-11-21. The dwell press was built in feature 4.
 - Languages other than English are not on the roadmap.
 - Generative features other than the keyboard suggestions in feature 7 and the language model screen in feature 22 are not on the roadmap. Adding one needs the patent check first.

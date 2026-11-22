@@ -2,7 +2,7 @@
 
 ## Why Symple exists
 
-Some people cannot speak clearly and cannot point precisely. Common causes are ALS, cerebral palsy and traumatic brain injury. Most of the tools made for them are AAC grid software, which shows a grid of cells that each hold a word, phrase or symbol. The person picks cells by scan, step, cursor or touch to build a message, and the device speaks it aloud. That covers talking, but everything else on a computer still needs a helper. Symple exists so that these people can do everyday things alone.
+Some people cannot speak clearly and cannot point precisely. Common causes are ALS, cerebral palsy and traumatic brain injury. Most of the tools made for them are AAC grid software, which shows a grid of cells that each hold a word, phrase or symbol. The person picks cells by scan, step, cursor, touch or dwell to build a message, and the device speaks it aloud. That covers talking, but everything else on a computer still needs a helper. Symple exists so that these people can do everyday things alone.
 
 Symple is a rewrite of SYMPLE, which Javed Gangjee built at the SpeakYourMind Foundation in the 2010s.
 
@@ -20,7 +20,7 @@ Symple speaks the user's words aloud with the voices of the device.
 
 The caregiver signs in once on each device. After that the app works with no network, and the settings sync to the caregiver's account.
 
-Every screen meant for the primary user works by scan, step, cursor or touch. Single switch scanning comes first. In scanning, the app highlights rows and then cells in turn, and the user triggers a switch to pick one.
+Every screen meant for the primary user works by scan, step, cursor, touch or dwell. Single switch scanning comes first. In scanning, the app highlights groups of cells and then cells in turn, and the user triggers a switch to pick one.
 
 Symple runs as a Mac app, an iPad app and a web app in a browser on a Mac. It stays open for most of the day.
 

@@ -22,14 +22,14 @@ The versions below were set on 2026-11-16.
 - Vitest runs the unit tests.
 - Playwright runs the end to end tests in a browser.
 - axe-core runs inside the Playwright tests and checks each screen against WCAG 2.2 Level AA.
-- Every screen for the primary user has an end to end test that reaches each target by single switch scanning.
+- Every screen for the primary user has an end to end test that reaches each target by single switch scanning. The scanning tests store their settings before the app starts and move the clock of the page with the Playwright clock, in `e2e/support/scan.ts`, so no test waits in real time.
 - The tests never reach Firebase, and they do not use the Firebase emulator, because the development Mac has no Java. The unit tests use fakes of the auth source and the cloud store. The end to end tests answer the Firebase Auth network calls with canned replies and block the Firestore calls, in `e2e/support/firebase.ts`. A setup project signs in once and saves the browser state, and the other tests start from it. The Firestore access rules are checked by hand.
 
 ## Data
 
 - Boards and cells are data. The app loads them from `boards.json` and `cells.json`. A hardcoded board or cell is an exception and needs a stated reason.
 - The data files are `src/data/boards.json` and `src/data/cells.json`, and they are built into the app. The symbols are in `public/symbols/`, with the credit and the original file names in `ATTRIBUTION.txt`.
-- Settings and edited boards are stored on the device.
+- Settings and edited boards are stored on the device. The service in `src/app/storage/local-store.ts` reads and writes local storage and does not throw when storage fails.
 - Firebase is the cloud provider if a feature needs a cloud service. No feature uses one until its plan says so. The Firebase project id is `symple-2`, and the app uses the `firebase` npm package, version 13, with no AngularFire.
 - Firebase Auth holds the caregiver accounts. The caregiver signs in with an email address and a password, and the sign in is kept on the device. The user makes each account in the Firebase console, and account creation is turned off in the project.
 - Firestore holds a second copy of the settings in the document `users/{uid}`, with the fields `theme` and `layout` for now. The access rules in `firestore.rules` let an account reach only its own document. One account holds one set of settings.
@@ -55,11 +55,11 @@ The versions below were set on 2026-11-16.
 
 ## Input
 
-- A switch reaches the app as a key press or a pointer press. Scanning is built in the app and does not rely on the scanning of the operating system.
+- A switch reaches the app as a key press. A pointer press on a cell presses that cell and is not treated as a switch, because the app cannot tell a switch from a tap on a cell. Scanning is built in the app and does not rely on the scanning of the operating system.
 - Tab and Enter are the switch keys. Tab moves the highlight, Shift with Tab moves it back, and Enter picks. The keyboard focus moves with the highlight.
 - A stored setting, the selection mode, says how the primary user selects. It has five values, and `scan` is the default. In `scan` the highlight moves by itself after each scan time, for one switch. In `step` Tab moves it, for two switches. In `cursor` and `touch` the user presses a cell with a pointer or a finger, and `cursor` draws a round cursor over the whole page at the place of the pointer. `dwell` adds the dwell press.
 - In the dwell press, a pointer that rests on a cell for the dwell time presses it. The dwell style says how the cell shows the time running, and is `grow` or `bar`.
-- The settings button, the Sign out button and anything else outside the grid are not in the tab order.
+- The settings button, the Sign out button and anything else outside the grid are not in the tab order. A caregiver reaches them with a pointer or a tap only, which does not meet WCAG 2.1.1 for those controls. Feature 8 must settle this.
 - Six values are stored on the device and are not synced yet. They are `symple.scanTime`, `symple.postClickDelay`, `symple.selectionMode`, `symple.dwellTime`, `symple.dwellStyle` and `symple.showProgressBar`. The times are in milliseconds.
 - Show progress bar says whether the highlight shows a bar that counts down the scan time in `scan` mode. It is off by default.
 - On iPad, the iPad's own pointer carries head tracking and eye gaze and does the dwell click. Symple receives a tap.
@@ -72,6 +72,7 @@ The versions below were set on 2026-11-16.
 - Red Hat Display is stored next to it in `context/design/mockups/home/fonts/` for later use. No screen uses it until the user says so.
 - The boards use the Mulberry symbol set, which is licensed CC BY-SA 4.0. The app must credit it, and any changed symbol must be shared under the same licence.
 - A group of cells is a column or a row. In the columns layout each group is a column, read top to bottom. In the rows layout each group is a row, read left to right. A stored setting picks the layout, and columns are the default. A board can fix its own layout, as the keyboard does with rows. Scan order follows the groups and then the cells of a group.
+- The scan highlight follows the home mockup with two changes. No cell is dimmed, and a highlighted group lies on a plate in the dark grey of the theme. The rules for the scan, the dwell styles and the round cursor are in `src/styles/scan.css`.
 - One gap size is used across a screen. While the scan time bar is shown, each group also keeps room under its cells for it, so in the rows layout the space between two rows is bigger than the gap.
 
 ## Patents

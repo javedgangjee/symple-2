@@ -31,8 +31,26 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 3 adds unit tests with fakes of the auth source and the cloud store, and end to end tests that answer the Firebase Auth calls with canned replies and block the Firestore calls.
 - Feature 3 adds a Firebase section to `README.md` with the one time setup in the Firebase console and the command that deploys the rules.
 - Feature 3 adds `make stop`, which ends the dev server on port 4200.
+- Feature 4 adds scanning on the home screen, the boards and the keyboards. The app highlights the groups of a board in turn and then the cells of the picked group, and a switch press picks the highlighted group or cell.
+- Feature 4 makes Tab and Enter the switch keys. Tab moves the highlight, Shift with Tab moves it back, and Enter picks.
+- Feature 4 adds the selection mode, which the app reads from `symple.selectionMode` in local storage. Its values are `scan`, `step`, `cursor`, `touch` and `dwell`, and it falls back to `scan`.
+- Feature 4 adds the `scan` mode for one switch, where the highlight moves by itself after each scan time, and the `step` mode for two switches, where only Tab moves it.
+- Feature 4 adds the scan time and the post click delay, which the app reads in milliseconds from `symple.scanTime` and `symple.postClickDelay`. They fall back to 1.5 seconds and 0.5 seconds.
+- Feature 4 shows a picked cell with its colours swapped for the post click delay, ignores switch presses in that time, and then starts the scan again on the board on show.
+- Feature 4 draws a highlighted group with an ink outline on a dark grey plate, and a highlighted cell with an ink outline.
+- Feature 4 adds the dwell press of the `dwell` mode, where a pointer that rests on a cell for the dwell time presses it. The app reads the dwell time from `symple.dwellTime` and falls back to 1 second.
+- Feature 4 adds the dwell styles `grow` and `bar`, which the app reads from `symple.dwellStyle`. The cell grows or fills a bar while the dwell time runs, and `grow` is the fallback.
+- Feature 4 adds a bar that counts down the scan time on the highlighted group or cell in `scan` mode. It is shown only when `symple.showProgressBar` is `true`.
+- Feature 4 adds a round cursor in `cursor` mode, which follows the pointer over the whole page of a board screen in place of the system arrow.
+- Feature 4 gives each group a name for screen readers, such as "Column 1 of 2", and moves the keyboard focus with the highlight.
+- Feature 4 adds unit tests for the scan, the switches, the dwell press and the stored settings, and end to end tests that reach each target by single switch scanning.
+- Feature 4 adds a Scanning section to `README.md`, which says how to try scanning and how to change the scan settings in local storage.
 
 ### Changed
 
 - Feature 3 marks the settings button and the Sign out button with the attribute `data-caregiver-control`, so that scanning in feature 4 can skip them.
 - Feature 3 makes the end to end tests start from a saved signed in browser state, which a Playwright setup project writes to `e2e/.auth/`.
+- Feature 4 takes the settings button and the Sign out button out of the tab order, so Tab never leaves the grid of a board. A caregiver reaches the two buttons with a pointer or a tap only.
+- Feature 4 makes Tab stop on a group before its cells in `scan` and `step` mode. In `cursor`, `touch` and `dwell` mode Tab still goes from cell to cell.
+- Feature 4 moves the safe reading and writing of local storage into one service, which the theme, the layout and the scan settings use.
+- Feature 4 changes `CLAUDE.md` to say that `PRODUCT.md` is initial context only and that the roadmap wins when the two disagree.
