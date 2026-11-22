@@ -916,7 +916,10 @@
     "id": "message",
     "label": "Message",
     "colour": "light",
-    "style": "message"
+    "style": "message",
+    "action": {
+      "type": "speak-message"
+    }
   },
   {
     "id": "key-q",

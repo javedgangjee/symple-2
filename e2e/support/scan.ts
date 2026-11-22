@@ -8,6 +8,7 @@ import {
 import { axeViolations } from './axe';
 import { standInForFirebase } from './firebase';
 import { writeStored, type StoredSettings } from './boards';
+import { standInForSpeech, type SpeechKind } from './speech';
 
 /** The scan time and the post click delay that the scanning tests store, in milliseconds. */
 export const SCAN_TIME = 1000;
@@ -57,8 +58,16 @@ async function stateAtStart(page: Page): Promise<string> {
     : `The saved browser state was not in place before the app started (signed in flag: ${held.flag}, Firebase database: ${held.database}), so the test setup lost the sign in.`;
 }
 
-/** Opens a board in a page of its own, with stored settings and a stopped clock. */
-export type OpenBoard = (id: string, title: string, stored?: StoredSettings) => Promise<Page>;
+/**
+ * Opens a board in a page of its own, with stored settings and a stopped clock. The page has a
+ * stand-in for the Web Speech API that makes no sound, unless the test asks for a page with none.
+ */
+export type OpenBoard = (
+  id: string,
+  title: string,
+  stored?: StoredSettings,
+  speech?: SpeechKind,
+) => Promise<Page>;
 
 /**
  * The `test` object of the scanning tests. Its `open` opens a board with stored settings and
@@ -75,7 +84,7 @@ export const test = base.extend<{ open: OpenBoard }>({
     let tracing = false;
 
     /** Loads the app once in a new context, with the values stored before the app starts. */
-    const load = async (id: string, stored: StoredSettings): Promise<Page> => {
+    const load = async (id: string, stored: StoredSettings, speech: SpeechKind): Promise<Page> => {
       await context?.close();
       context = await browser.newContext({ baseURL, viewport, storageState });
       // The trace is kept only for a load that shows the sign in screen. Playwright refuses a
@@ -90,6 +99,7 @@ export const test = base.extend<{ open: OpenBoard }>({
         ...stored,
       });
       await context.addInitScript(noteStateAtStart);
+      await standInForSpeech(context, speech);
       const page = await context.newPage();
       await standInForFirebase(page);
       await page.goto(id === 'home' ? '/' : `/board/${id}`);
@@ -97,8 +107,8 @@ export const test = base.extend<{ open: OpenBoard }>({
       return page;
     };
 
-    await use(async (id, title, stored = {}) => {
-      const page = await load(id, stored);
+    await use(async (id, title, stored = {}, speech = 'voice') => {
+      const page = await load(id, stored, speech);
       if (title !== SIGN_IN_TITLE && (await page.locator('h1').textContent()) === SIGN_IN_TITLE) {
         // A board showed the sign in screen on a device with a stored sign in. The primary user
         // cannot sign in again, so this fails the test. The board is not loaded a second time.

@@ -42,6 +42,11 @@ The versions below were set on 2026-11-16.
 
 - Speech goes through one voice source interface, so a second source can be added without changing the screens.
 - The only voice source for now is the system voices. The web and Mac builds reach them through the Web Speech API. The iPad build reaches the iOS voices through Capacitor.
+- The code is in `src/app/speech/`. `voice-source.ts` holds the interface and its injection token, `system-voice-source.ts` holds the Web Speech source, `fake-voice-source.ts` holds the fake for the unit tests, and `speech.ts` holds the `Speech` service that the screens call.
+- The system source uses the default voice of the browser when that voice is English. Otherwise it uses the first English voice in the list. With no English voice nothing is spoken, and one warning goes to the console. Feature 8 adds the voice picker.
+- A voice that runs on a server, such as the Google voices of Chrome, is used like any other. With such a voice, speech needs a network and the spoken text leaves the device.
+- Chrome speaks only after the page has had a key press, a click or a tap since it was loaded. In `dwell` mode with a head tracker, a pointer that only moves does not count, so after a reload nothing is spoken until someone presses a key or clicks once. Feature 10 can lift this in Electron.
+- The end to end tests put a stand-in for the Web Speech API on every page, in `e2e/support/speech.ts`, so no test speaks aloud.
 
 ## Suggested words
 

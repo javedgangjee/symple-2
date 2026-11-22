@@ -4,6 +4,8 @@ import { Router, provideRouter } from '@angular/router';
 import { Message } from '../keyboard/message';
 import { Layout } from '../layout/layout';
 import { ScanSettingValues, ScanSettings } from '../scan/scan-settings';
+import { FakeVoiceSource } from '../speech/fake-voice-source';
+import { VOICE_SOURCE } from '../speech/voice-source';
 import { Back } from './back';
 import { Board, BoardData, Cell, CellSize, Tile } from './board-data';
 import { BoardScreen } from './board-screen';
@@ -28,9 +30,14 @@ function cell(label: string, size?: CellSize, action?: Tile['action']): Cell {
 
 const MESSAGE_TILE: Tile = { id: 'message', label: 'Message', colour: 'light', style: 'message' };
 
+/** The message tile as the data has it, with the action that speaks the message. */
+const SPEAKING_MESSAGE_TILE: Tile = { ...MESSAGE_TILE, action: { type: 'speak-message' } };
+
 describe('BoardScreen', () => {
   let fixture: ComponentFixture<BoardScreen>;
   let element: HTMLElement;
+  /** The fake voice of the screen that was drawn last. No test speaks aloud. */
+  let voice: FakeVoiceSource;
   const back = { back: vi.fn(() => Promise.resolve(true)) };
 
   /**
@@ -43,6 +50,7 @@ describe('BoardScreen', () => {
     settings: Partial<ScanSettingValues> = {},
   ): Promise<void> {
     const boards: Board[] = [{ id: 'test', title: 'Test', ...board }, ...others];
+    voice = new FakeVoiceSource();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'board/:id', component: Blank }]),
@@ -51,6 +59,7 @@ describe('BoardScreen', () => {
           useValue: { board: (id: string) => boards.find((b) => b.id === id) },
         },
         { provide: Back, useValue: back },
+        { provide: VOICE_SOURCE, useValue: voice },
       ],
     });
     TestBed.inject(ScanSettings).set(settings);
@@ -506,6 +515,124 @@ describe('BoardScreen', () => {
       pass(5000);
       expect(cellsWith('data-dwell')).toEqual([]);
       expect(TestBed.inject(Router).url).toBe(url);
+    });
+
+    const speaks = (label: string, phrase: string) =>
+      cell(label, undefined, { type: 'speak', phrase });
+    const types = (text: string) => cell(text, undefined, { type: 'type', text });
+
+    /** Two phrase cells in one group and Back in a group of its own, as a small Needs board. */
+    const NEEDS = {
+      groups: [
+        { cells: [speaks('Help', 'I need help'), speaks('Pain', 'I am in pain')] },
+        { cells: [cell('Back', undefined, { type: 'back' })] },
+      ],
+    };
+
+    /** Picks Help on the small Needs board with one switch, from rest or from the first group. */
+    function pickHelp(): void {
+      if (scanState() === 'rest') {
+        switchKey('Enter');
+      }
+      switchKey('Enter');
+      switchKey('Enter');
+    }
+
+    it('BS1: a phrase that the scan picks is spoken, told and marked as confirmed', async () => {
+      await drawWithScan({}, NEEDS);
+      pickHelp();
+      expect(voice.texts).toEqual(['I need help']);
+      expect(status()).toBe('I need help');
+      expect(cellsWith('data-confirmed')).toEqual(['Help']);
+    });
+
+    it('BS2: the scan starts again after the post click delay while the speech still runs', async () => {
+      await drawWithScan({}, NEEDS);
+      pickHelp();
+      pass(500);
+      expect(voice.speaking).toBe(true);
+      expect(cellsWith('data-confirmed')).toEqual([]);
+      expect(groupsWith('data-scan')).toEqual(['Column 1 of 2']);
+    });
+
+    it('BS4: a second phrase stops the first one that still speaks', async () => {
+      await drawWithScan({}, NEEDS);
+      pickHelp();
+      const before = voice.calls.length;
+      pass(500);
+      // The scan is on the first group again. It goes into the group and on to Pain.
+      switchKey('Enter');
+      pass(1000);
+      switchKey('Enter');
+      expect(voice.calls.slice(before)).toEqual([
+        { kind: 'stop' },
+        { kind: 'speak', text: 'I am in pain' },
+      ]);
+    });
+
+    it('BS5: Back opens the home board and does not stop the speech', async () => {
+      await drawWithScan({}, NEEDS);
+      // The way back is a stand-in here, so it opens the home board itself.
+      back.back.mockImplementationOnce(() => TestBed.inject(Router).navigate(['/board', 'home']));
+      pickHelp();
+      const stops = voice.stops;
+      pass(500);
+      // The scan moves on to the group of Back, which has one cell, so one press picks it.
+      pass(1000);
+      switchKey('Enter');
+      expect(back.back).toHaveBeenCalledTimes(1);
+      await expectUrl('/board/home');
+      expect(voice.stops).toBe(stops);
+      expect(voice.speaking).toBe(true);
+    });
+
+    it('BS6: the message is spoken when it is picked, and it stays as it is', async () => {
+      await drawWithScan(
+        { selectionMode: 'touch' },
+        { groups: [{ cells: [{ tile: SPEAKING_MESSAGE_TILE }, types('h'), types('i')] }] },
+      );
+      for (const name of ['h', 'i', 'hi']) {
+        host(name).querySelector('button')?.click();
+        fixture.detectChanges();
+      }
+      expect(voice.texts).toEqual(['hi']);
+      expect(TestBed.inject(Message).text()).toBe('hi');
+    });
+
+    it('BS7: an empty message is not spoken, and its cell is marked as confirmed', async () => {
+      await drawWithScan(
+        {},
+        { groups: [{ cells: [{ tile: SPEAKING_MESSAGE_TILE }, types('h')] }] },
+      );
+      // The board has one group, so the scan starts on the message.
+      switchKey('Enter');
+      switchKey('Enter');
+      expect(voice.calls).toEqual([]);
+      expect(cellsWith('data-confirmed')).toEqual(['Message']);
+    });
+
+    describe('BS8: a pick speaks in the other selection modes', () => {
+      it('in step mode, by a move and a press', async () => {
+        await drawWithScan({ selectionMode: 'step' }, NEEDS);
+        switchKey('Tab');
+        switchKey('Enter');
+        switchKey('Enter');
+        expect(voice.texts).toEqual(['I need help']);
+      });
+
+      it('in touch mode, by a pointer press', async () => {
+        await drawWithScan({ selectionMode: 'touch' }, NEEDS);
+        host('Help').querySelector('button')?.click();
+        fixture.detectChanges();
+        expect(voice.texts).toEqual(['I need help']);
+      });
+
+      it('in dwell mode, by a dwell', async () => {
+        await drawWithScan({ selectionMode: 'dwell' }, NEEDS);
+        pointerEnters('Help', 'mouse');
+        pass(1000);
+        expect(voice.texts).toEqual(['I need help']);
+      });
     });
   });
 });
