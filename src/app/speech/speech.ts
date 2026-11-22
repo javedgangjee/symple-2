@@ -11,10 +11,10 @@ export class Speech {
 
   /**
    * Speaks a text from its start. A speech that still runs is stopped first.
-   * An empty text is not spoken and stops nothing.
+   * An empty text, or one of only white space, is not spoken and stops nothing.
    */
   say(text: string): void {
-    if (text === '') {
+    if (text.trim() === '') {
       return;
     }
     this.source.stop();

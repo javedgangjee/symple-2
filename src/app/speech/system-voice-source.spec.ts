@@ -33,12 +33,15 @@ class StandInSynthesis extends EventTarget implements WebSynthesis {
   /** Each call in order: "speak:" with the text, or "cancel". */
   readonly log: string[] = [];
   readonly spoken: StandInUtterance[] = [];
+  /** How many times the list of voices was asked for. */
+  voiceCalls = 0;
 
   constructor(public voices: SpeechSynthesisVoice[]) {
     super();
   }
 
   getVoices(): SpeechSynthesisVoice[] {
+    this.voiceCalls += 1;
     return this.voices;
   }
 
@@ -175,5 +178,23 @@ describe('SystemVoiceSource', () => {
     source.stop();
     expect(synthesis.log.slice(before)).toEqual(['cancel']);
     await expect(promise).resolves.toBeUndefined();
+  });
+
+  it('VS11: the source asks for the voices once when it is made', () => {
+    const { synthesis } = sourceWithVoices([ENGLISH]);
+    expect(synthesis.voiceCalls).toBe(1);
+    expect(synthesis.log).toEqual([]);
+  });
+
+  it('VS12: voices that never load give a warning that says so', async () => {
+    vi.useFakeTimers();
+    const { synthesis, source } = sourceWithVoices([]);
+    const state = follow(source.speak('I need help'));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(synthesis.spoken).toEqual([]);
+    expect(state.settled).toBe(true);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('did not load'));
+    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('no English voice'));
   });
 });

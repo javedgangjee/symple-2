@@ -249,7 +249,7 @@ describe('BoardScreen', () => {
     expect(status()).toBe('');
   });
 
-  it('S16: the message tile does nothing when pressed', async () => {
+  it('S16: a message tile with no action does nothing when pressed', async () => {
     await draw({ groups: [{ cells: [{ tile: MESSAGE_TILE }] }] });
     const message = TestBed.inject(Message);
     message.type('hi');

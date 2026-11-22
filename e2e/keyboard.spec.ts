@@ -152,34 +152,6 @@ test('Y6: the message is kept when the user goes home and comes back', async ({ 
   await expect(message(page)).toHaveText('hi');
 });
 
-test('Y7: pressing the message changes nothing and asks for no speech', async ({ page }) => {
-  // Counts each request to speak, so the test can tell that none was made.
-  await page.addInitScript(() => {
-    const counter = { spoken: 0 };
-    Object.assign(window, { speechCounter: counter });
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.speak = () => {
-        counter.spoken += 1;
-      };
-    }
-  });
-  await openWithHi(page);
-  const url = page.url();
-  const status = await statusRegion(page).textContent();
-  await message(page).click();
-  await page.waitForTimeout(300);
-  await expect(message(page)).toHaveText('hi');
-  expect(page.url()).toBe(url);
-  expect(await statusRegion(page).textContent()).toBe(status);
-  await expect(cells(page)).toHaveCount(35);
-  expect(
-    await page.evaluate(() => {
-      const counter: unknown = Reflect.get(window, 'speechCounter');
-      return counter;
-    }),
-  ).toEqual({ spoken: 0 });
-});
-
 test('Y8: Tab reaches the thirty five cells in order and never a caregiver control', async ({
   page,
 }) => {

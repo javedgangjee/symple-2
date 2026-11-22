@@ -108,6 +108,12 @@ export class SystemVoiceSource implements VoiceSource {
    */
   private turn = 0;
 
+  constructor() {
+    // Chrome starts to load its list of voices on the first call, so the list is asked for
+    // before the first pick.
+    this.speech?.synthesis.getVoices();
+  }
+
   speak(text: string): Promise<void> {
     const speech = this.speech;
     if (!speech) {
@@ -138,6 +144,11 @@ export class SystemVoiceSource implements VoiceSource {
     text: string,
     voices: readonly SpeechSynthesisVoice[],
   ): Promise<void> {
+    if (voices.length === 0) {
+      // The list is empty only after the wait, because a call with no voices waits for them.
+      console.warn('Nothing was spoken: the voices of this browser did not load.');
+      return Promise.resolve();
+    }
     const voice = englishVoice(voices);
     if (!voice) {
       console.warn('Nothing was spoken: this browser has no English voice.');

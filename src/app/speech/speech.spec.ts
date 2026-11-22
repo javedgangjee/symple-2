@@ -32,4 +32,9 @@ describe('Speech', () => {
     speech.say('');
     expect(source.calls).toEqual([]);
   });
+
+  it('SP7: a text of only spaces is not spoken and stops nothing', () => {
+    speech.say('   ');
+    expect(source.calls).toEqual([]);
+  });
 });
