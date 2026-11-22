@@ -119,3 +119,31 @@ Command: `grep -c "Y7" e2e/keyboard.spec.ts`
 
 1. In the console of Chrome, run `speechSynthesis.getVoices().filter(v => !v.localService).map(v => v.name)`. Expected: the list names the Google voices, so the app can reach them. Feature 8, settings, adds the picker that chooses one.
 2. Speak a text of about 40 words with a Google voice from the console. Expected: the whole text is spoken. As far as I know, Chrome can cut a server voice off after about 15 seconds, so write down what happens.
+
+## Results, 2026-11-21
+
+The checks ran on Node 22.23.5, the version in `.nvmrc`, after the fixes for findings 1, 3 and 8 of review.md. The shell default, Node 22.22.1, is too old for the Angular CLI.
+
+### Automated checks
+
+- Check A1, the build: pass. `npm run build` ended with no errors and no warnings.
+- Check A2, lint and format: pass. `npm run lint` and `npm run format:check` both ended with no errors.
+- Check A3, the unit tests: pass. All 290 tests in 25 files passed. They include the new cases VS11, which checks that the source asks for the voices once when it is made, VS12, which checks the warning when the voices never load, and SP7, which checks that a text of only spaces is not spoken.
+- Check A4, the end to end tests: pass. All 213 tests passed in one run, with no retry. They include the six speech cases SE1, SE2, SE4, SE5, SE7 and SE8, and the contrast and axe cases of feature 4.
+- Check A5, the false case is gone: pass. `grep -c "Y7" e2e/keyboard.spec.ts` printed 0, and case SE4, which picks the message by scan and expects "hi" to be spoken, passed.
+
+### Manual checks
+
+None of the five manual checks has a result yet. They are check M1, a real voice in Chrome on a Mac, check M2, Safari on a Mac, check M3, `dwell` mode after a reload, check M4, no network, and check M7, a Google voice in Chrome.
+
+### Requirements
+
+- Items 1, 3 to 7, 17, 19, 20, 23, 25, 26, 27 and 30 each have a passing automated check.
+- Item 8, that speech adds no new look, passes through the contrast and axe cases of feature 4 in check A4.
+- Item 12, that no feature 5 code calls Firebase, has no check in this file. A search of `src/app/speech`, `e2e/speech.spec.ts` and `e2e/support/speech.ts` for "firebase" and "firestore" found nothing.
+- Items 2, 9, 11, 18 and 24 depend on a real voice. Their unit cases pass, and they wait for manual checks M1, M2, M3, M4 and M7.
+- Items 10, 13, 14, 28 and 33 have no check of their own. Item 10 says that this feature shows no voice control, items 13 and 14 record decisions, item 28 keeps the status text that case BS1 reads, and item 33 names files that exist.
+
+### Verdict
+
+The feature is not ready yet, because the five manual checks have no result.
