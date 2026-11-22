@@ -10,7 +10,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 2. **Home screen and boards from data.** The home screen, the communication boards and the keyboard are drawn from `boards.json` and `cells.json` as grids of cells, each with a colour, a label and an icon or a symbol. A cell on the home screen opens a board, and a Back tile leads back. The first boards are Needs, Quick phrases, My boards and the keyboard, whose letters are tiles that write a message. Covers: Capabilities (home screen, cell contents, communication boards), Product Purpose, Principles 3 and 4, the keyboard mockup, the data rule in tech-stack.md. Status: done.
 3. **Sign in.** The caregiver signs in to Symple through Firebase Auth, and the theme and the layout sync to the caregiver's account through Firestore. Covers: the sign in step added on 2026-11-16, the cloud rule in tech-stack.md. Status: done.
 4. **Scanning.** The app highlights groups and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. The feature also built the five selection modes, the dwell press and the scan time bar. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: done.
-5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the confirmed look of feature 4, as any picked cell does, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: in progress.
+5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the confirmed look of feature 4, as any picked cell does, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: done.
 8. **Settings.** The caregiver sets the scan time, the post click delay, the selection mode, the dwell time, the dwell style, whether the progress bar is shown, the theme, the layout of columns or rows, and the voice with its rate, pitch and volume. The settings panel shows the credit for the Mulberry symbols and for the Material icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: planned.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
 9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and the changes are saved and join the sync of feature 3. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
@@ -45,10 +45,12 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 Each question must be answered in the plan of the feature it names.
 
 - Feature 8: how the caregiver reaches the settings button and the settings panel with the keyboard. Feature 4 took the settings button and the Sign out button out of the tab order, which does not meet WCAG 2.1.1 for those two controls.
+- Feature 8: whether Chrome cuts a voice that runs on a server off after about 15 seconds, which would cut a long message short. Check M7 of the validation.md of feature 5 passed, but nobody wrote down whether the long text was spoken to its end.
 - Feature 8: whether a change of a scan setting takes effect at once or after a reload. Today the scan goes to rest when the selection mode changes.
 - Feature 10: how Electron loads the build. `src/index.html` uses a base href of `/`, so the app may not load from disk as it is. The plan must also test that the font loads in the packaged Mac app.
 - Feature 10: whether the symbol images load in the packaged Mac app. Their addresses are relative, such as `symbols/help.svg`.
 - Feature 10: whether Firebase Auth keeps the sign in inside Electron.
+- Feature 10: whether Chrome stays silent in `dwell` mode until the first key press or click after a load, and whether Electron lifts that. Check M3 of the validation.md of feature 5 passed, but nobody wrote down what Chrome did before the first click.
 - Feature 11: how switches reach the app on iPad.
 - Feature 11: whether Firebase Auth keeps the sign in inside Capacitor.
 - Feature 11: whether the iPad app works in portrait. Features before it are built and tested in landscape only.
@@ -126,6 +128,9 @@ Each question must be answered in the plan of the feature it names.
 - Feature 4: the five findings of its second review are ignored. The cause of the lost sign in of the end to end tests stays unknown, and the test helper fails any test that loses the sign in and keeps a trace.
 - Feature 5: a cell that speaks shows the confirmed look of feature 4 and has no look of its own.
 - Feature 5: a voice that runs on a server, such as the Google voices of Chrome, is allowed.
+- Feature 5: a new phrase stops the one that is being spoken. A pick that opens a board, goes back or types a key does not stop it.
+- Feature 5: the message tile carries the action `speak-message` in `cells.json`. The message stays after it is spoken.
+- Feature 5: findings 1, 3 and 8 of its review were fixed. The other six findings, which are all low apart from finding 2 on two untested paths of the wait for the voices, were left as they are.
 
 ## Skipped checks
 

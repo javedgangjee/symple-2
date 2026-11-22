@@ -45,6 +45,14 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 4 gives each group a name for screen readers, such as "Column 1 of 2", and moves the keyboard focus with the highlight.
 - Feature 4 adds unit tests for the scan, the switches, the dwell press and the stored settings, and end to end tests that reach each target by single switch scanning.
 - Feature 4 adds a Scanning section to `README.md`, which says how to try scanning and how to change the scan settings in local storage.
+- Feature 5 speaks the phrase of a cell aloud when the cell is picked on a board, in each of the five selection modes.
+- Feature 5 speaks the message when the message tile is picked on a keyboard. The message stays after it is spoken, and an empty message or one of only spaces speaks nothing.
+- Feature 5 adds a voice source interface with the system voices as its first source, which the web build reaches through the Web Speech API.
+- Feature 5 uses the default voice of the browser when it is English, and otherwise the first English voice in the list. A voice that runs on a server, such as the Google voices of Chrome, is used like any other.
+- Feature 5 stops the speech that runs when a new phrase is picked. A pick that opens a board, goes back or types a key does not stop it.
+- Feature 5 writes a warning to the console and speaks nothing when the browser has no Web Speech API, has no English voice, does not load its voices within one second, or fails to speak.
+- Feature 5 adds the action type `speak-message` to the tile data, and gives it to the message tile in `src/data/cells.json`.
+- Feature 5 adds unit tests with a fake voice source, and end to end tests that put a stand-in for the Web Speech API on the page, so no test speaks aloud.
 
 ### Changed
 
@@ -54,3 +62,7 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 4 makes Tab stop on a group before its cells in `scan` and `step` mode. In `cursor`, `touch` and `dwell` mode Tab still goes from cell to cell.
 - Feature 4 moves the safe reading and writing of local storage into one service, which the theme, the layout and the scan settings use.
 - Feature 4 changes `CLAUDE.md` to say that `PRODUCT.md` is initial context only and that the roadmap wins when the two disagree.
+
+### Removed
+
+- Feature 5 removes the end to end case Y7 of `e2e/keyboard.spec.ts`, which said that pressing the message asks for no speech.

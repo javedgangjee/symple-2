@@ -18,7 +18,7 @@ Symple shows a home screen with a few large cells. Each cell opens one activity.
 
 Symple speaks the user's words aloud with the voices of the device.
 
-The caregiver signs in once on each device. After that the app works with no network, and the settings sync to the caregiver's account.
+The caregiver signs in once on each device. After that the app works with no network, and the settings sync to the caregiver's account. Speech needs a network only when the voice in use runs on a server.
 
 Every screen meant for the primary user works by scan, step, cursor, touch or dwell. Single switch scanning comes first. In scanning, the app highlights groups of cells and then cells in turn, and the user triggers a switch to pick one.
 
