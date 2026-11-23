@@ -1,5 +1,6 @@
-import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
+import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Subject } from 'rxjs';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { ScanSettings } from './scan-settings';
 
@@ -48,6 +49,10 @@ const PASSES = 2;
 export class Scan {
   private readonly settings = inject(ScanSettings);
   private readonly panel = inject(SettingsOpen);
+  private readonly edit = inject(EditMode);
+
+  /** Whether the caregiver is at work, in the settings panel or in edit mode. The scan rests then. */
+  private readonly quiet = computed(() => this.panel.isOpen() || this.edit.isOn());
 
   private readonly current = signal(REST);
   private readonly picked = new Subject<CellPosition>();
@@ -81,10 +86,10 @@ export class Scan {
       }
     });
 
-    // The scan rests while the settings panel is open. It starts from rest, with the values
-    // that the caregiver set, at the first switch press after the panel is closed.
+    // The scan rests while the settings panel is open and while edit mode is on. It starts from
+    // rest, with the values that the caregiver set, at the first switch press after that.
     effect(() => {
-      if (this.panel.isOpen()) {
+      if (this.quiet()) {
         untracked(() => this.rest());
       }
     });
@@ -109,7 +114,7 @@ export class Scan {
    */
   show(sizes: readonly number[]): void {
     this.sizes = [...sizes];
-    if (this.panel.isOpen()) {
+    if (this.quiet()) {
       this.rest();
     } else if (this.current().phase === 'confirmed') {
       // The picked cell is not on the new board, so nothing is marked while the delay runs.
@@ -124,10 +129,10 @@ export class Scan {
   /**
    * The switch that picks. At rest it starts the scan and picks nothing. On a group it goes into
    * the cells of the group, and on a cell it picks the cell. It does nothing in the post click delay
-   * or while the settings panel is open.
+   * or while the caregiver is at work.
    */
   press(): void {
-    if (this.panel.isOpen()) {
+    if (this.quiet()) {
       return;
     }
     const { phase, group, cell } = this.current();
@@ -145,10 +150,10 @@ export class Scan {
    * The switch that moves the highlight by one, forward or back. At rest it starts the scan.
    * A move past the last group goes round to the first. A move out of either end of a group
    * goes back to the groups, with that group highlighted. The scan time and the count of passes
-   * start again. It does nothing in the post click delay.
+   * start again. It does nothing in the post click delay or while the caregiver is at work.
    */
   move(direction: 1 | -1 = 1): void {
-    if (this.panel.isOpen()) {
+    if (this.quiet()) {
       return;
     }
     const { phase, group, cell } = this.current();

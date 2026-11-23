@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { routes } from '../app.routes';
+import { BOARDS_STORAGE_KEY, BoardStore, TILES_STORAGE_KEY } from '../boards/board-store';
 import { AUTH_SOURCE, Auth, READY_WAIT_MS, SIGNED_IN_STORAGE_KEY } from './auth';
 import { FakeAuthSource } from './fake-auth-source';
 
@@ -51,6 +52,18 @@ describe('Auth', () => {
     expect(flag).not.toContain(String(FakeAuthSource.ACCOUNT.email));
     source.report(null);
     expect(localStorage.getItem(SIGNED_IN_STORAGE_KEY)).toBeNull();
+  });
+
+  it('AU1: a sign out removes the stored set of boards', async () => {
+    source.report(FakeAuthSource.ACCOUNT);
+    const boards = TestBed.inject(BoardStore);
+    boards.save({ tiles: [], boards: [] });
+    expect(localStorage.getItem(TILES_STORAGE_KEY)).toBe('[]');
+    expect(localStorage.getItem(BOARDS_STORAGE_KEY)).toBe('[]');
+    await auth.signOut();
+    expect(localStorage.getItem(TILES_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(BOARDS_STORAGE_KEY)).toBeNull();
+    expect(boards.stored()).toBeNull();
   });
 });
 

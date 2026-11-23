@@ -1,0 +1,14 @@
+/* The remove dialog is narrow and holds a question, a sentence and two buttons. */
+/* The rest of its look comes from tile-dialog.css. */
+.sheet.narrow {
+  width: min(32rem, calc(100vw - 2 * var(--pad)));
+}
+
+.body {
+  display: grid;
+  gap: 1.25rem;
+}
+
+h2 {
+  overflow-wrap: anywhere;
+}

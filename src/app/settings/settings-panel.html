@@ -37,6 +37,13 @@
             <!-- Each icon is copied from the Lucide icon set, and the comment in each case names it. -->
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
               @switch (item.id) {
+                @case ('boards') {
+                  <!-- Lucide layout-grid. -->
+                  <rect width="7" height="7" x="3" y="3" rx="1" />
+                  <rect width="7" height="7" x="14" y="3" rx="1" />
+                  <rect width="7" height="7" x="14" y="14" rx="1" />
+                  <rect width="7" height="7" x="3" y="14" rx="1" />
+                }
                 @case ('selection') {
                   <!-- Lucide target. -->
                   <circle cx="12" cy="12" r="10" />
@@ -77,6 +84,24 @@
 
     <div class="panes">
       <div class="scroll">
+        <section
+          role="tabpanel"
+          id="settings-pane-boards"
+          aria-labelledby="settings-tab-boards"
+          [hidden]="tab() !== 'boards'"
+        >
+          <h3>Boards</h3>
+          <div class="block">
+            <div class="set">
+              <button class="row" type="button" (click)="editBoards()">
+                Edit boards
+                <!-- Lucide chevron-right. -->
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
         <section
           role="tabpanel"
           id="settings-pane-selection"

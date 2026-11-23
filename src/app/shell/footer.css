@@ -3,7 +3,8 @@
   display: block;
 }
 
-/* The footer keeps its height when it is empty, so the main area does not move when buttons are added. */
+/* The footer keeps its height when it is empty, so the main area does not move when edit mode adds its buttons. */
+/* The buttons are as tall as the footer. */
 /* It has the same side margin as the main area. */
 footer {
   display: flex;

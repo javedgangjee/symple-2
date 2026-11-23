@@ -12,7 +12,10 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Auth } from '../auth/auth';
+import { BoardData } from '../boards/board-data';
+import { EditMode } from '../edit/edit-mode';
 import {
   DWELL_STYLES,
   DwellStyle,
@@ -29,10 +32,11 @@ import { SettingsOpen } from './settings-open';
 import { Stepper } from './stepper';
 
 /**
- * The five categories of the panel, in the order of the list.
+ * The six categories of the panel, in the order of the list.
  * The template draws the icon of each one by its id, because a Lucide icon can have several parts.
  */
 const TABS = [
+  { id: 'boards', label: 'Boards' },
   { id: 'selection', label: 'Selection' },
   { id: 'speech', label: 'Speech' },
   { id: 'appearance', label: 'Appearance' },
@@ -43,7 +47,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id'];
 
 /** The category that the panel shows each time it opens. */
-const FIRST_TAB: TabId = 'selection';
+const FIRST_TAB: TabId = 'boards';
 
 /** The name of each selection mode in the list. */
 const MODE_LABELS: Readonly<Record<SelectionMode, string>> = {
@@ -138,6 +142,9 @@ export class SettingsPanel {
   private readonly speech = inject(Speech);
   private readonly source = inject(VOICE_SOURCE);
   private readonly themeService = inject(Theme);
+  private readonly router = inject(Router);
+  private readonly boards = inject(BoardData);
+  private readonly edit = inject(EditMode);
   protected readonly scan = inject(ScanSettings);
   protected readonly voice = inject(VoiceSettings);
 
@@ -264,6 +271,18 @@ export class SettingsPanel {
     const { id } = TABS[(to + TABS.length) % TABS.length];
     this.tab.set(id);
     this.focusTab(id);
+  }
+
+  /**
+   * Closes the panel and turns edit mode on for the board on show. A locked board, such as a
+   * keyboard, cannot be edited, so home is opened first.
+   */
+  protected async editBoards(): Promise<void> {
+    this.close();
+    if (this.boards.board(this.edit.boardId())?.locked) {
+      await this.router.navigateByUrl('/');
+    }
+    this.edit.start();
   }
 
   protected setMode(value: string): void {

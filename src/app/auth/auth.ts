@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Injectable, InjectionToken, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { BoardStore } from '../boards/board-store';
 
 /** The address of the sign in screen. */
 export const SIGN_IN_URL = '/sign-in';
@@ -20,7 +21,7 @@ export const READY_WAIT_MS = 1000;
 
 /** The caregiver account that is signed in on this device. */
 export interface Account {
-  /** The id that Firebase Auth gives the account. The cloud copy of the settings is stored under it. */
+  /** The id that Firebase Auth gives the account. The cloud copy of the settings and the boards is stored under it. */
   readonly id: string;
   /** The email address of the account. It is null when the account has none. */
   readonly email: string | null;
@@ -71,14 +72,15 @@ function sameAccount(a: Account | null, b: Account | null): boolean {
 
 /**
  * Gives the screens the signed in account and the sign in and sign out requests.
- * It opens the sign in screen when the account goes away, whether the caregiver signed out
- * or Firebase ended the session.
+ * When the account goes away, whether the caregiver signed out or Firebase ended the session,
+ * it removes the stored boards and opens the sign in screen.
  */
 @Injectable({ providedIn: 'root' })
 export class Auth {
   private readonly source = inject(AUTH_SOURCE);
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
+  private readonly boards = inject(BoardStore);
   private readonly current = signal<Account | null>(null, { equal: sameAccount });
 
   /**
@@ -96,7 +98,8 @@ export class Auth {
   /**
    * Whether the screens of the app are open to this device. It is true with an account.
    * It is also true while a device that was signed in before waits for the source.
-   * It guards no data: the boards are built into the app, and the cloud checks the account itself.
+   * It guards no data. The boards stored on the device belong to the account that signed in
+   * last and are removed at sign out, and the cloud checks the account itself.
    */
   readonly signedIn = computed(() => this.current() !== null || this.presumed());
 
@@ -117,6 +120,11 @@ export class Auth {
     const stop = this.source.watch((account) => {
       const wasSignedIn = this.signedIn();
       this.current.set(account);
+      if (account === null) {
+        // A second account on this device must never see or upload the boards of the first.
+        // The account is already null, so the board sync saves nothing for this change.
+        this.boards.forget();
+      }
       this.presumed.set(false);
       this.writeFlag(account !== null);
       clearTimeout(timer);

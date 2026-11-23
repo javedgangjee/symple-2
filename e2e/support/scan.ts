@@ -7,7 +7,7 @@ import {
 } from '@playwright/test';
 import { axeViolations } from './axe';
 import { standInForFirebase } from './firebase';
-import { writeStored, type StoredSettings } from './boards';
+import { forStorage, writeStored, type StoredSettings } from './boards';
 import { standInForSpeech, type SpeechKind } from './speech';
 
 /** The scan time and the post click delay that the scanning tests store, in milliseconds. */
@@ -93,11 +93,10 @@ export const test = base.extend<{ open: OpenBoard }>({
         () => true,
         () => false,
       );
-      await context.addInitScript(writeStored, {
-        scanTime: SCAN_TIME,
-        postClickDelay: POST_CLICK_DELAY,
-        ...stored,
-      });
+      await context.addInitScript(
+        writeStored,
+        forStorage({ scanTime: SCAN_TIME, postClickDelay: POST_CLICK_DELAY, ...stored }),
+      );
       await context.addInitScript(noteStateAtStart);
       await standInForSpeech(context, speech);
       const page = await context.newPage();

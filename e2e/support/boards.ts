@@ -1,4 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import boardsFile from '../../src/data/boards.json' with { type: 'json' };
+import cellsFile from '../../src/data/cells.json' with { type: 'json' };
 import { standInForSpeech } from './speech';
 
 export const THEMES = ['colours', 'blue', 'purple', 'teal', 'dark'] as const;
@@ -64,7 +66,10 @@ export interface ScreenLayout {
 export const SELECTION_MODES = ['scan', 'step', 'cursor', 'touch', 'dwell'] as const;
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 
-/** The values that a test can store before the app starts. Each is stored under `symple.` and its name. */
+/**
+ * The values that a test can store before the app starts. Each is stored under `symple.` and
+ * its name, apart from the layout, which is stored as a set of boards.
+ */
 export interface StoredSettings {
   scanTime?: number;
   postClickDelay?: number;
@@ -72,17 +77,64 @@ export interface StoredSettings {
   dwellTime?: number;
   dwellStyle?: 'grow' | 'bar';
   showProgressBar?: boolean;
+  /**
+   * `rows` draws every board that gives no layout of its own in rows. Each board sets its own
+   * layout since feature 9, so this stores the built-in set with those boards in rows.
+   */
   layout?: LayoutName;
   theme?: ThemeName;
+  /** A set of boards, as a caregiver's edits would be stored. It takes the place of `layout`. */
+  set?: StoredSet;
+}
+
+/** A set of boards as the app stores it: two JSON texts under `symple.tiles` and `symple.boards`. */
+export interface StoredSet {
+  tiles: string;
+  boards: string;
+}
+
+/** Writes a set as the two texts that the app stores. */
+export function storedSet(tiles: unknown, boards: unknown): StoredSet {
+  return { tiles: JSON.stringify(tiles), boards: JSON.stringify(boards) };
 }
 
 /**
- * Writes settings to local storage. It runs in the page, so it uses nothing from this file.
- * Every helper that stores a setting passes this to the page.
+ * The built-in set with a change to one board, as the app would store it. `change` gets the
+ * board as `boards.json` has it and returns the board to store. `tiles` are added to the tiles.
  */
-export function writeStored(values: StoredSettings): void {
-  for (const [name, value] of Object.entries(values)) {
-    localStorage.setItem(`symple.${name}`, String(value));
+export function setWith(
+  boardId: string,
+  change: (board: (typeof boardsFile)[number]) => object,
+  tiles: object[] = [],
+): StoredSet {
+  const boards = boardsFile.map((board) => (board.id === boardId ? change(board) : board));
+  return storedSet([...cellsFile, ...tiles], boards);
+}
+
+/** The built-in set with the rows layout on every board that gives no layout of its own. */
+function setInRows(): StoredSet {
+  const boards = boardsFile.map((board) =>
+    'layout' in board ? board : { ...board, layout: 'rows' },
+  );
+  return storedSet(cellsFile, boards);
+}
+
+/** The texts that local storage holds for some settings, by their names without `symple.`. */
+export function forStorage({ layout, set, ...settings }: StoredSettings): Record<string, string> {
+  const texts = Object.fromEntries(
+    Object.entries(settings).map(([name, value]) => [name, String(value)]),
+  );
+  return { ...texts, ...(set ?? (layout === 'rows' ? setInRows() : {})) };
+}
+
+/**
+ * Writes texts to local storage, each under `symple.` and its name. It runs in the page, so it
+ * uses nothing from this file. Every helper that stores a setting passes this to the page with
+ * the texts of `forStorage`.
+ */
+export function writeStored(texts: Record<string, string>): void {
+  for (const [name, text] of Object.entries(texts)) {
+    localStorage.setItem(`symple.${name}`, text);
   }
 }
 
@@ -99,7 +151,7 @@ export async function openBoard(
   await standInForSpeech(page);
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
-  await page.evaluate(writeStored, stored);
+  await page.evaluate(writeStored, forStorage(stored));
   await page.goto(id === 'home' ? '/' : `/board/${id}`);
   await expect(page.locator('h1')).toHaveText(BOARDS[id]);
 }
@@ -274,5 +326,65 @@ export async function askForLessTransparency(page: Page): Promise<void> {
   const session = await page.context().newCDPSession(page);
   await session.send('Emulation.setEmulatedMedia', {
     features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }],
+  });
+}
+
+/** The buttons of edit mode in the footer. */
+export function editAction(page: Page, name: string): Locator {
+  return page.locator('app-footer').getByRole('button', { name, exact: true });
+}
+
+/** An edit button of a cell, by its name, such as "Edit Help". */
+export function tool(page: Page, name: string): Locator {
+  return page.locator('main .tool').and(page.getByRole('button', { name, exact: true }));
+}
+
+/** Turns edit mode on as a caregiver does: through the settings panel and its Edit boards button. */
+export async function startEditing(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit boards', exact: true }).click();
+  await expect(page.locator('dialog.panel')).not.toHaveAttribute('open');
+  await expect(editAction(page, 'Done')).toBeFocused();
+}
+
+/** The names of the cells of each group, in the order of the page, without the edit buttons. */
+export async function cellsByGroup(page: Page): Promise<string[][]> {
+  return page
+    .locator('main .group')
+    .evaluateAll((groups) =>
+      groups.map((group) =>
+        Array.from(
+          group.querySelectorAll('app-cell button'),
+          (button) => button.getAttribute('aria-label') ?? '',
+        ),
+      ),
+    );
+}
+
+/** The box of each cell of the board on show, in the order of the page. */
+export async function cellBoxes(page: Page): Promise<Box[]> {
+  return page.locator('main .grid app-cell button').evaluateAll((buttons) =>
+    buttons.map((button) => {
+      const { left, top, right, bottom, width, height } = button.getBoundingClientRect();
+      return { left, top, right, bottom, width, height };
+    }),
+  );
+}
+
+/** Reads the set that the app has stored, or null when it has stored none. */
+export async function readStoredSet(
+  page: Page,
+): Promise<{ tiles: unknown; boards: unknown } | null> {
+  return page.evaluate(() => {
+    const tiles = localStorage.getItem('symple.tiles');
+    const boards = localStorage.getItem('symple.boards');
+    if (tiles === null || boards === null) {
+      return null;
+    }
+    const set: { tiles: unknown; boards: unknown } = {
+      tiles: JSON.parse(tiles),
+      boards: JSON.parse(boards),
+    };
+    return set;
   });
 }

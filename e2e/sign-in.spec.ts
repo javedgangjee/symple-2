@@ -1,4 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import boardsFile from '../src/data/boards.json' with { type: 'json' };
+import cellsFile from '../src/data/cells.json' with { type: 'json' };
 import { axeViolations } from './support/axe';
 import {
   NEEDS_LABELS,
@@ -57,6 +59,14 @@ async function focusedControl(page: Page): Promise<string> {
     }
     return active?.textContent?.trim() ?? '';
   });
+}
+
+/** The two texts of the stored set of boards, tiles first. Each is null when it is not stored. */
+async function storedBoards(page: Page): Promise<(string | null)[]> {
+  return page.evaluate(() => [
+    localStorage.getItem('symple.tiles'),
+    localStorage.getItem('symple.boards'),
+  ]);
 }
 
 /** The alpha of the background of an element, from 0 to 255, and its backdrop filter. */
@@ -279,16 +289,25 @@ test.describe('on a signed in device', () => {
     await expect(card(page)).toHaveCount(0);
   });
 
-  test('N14: Sign out in the panel shows the sign in screen, and it stays after a reload', async ({
+  test('N14: Sign out in the panel shows the sign in screen and removes the stored boards', async ({
     page,
   }) => {
+    // A set is stored, as the first edit of the caregiver stores it.
+    const set = { tiles: JSON.stringify(cellsFile), boards: JSON.stringify(boardsFile) };
     await page.goto('/');
+    await page.evaluate(({ tiles, boards }) => {
+      localStorage.setItem('symple.tiles', tiles);
+      localStorage.setItem('symple.boards', boards);
+    }, set);
+    await page.reload();
     await expect(page.locator('h1')).toHaveText('Home');
+    expect(await storedBoards(page)).toEqual([set.tiles, set.boards]);
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Account' }).click();
     await signOutButton(page).click();
     await expect(page).toHaveURL(/\/sign-in$/);
     await expect(card(page)).toBeVisible();
+    expect(await storedBoards(page)).toEqual([null, null]);
     await page.reload();
     await expect(page).toHaveURL(/\/sign-in$/);
     await expect(card(page)).toBeVisible();

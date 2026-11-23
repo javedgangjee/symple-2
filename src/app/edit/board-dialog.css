@@ -1,0 +1,5 @@
+/* The board settings dialog is narrow and holds the title and the layout. */
+/* The rest of its look comes from tile-dialog.css. */
+.sheet.narrow {
+  width: min(32rem, calc(100vw - 2 * var(--pad)));
+}

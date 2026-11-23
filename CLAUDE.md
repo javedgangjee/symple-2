@@ -14,7 +14,7 @@ Symple is an app that lets people who cannot speak or point use a computer alone
 
 - The user commits and merges. Do not commit.
 - Boards and cells come from `boards.json` and `cells.json`. Do not hardcode them without a stated reason.
-- Every screen for the primary user must work by single switch scanning. A group of cells is a column or a row. A stored setting picks which, and columns are the default. A board can fix its own layout, as the keyboard does.
+- Every screen for the primary user must work by single switch scanning. A group of cells is a column or a row. Each board sets its own layout, and columns are the default. The caregiver sets it in the board settings of edit mode.
 - Use Firebase if a cloud service is needed, and only when a feature plan calls for it.
 
 ## Commands

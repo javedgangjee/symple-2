@@ -1,4 +1,5 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { Scan } from './scan';
 import { ScanSettings, isSwitchMode } from './scan-settings';
@@ -37,8 +38,9 @@ export const SETTINGS_SHORTCUT = `Control+${SETTINGS_KEY}`;
  * Turns key presses into switch presses while a board is on show. In `scan` and `step` mode
  * Tab moves the highlight, Shift with Tab moves it back, and Enter picks. The browser does
  * nothing with those keys then. In the other modes the keys are left to the browser.
- * While the settings panel is open no key is a switch, so the caregiver has Tab and Enter.
- * Control with the comma key opens the panel in every mode. It is the caregiver's way to the
+ * While the settings panel is open or edit mode is on no key is a switch, so the caregiver has
+ * Tab and Enter. Control with the comma key opens the panel in every mode, but not in edit
+ * mode, where the settings button is hidden. It is the caregiver's way to the
  * panel with the keyboard, because nothing outside the grid is in the tab order.
  */
 @Injectable({ providedIn: 'root' })
@@ -47,6 +49,7 @@ export class Switches {
   private readonly scan = inject(Scan);
   private readonly settings = inject(ScanSettings);
   private readonly panel = inject(SettingsOpen);
+  private readonly edit = inject(EditMode);
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
     if (this.isSettingsShortcut(event)) {
@@ -91,6 +94,7 @@ export class Switches {
 
   private isSettingsShortcut(event: KeyboardEvent): boolean {
     return (
+      !this.edit.isOn() &&
       event.key === SETTINGS_KEY &&
       event.ctrlKey &&
       !event.altKey &&
@@ -102,6 +106,7 @@ export class Switches {
   private isSwitchKey(event: KeyboardEvent): boolean {
     return (
       !this.panel.isOpen() &&
+      !this.edit.isOn() &&
       isSwitchMode(this.settings.selectionMode()) &&
       KEYS.includes(event.key) &&
       !event.ctrlKey &&

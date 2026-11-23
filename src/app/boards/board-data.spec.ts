@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import boardsFile from '../../data/boards.json';
 import cellsFile from '../../data/cells.json';
-import { BOARD_FILES, Board, BoardData, Cell, LoadedBoards, loadBoards } from './board-data';
+import { Board, BoardData, Cell, LoadedBoards, loadBoards, toBoardSet } from './board-data';
+import { BOARD_FILES, BoardStore } from './board-store';
 
 type Json = Record<string, unknown>;
 
@@ -711,5 +713,46 @@ describe('Board data rules', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(faults[0]);
     warn.mockRestore();
+  });
+});
+
+describe('Board data from the store', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+
+  /** The built-in set with one title of the board Needs. */
+  function withNeedsTitled(title: string) {
+    const { boards, tiles } = toBoardSet(loadBoards(cellsFile, boardsFile).boards);
+    return {
+      tiles,
+      boards: boards.map((board) => (board.id === 'needs' ? { ...board, title } : board)),
+    };
+  }
+
+  it('BD1: the board Needs has the title of the set that the store holds', () => {
+    TestBed.inject(BoardStore).save(withNeedsTitled('Care'));
+    expect(TestBed.inject(BoardData).board('needs')?.title).toBe('Care');
+  });
+
+  it('BD2: a board that a screen holds changes with the set', () => {
+    const data = TestBed.inject(BoardData);
+    const held = computed(() => data.board('needs')?.title);
+    expect(held()).toBe('Needs');
+    TestBed.inject(BoardStore).save(withNeedsTitled('Care'));
+    expect(held()).toBe('Care');
+  });
+
+  it('BD3: a board that is locked is read as locked, and a board locked with "yes" is skipped', () => {
+    const tiles = [{ id: 'plain', label: 'Plain', colour: 'grey', style: 'key' }];
+    const groups = [{ cells: [{ tile: 'plain' }] }];
+    const loaded = loadBoards(tiles, [
+      { id: 'home', title: 'Home', locked: true, groups },
+      { id: 'food', title: 'Food', locked: 'yes', groups },
+    ]);
+    expect(loaded.boards.map((board) => board.id)).toEqual(['home']);
+    expect(boardOf(loaded, 'home').locked).toBe(true);
+    expect(loaded.faults.length).toBe(1);
+    expect(loaded.faults[0]).toContain('"food"');
+    expect(loaded.faults[0]).toContain('"locked"');
   });
 });

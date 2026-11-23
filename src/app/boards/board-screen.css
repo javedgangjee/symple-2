@@ -19,9 +19,14 @@
   flex: 1 1 0;
 }
 
-/* The share of each cell is set as flex-grow by the screen. */
-app-cell {
+/* A slot holds one cell, and in edit mode its edit buttons. The share of each cell is set as */
+/* flex-grow on its slot by the screen, and the cell fills its slot. */
+.slot {
+  position: relative;
+  display: grid;
   flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
 }
 
 /* In the columns layout each group is a column, read top to bottom. */
@@ -32,6 +37,170 @@ app-cell {
 /* In the rows layout each group is a row, read left to right. */
 .grid[data-layout='rows'] {
   flex-direction: column;
+}
+
+/* Edit mode. The rules follow context/design/home.html. A slot can be pressed and dragged. */
+.grid[data-editing] .slot {
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The cell that has been picked up carries a ring. */
+.slot[data-picked] {
+  border-radius: var(--radius);
+  outline: var(--ring) solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* The cell that is dragged leaves a faint copy where it would land. */
+.slot[data-dragged] {
+  opacity: 0.3;
+}
+
+/* The picture of the dragged cell follows the pointer, lifted off the page. */
+.lifted {
+  position: fixed;
+  z-index: 5;
+  display: grid;
+  scale: 1.03;
+  filter: drop-shadow(0 18px 24px oklch(0.2 0.04 var(--shade) / 0.45));
+  pointer-events: none;
+}
+
+/* Each edit button is a round glass button of 48px. Edit sits at the top left corner of its cell. */
+.tool {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--light) 72%, transparent);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  color: var(--ink);
+  /* A light ring lies round the ink border, so the border keeps its contrast on a dark cell too. */
+  /* The mockup has no ring, and there the border of a button on the Back cell cannot be seen. */
+  box-shadow:
+    0 0 0 3px var(--light),
+    0 2px 6px 3px oklch(0.2 var(--shc) var(--shade) / 0.35);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    color 160ms var(--ease);
+}
+
+.tool svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tool:hover,
+.move[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--light);
+}
+
+.tool:focus-visible,
+.add-tile:focus-visible,
+.remove-group:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Open and Go back sit beside Edit, or in its place on a cell that has no Edit button. */
+.edit + .open {
+  left: 46px;
+}
+
+/* Remove sits at the other top corner. It stays inside the edge of the cell, so it clears the */
+/* Edit button of the next column. */
+.remove {
+  left: auto;
+  right: 0;
+}
+
+/* Move sits beside Remove, or in its place on a cell that has no Remove button. */
+.move {
+  left: auto;
+  right: 0;
+  cursor: grab;
+}
+
+.move:has(+ .remove) {
+  right: 56px;
+}
+
+/* The Move button shows only while the keyboard has the focus on it. A pointer drags the cell or presses it. */
+.move:not(:focus-visible) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* An empty group holds its Add tile button in its middle, and in edit mode Remove column under it. */
+.empty {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* In edit mode an empty group shows a dashed outline, so there is somewhere to put a cell. */
+.grid[data-editing] .group[data-empty] {
+  outline: 3px dashed color-mix(in oklab, var(--ink) 75%, var(--canvas));
+  outline-offset: -3px;
+  background: color-mix(in oklab, var(--light) 30%, transparent);
+}
+
+.add-tile,
+.remove-group {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border: 2px solid var(--ink);
+  border-radius: 99px;
+  background: color-mix(in oklab, var(--light) 60%, transparent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 660;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+.add-tile:hover,
+.remove-group:hover {
+  background: color-mix(in oklab, var(--light) 90%, transparent);
+}
+
+/* People who ask for less transparency get solid buttons. */
+@media (prefers-reduced-transparency: reduce) {
+  .tool,
+  .add-tile,
+  .remove-group {
+    background: var(--light);
+  }
+
+  .tool:hover,
+  .move[aria-pressed='true'] {
+    background: var(--ink);
+  }
 }
 
 /* This text is for screen readers only. */

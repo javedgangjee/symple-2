@@ -1,7 +1,6 @@
-import { Injectable, InjectionToken, inject } from '@angular/core';
-import boardsFile from '../../data/boards.json';
-import cellsFile from '../../data/cells.json';
+import { Injectable, computed, effect, inject } from '@angular/core';
 import { LayoutName, isLayoutName } from '../layout/layout';
+import { BoardStore } from './board-store';
 
 /** The cell colours. Each name is a class in src/styles/cells.css. */
 export const CELL_COLOURS = ['dark', 'light', 'soft1', 'grey', 'ink', 'green', 'red'] as const;
@@ -92,9 +91,35 @@ export interface Group {
 export interface Board {
   readonly id: string;
   readonly title: string;
-  /** A board that gives a layout is always drawn that way. */
+  /** The layout that the board is drawn in. A board that gives none is drawn in columns. */
   readonly layout?: LayoutName;
+  /** A locked board cannot be edited. */
+  readonly locked?: true;
   readonly groups: readonly Group[];
+}
+
+/** A cell as `boards.json` writes it: the id of its tile, and its size. */
+export interface CellRecord {
+  readonly tile: string;
+  readonly size?: CellSize;
+}
+
+export interface GroupRecord {
+  readonly cells: readonly CellRecord[];
+}
+
+/** A board as `boards.json` writes it. */
+export interface BoardRecord extends Omit<Board, 'groups'> {
+  readonly groups: readonly GroupRecord[];
+}
+
+/**
+ * The set: every tile and every board together, in the shape of the two data files and with
+ * every rule of `loadBoards` kept. The edits of feature 9 take a set and give a new one.
+ */
+export interface BoardSet {
+  readonly tiles: readonly Tile[];
+  readonly boards: readonly BoardRecord[];
 }
 
 export interface LoadedBoards {
@@ -249,21 +274,25 @@ interface BoardShell {
   readonly id: string;
   readonly title: string;
   readonly layout?: LayoutName;
+  readonly locked?: true;
   readonly groups: readonly (readonly unknown[])[];
 }
 
 /** Reads the fields of one board, without its cells. It gives the board, or a line that says what is wrong. */
 function readBoardShell(value: Json, id: string): BoardShell | string {
-  const extra = unknownField(value, ['id', 'title', 'layout', 'groups']);
+  const extra = unknownField(value, ['id', 'title', 'layout', 'locked', 'groups']);
   if (extra) {
     return `it has the unknown field "${extra}"`;
   }
-  const { title, layout, groups } = value;
+  const { title, layout, locked, groups } = value;
   if (!isText(title)) {
     return 'it has no title';
   }
   if (layout !== undefined && !isLayoutName(layout)) {
     return `its layout ${show(layout)} is not known`;
+  }
+  if (locked !== undefined && locked !== true) {
+    return `its field "locked" is ${show(locked)} and not true`;
   }
   if (!Array.isArray(groups)) {
     return 'it has no list of groups';
@@ -276,7 +305,13 @@ function readBoardShell(value: Json, id: string): BoardShell | string {
     }
     cellLists.push(cells);
   }
-  return { id, title, ...(layout !== undefined && { layout }), groups: cellLists };
+  return {
+    id,
+    title,
+    ...(layout !== undefined && { layout }),
+    ...(locked === true && { locked }),
+    groups: cellLists,
+  };
 }
 
 /**
@@ -392,6 +427,7 @@ export function loadBoards(tilesInput: unknown, boardsInput: unknown): LoadedBoa
       id: shell.id,
       title: shell.title,
       ...(shell.layout !== undefined && { layout: shell.layout }),
+      ...(shell.locked && { locked: shell.locked }),
       groups,
     });
   }
@@ -399,37 +435,75 @@ export function loadBoards(tilesInput: unknown, boardsInput: unknown): LoadedBoa
   return { boards, faults };
 }
 
-/** The contents of the two data files. The tests replace them. */
-export interface BoardFiles {
-  readonly tiles: unknown;
-  readonly boards: unknown;
+/**
+ * Writes boards back in the shape of the two data files. The set holds each tile that a cell
+ * shows once, so a tile that no cell uses is not in it.
+ */
+export function toBoardSet(boards: readonly Board[]): BoardSet {
+  const tiles = new Map<string, Tile>();
+  const records = boards.map(({ groups, ...fields }): BoardRecord => ({
+    ...fields,
+    groups: groups.map((group) => ({
+      cells: group.cells.map(({ tile, size }) => {
+        tiles.set(tile.id, tile);
+        return size === undefined ? { tile: tile.id } : { tile: tile.id, size };
+      }),
+    })),
+  }));
+  return { tiles: [...tiles.values()], boards: records };
 }
 
-/** The files that are built into the app. Feature 9 adds the boards that the caregiver edits. */
-export const BOARD_FILES = new InjectionToken<BoardFiles>('BOARD_FILES', {
-  providedIn: 'root',
-  factory: () => ({ tiles: cellsFile, boards: boardsFile }),
-});
-
-/** Reads the two data files once and gives a board by its id. */
+/**
+ * Reads the set of the store and gives a board by its id. The set is read again when it
+ * changes, so a screen that holds a board draws the change.
+ */
 @Injectable({ providedIn: 'root' })
 export class BoardData {
-  private readonly byId = new Map<string, Board>();
+  private readonly store = inject(BoardStore);
+
+  private readonly loaded = computed(() => {
+    const { tiles, boards } = this.store.set();
+    return loadBoards(tiles, boards);
+  });
+
+  private readonly byId = computed(
+    () => new Map(this.loaded().boards.map((board) => [board.id, board])),
+  );
+
+  /** The set in use, as the edits take it. */
+  readonly set = computed(() => toBoardSet(this.loaded().boards));
 
   constructor() {
-    const files = inject(BOARD_FILES);
-    const { boards, faults } = loadBoards(files.tiles, files.boards);
-    for (const board of boards) {
-      this.byId.set(board.id, board);
-    }
     // The caregiver or the developer can find each skipped item in the console.
-    for (const fault of faults) {
-      console.warn(fault);
-    }
+    // The set in use is told of at once, and each later set when it is read.
+    let told = this.loaded();
+    this.warn(told);
+    effect(() => {
+      const loaded = this.loaded();
+      if (loaded !== told) {
+        told = loaded;
+        this.warn(loaded);
+      }
+    });
   }
 
   /** Gives the board with this id, or nothing when there is none. */
   board(id: string): Board | undefined {
-    return this.byId.get(id);
+    return this.byId().get(id);
+  }
+
+  /** Changes the set with an edit and stores the result. An edit that gives the same set stores nothing. */
+  change(edit: (set: BoardSet) => BoardSet): void {
+    const before = this.set();
+    const after = edit(before);
+    if (after !== before) {
+      this.store.save(after);
+    }
+  }
+
+  private warn({ faults }: LoadedBoards): void {
+    for (const fault of faults) {
+      console.warn(fault);
+    }
   }
 }

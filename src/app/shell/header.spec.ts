@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { Header } from './header';
 
@@ -42,5 +43,12 @@ describe('Header', () => {
     await fixture.whenStable();
     expect(TestBed.inject(SettingsOpen).isOpen()).toBe(true);
     expect(button?.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('H5: in edit mode the header shows no settings button and keeps its title', async () => {
+    TestBed.inject(EditMode).start();
+    const element = await draw('Needs');
+    expect(element.querySelector('button')).toBeNull();
+    expect(element.querySelector('h1')?.textContent?.trim()).toBe('Needs');
   });
 });

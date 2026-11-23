@@ -1,6 +1,5 @@
 import { Injectable, effect, inject, untracked } from '@angular/core';
 import { Auth } from '../auth/auth';
-import { Layout, isLayoutName } from '../layout/layout';
 import { ScanSettingName, ScanSettings } from '../scan/scan-settings';
 import { VoiceSettingName, VoiceSettings } from '../speech/voice-settings';
 import { THEME_NAMES, Theme, ThemeName } from '../theme/theme';
@@ -20,8 +19,10 @@ function isThemeName(value: unknown): value is ThemeName {
 
 /**
  * Keeps the settings of the device in step with the settings document of the account. They are
- * the theme, the layout, the six scan values and the four voice values, each saved as text.
+ * the theme, the six scan values and the four voice values, each saved as text.
  * The settings stay stored on the device, and the cloud holds a second copy.
+ * An older document can also hold `layout`. Each board has its own layout now, so the sync
+ * leaves that field alone.
  * The service starts when it is made and runs until the app ends.
  */
 @Injectable({ providedIn: 'root' })
@@ -29,7 +30,6 @@ export class SettingsSync {
   private readonly auth = inject(Auth);
   private readonly store = inject(CLOUD_STORE);
   private readonly theme = inject(Theme);
-  private readonly layout = inject(Layout);
   private readonly scan = inject(ScanSettings);
   private readonly voice = inject(VoiceSettings);
 
@@ -42,16 +42,6 @@ export class SettingsSync {
           return false;
         }
         this.theme.set(value);
-        return true;
-      },
-    },
-    layout: {
-      read: () => this.layout.name(),
-      use: (value) => {
-        if (!isLayoutName(value)) {
-          return false;
-        }
-        this.layout.set(value);
         return true;
       },
     },
@@ -87,7 +77,9 @@ export class SettingsSync {
         return;
       }
       const stop = untracked(() =>
-        this.store.watch(account.id, (document) => this.onDocument(account.id, document)),
+        this.store.watch(account.id, 'settings', (document) =>
+          this.onDocument(account.id, document),
+        ),
       );
       onCleanup(stop);
     });
@@ -153,7 +145,7 @@ export class SettingsSync {
     // The store then asks the cloud once more before it writes, so a value of the device
     // never replaces a value that the cloud holds, and nothing waits on the device to be sent later.
     if (document.fromCloud && Object.keys(missing).length > 0) {
-      this.store.saveIfMissing(accountId, missing).catch(() => undefined);
+      this.store.saveIfMissing(accountId, 'settings', missing).catch(() => undefined);
     }
   }
 
@@ -167,7 +159,7 @@ export class SettingsSync {
     }
     // A save that fails is dropped. The device keeps its value and stays usable with no cloud.
     void this.store
-      .save(accountId, fields)
+      .save(accountId, 'settings', fields)
       .catch(() => undefined)
       .then(() => names.forEach((field) => this.answered(field)));
   }

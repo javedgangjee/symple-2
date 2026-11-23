@@ -3,24 +3,27 @@
   <!-- With the keyboard, the caregiver opens the settings panel with the shortcut that the button names. -->
   <app-logo class="logo" />
   <h1>{{ title() }}</h1>
-  <button
-    class="settings"
-    type="button"
-    aria-label="Settings"
-    aria-haspopup="dialog"
-    [attr.aria-expanded]="settings.isOpen()"
-    [attr.aria-keyshortcuts]="shortcut"
-    [title]="'Settings (' + shortcut + ')'"
-    data-caregiver-control
-    tabindex="-1"
-    (click)="settings.open()"
-  >
-    <!-- The gear is the Lucide settings icon. -->
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
-      />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  </button>
+  <!-- The header keeps its height when the button is hidden in edit mode, so the cells do not move. -->
+  @if (!edit.isOn()) {
+    <button
+      class="settings"
+      type="button"
+      aria-label="Settings"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="settings.isOpen()"
+      [attr.aria-keyshortcuts]="shortcut"
+      [title]="'Settings (' + shortcut + ')'"
+      data-caregiver-control
+      tabindex="-1"
+      (click)="settings.open()"
+    >
+      <!-- The gear is the Lucide settings icon. -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+        />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    </button>
+  }
 </header>

@@ -1,0 +1,73 @@
+<!-- The buttons follow the footer of context/design/home.html, which has no Board settings button. -->
+<!-- Each icon is copied from the Lucide icon set, and a comment names it. -->
+@let cellsFull = !room.forAnyCell();
+@let groupsFull = !room.forGroup();
+<button
+  class="add"
+  type="button"
+  [attr.aria-disabled]="groupsFull"
+  [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"
+  [title]="groupsFull ? groupsFullText() : ''"
+  (click)="addGroup()"
+>
+  <!-- Lucide plus. -->
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+  Add {{ groupKind() }}
+</button>
+<button
+  class="add"
+  type="button"
+  aria-haspopup="dialog"
+  [attr.aria-disabled]="cellsFull"
+  [attr.aria-describedby]="cellsFull ? 'edit-cells-full' : null"
+  [title]="cellsFull ? cellsFullText() : ''"
+  (click)="add('add-board')"
+>
+  <!-- Lucide plus. -->
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+  Add board
+</button>
+<button
+  class="add"
+  type="button"
+  aria-haspopup="dialog"
+  [attr.aria-disabled]="cellsFull"
+  [attr.aria-describedby]="cellsFull ? 'edit-cells-full' : null"
+  [title]="cellsFull ? cellsFullText() : ''"
+  (click)="add('add-tile')"
+>
+  <!-- Lucide plus. -->
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+  Add tile
+</button>
+<button class="add" type="button" aria-haspopup="dialog" (click)="openBoardSettings()">
+  <!-- Lucide settings-2. -->
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M14 17H5" />
+    <path d="M19 7h-9" />
+    <circle cx="17" cy="17" r="3" />
+    <circle cx="7" cy="7" r="3" />
+  </svg>
+  Board settings
+</button>
+<button #done class="done" type="button" (click)="stop()">
+  <!-- Lucide check. -->
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+  Done
+</button>
+<!-- The lines that say why an Add button does nothing. A screen reader hears one with the button. -->
+@if (cellsFull) {
+  <p class="sr-only" id="edit-cells-full">{{ cellsFullText() }}</p>
+}
+@if (groupsFull) {
+  <p class="sr-only" id="edit-groups-full">{{ groupsFullText() }}</p>
+}

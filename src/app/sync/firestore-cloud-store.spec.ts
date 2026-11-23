@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import type { FirebaseApp } from 'firebase/app';
 import { FIREBASE_APP } from '../firebase/firebase-app';
-import { CloudDocument } from './cloud-store';
+import { CloudDocument, CloudDocumentName } from './cloud-store';
 import {
   DocumentSnapshot,
   FIRESTORE_LOADER,
@@ -21,12 +21,11 @@ class FakeDocuments implements FirestoreDocuments {
   readonly merges: { path: string; fields: Record<string, string> }[] = [];
 
   watch(
-    collection: string,
-    id: string,
+    path: readonly string[],
     onSnapshot: (snapshot: DocumentSnapshot) => void,
     onError: (error: unknown) => void,
   ): () => void {
-    this.watches.push({ path: `${collection}/${id}`, onSnapshot, onError });
+    this.watches.push({ path: path.join('/'), onSnapshot, onError });
     return () => undefined;
   }
 
@@ -34,22 +33,17 @@ class FakeDocuments implements FirestoreDocuments {
   held: Record<string, unknown> | null = null;
 
   async mergeAfterRead(
-    collection: string,
-    id: string,
+    path: readonly string[],
     choose: (held: Readonly<Record<string, unknown>> | null) => Readonly<Record<string, string>>,
   ): Promise<void> {
     const fields = choose(this.held);
     if (Object.keys(fields).length > 0) {
-      await this.merge(collection, id, fields);
+      await this.merge(path, fields);
     }
   }
 
-  async merge(
-    collection: string,
-    id: string,
-    fields: Readonly<Record<string, string>>,
-  ): Promise<void> {
-    this.merges.push({ path: `${collection}/${id}`, fields: { ...fields } });
+  async merge(path: readonly string[], fields: Readonly<Record<string, string>>): Promise<void> {
+    this.merges.push({ path: path.join('/'), fields: { ...fields } });
   }
 }
 
@@ -73,10 +67,12 @@ describe('FirestoreCloudStore', () => {
   /** Lets the load of Firestore, and what waits for it, run. */
   const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-  /** Watches the document of the account and returns the reports and the function that stops them. */
-  async function watch(): Promise<{ reports: CloudDocument[]; stop: () => void }> {
+  /** Watches a document of the account and returns the reports and the function that stops them. */
+  async function watch(
+    name: CloudDocumentName = 'settings',
+  ): Promise<{ reports: CloudDocument[]; stop: () => void }> {
     const reports: CloudDocument[] = [];
-    const stop = store.watch(ACCOUNT_ID, (document) => reports.push(document));
+    const stop = store.watch(ACCOUNT_ID, name, (document) => reports.push(document));
     await settle();
     return { reports, stop };
   }
@@ -131,7 +127,7 @@ describe('FirestoreCloudStore', () => {
   });
 
   it('C4: a watch that is stopped before Firestore has loaded never watches the document', async () => {
-    const stop = store.watch(ACCOUNT_ID, () => undefined);
+    const stop = store.watch(ACCOUNT_ID, 'settings', () => undefined);
     stop();
     await settle();
     expect(loads).toBe(1);
@@ -142,7 +138,7 @@ describe('FirestoreCloudStore', () => {
     failingLoads = 1;
     await watch();
     expect(documents.watches).toEqual([]);
-    await store.save(ACCOUNT_ID, { theme: 'dark' });
+    await store.save(ACCOUNT_ID, 'settings', { theme: 'dark' });
     expect(loads).toBe(2);
     expect(documents.merges).toEqual([{ path: `users/${ACCOUNT_ID}`, fields: { theme: 'dark' } }]);
   });
@@ -177,23 +173,40 @@ describe('FirestoreCloudStore', () => {
 
   it('C8: a save of missing fields leaves out a field that the server holds', async () => {
     documents.held = { theme: 'teal' };
-    await store.saveIfMissing(ACCOUNT_ID, { theme: 'blue', layout: 'columns' });
+    await store.saveIfMissing(ACCOUNT_ID, 'settings', { theme: 'blue', scanTime: '1500' });
     expect(documents.merges).toEqual([
-      { path: `users/${ACCOUNT_ID}`, fields: { layout: 'columns' } },
+      { path: `users/${ACCOUNT_ID}`, fields: { scanTime: '1500' } },
     ]);
   });
 
   it('C9: a save of missing fields writes nothing when the server holds them all', async () => {
-    documents.held = { theme: 'teal', layout: 'rows' };
-    await store.saveIfMissing(ACCOUNT_ID, { theme: 'blue', layout: 'columns' });
+    documents.held = { theme: 'teal', scanTime: '2000' };
+    await store.saveIfMissing(ACCOUNT_ID, 'settings', { theme: 'blue', scanTime: '1500' });
     expect(documents.merges).toEqual([]);
   });
 
   it('C10: a save of missing fields writes them all when there is no document', async () => {
     documents.held = null;
-    await store.saveIfMissing(ACCOUNT_ID, { theme: 'blue', layout: 'columns' });
+    await store.saveIfMissing(ACCOUNT_ID, 'settings', { theme: 'blue', scanTime: '1500' });
     expect(documents.merges).toEqual([
-      { path: `users/${ACCOUNT_ID}`, fields: { theme: 'blue', layout: 'columns' } },
+      { path: `users/${ACCOUNT_ID}`, fields: { theme: 'blue', scanTime: '1500' } },
+    ]);
+  });
+
+  it('C11: the boards document is watched at its own path', async () => {
+    const { reports } = await watch('boards');
+    documents.watches[0].onSnapshot(snapshot({ tiles: '[]', boards: '[]' }, false));
+    expect(documents.watches[0].path).toBe(`users/${ACCOUNT_ID}/data/boards`);
+    expect(reports).toEqual([{ fields: { tiles: '[]', boards: '[]' }, fromCloud: true }]);
+  });
+
+  it('C12: the two saves of the boards document reach its own path', async () => {
+    await store.save(ACCOUNT_ID, 'boards', { tiles: '[]', boards: '[]' });
+    await store.saveIfMissing(ACCOUNT_ID, 'boards', { tiles: '[1]', boards: '[2]' });
+    const path = `users/${ACCOUNT_ID}/data/boards`;
+    expect(documents.merges).toEqual([
+      { path, fields: { tiles: '[]', boards: '[]' } },
+      { path, fields: { tiles: '[1]', boards: '[2]' } },
     ]);
   });
 });

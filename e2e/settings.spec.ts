@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { axeViolations } from './support/axe';
 import { THEMES, askForLessTransparency, cell, openBoard } from './support/boards';
+import { drawnContrast } from './support/contrast';
 import { test } from './support/firebase';
 import {
   SCAN_TIME,
@@ -17,8 +18,8 @@ import {
 } from './support/scan';
 import { VOICE_A, VOICE_B, spokenWithVoice } from './support/speech';
 
-/** The five categories of the panel, in the order of the list. */
-const TABS = ['Selection', 'Speech', 'Appearance', 'Account', 'About'] as const;
+/** The six categories of the panel, in the order of the list. */
+const TABS = ['Boards', 'Selection', 'Speech', 'Appearance', 'Account', 'About'] as const;
 type TabName = (typeof TABS)[number];
 
 const SAMPLE = 'Hello. This is my voice.';
@@ -31,11 +32,11 @@ const tab = (page: Page, name: TabName) => panel(page).getByRole('tab', { name, 
 const pane = (page: Page, name: TabName) => page.locator(`#settings-pane-${name.toLowerCase()}`);
 const done = (page: Page) => panel(page).getByRole('button', { name: 'Done', exact: true });
 
-/** Presses the settings button and waits for the panel, which opens on Selection. */
+/** Presses the settings button and waits for the panel, which opens on Boards. */
 async function openPanel(page: Page): Promise<void> {
   await settingsButton(page).click();
   await expect(panel(page)).toHaveAttribute('open', '');
-  await expect(tab(page, 'Selection')).toBeFocused();
+  await expect(tab(page, 'Boards')).toBeFocused();
 }
 
 /** Chooses a category of the open panel and waits for its settings. */
@@ -103,232 +104,6 @@ async function focusInPanel(page: Page): Promise<{ inside: boolean; name: string
   });
 }
 
-/** One measured contrast: what was measured, its lowest ratio and the ratio it needs. */
-interface Reading {
-  what: string;
-  ratio: number;
-  needed: number;
-}
-
-/** A colour that a test measures, and the places of the page where it meets its background. */
-interface Target {
-  what: string;
-  needed: number;
-  /** The colour of the text or of the border, as the browser gives it. */
-  colour: string;
-  /** The points where the background is read, in pixels of the window. */
-  points: [number, number][];
-}
-
-/**
- * Lists what ST12 measures in the open panel, with the points where each one meets its
- * background. Text is read over the line boxes of each text, inside its own element. The border
- * of a control is read against the pixels just inside it and just outside it. A control that has
- * no border but a solid fill, such as the switch, Done and the chosen category, is read against
- * the pixels just outside it. A control that is turned off at the end of its range is left out,
- * as WCAG 1.4.11 allows.
- */
-function listTargets(): Target[] {
-  const dialog = document.querySelector('dialog.panel');
-  if (!dialog) {
-    throw new Error('There is no settings panel.');
-  }
-  const targets: Target[] = [];
-  const shown = (element: Element) =>
-    element.getClientRects().length > 0 && element.closest('.sr-only, option') === null;
-  const fill = (rect: DOMRect, inset: number): [number, number][] => {
-    const points: [number, number][] = [];
-    for (let y = Math.ceil(rect.top + inset); y < rect.bottom - inset; y++) {
-      for (let x = Math.ceil(rect.left + inset); x < rect.right - inset; x++) {
-        points.push([x, y]);
-      }
-    }
-    return points;
-  };
-  // Points on a ring at a distance from the edge of a box: outside it when the distance is
-  // above 0 and inside it when it is below. Only the middle half of each side is read, so the
-  // rounded corners are left out.
-  const ring = (rect: DOMRect, distance: number): [number, number][] => {
-    const points: [number, number][] = [];
-    const left = Math.floor(rect.left - distance);
-    const right = Math.ceil(rect.right + distance) - 1;
-    const top = Math.floor(rect.top - distance);
-    const bottom = Math.ceil(rect.bottom + distance) - 1;
-    for (let x = rect.left + rect.width / 4; x <= rect.right - rect.width / 4; x++) {
-      points.push([Math.round(x), top], [Math.round(x), bottom]);
-    }
-    for (let y = rect.top + rect.height / 4; y <= rect.bottom - rect.height / 4; y++) {
-      points.push([left, Math.round(y)], [right, Math.round(y)]);
-    }
-    return points;
-  };
-  const nameOf = (element: Element) =>
-    (element.getAttribute('aria-label') ?? element.textContent ?? element.tagName)
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 40);
-
-  // Each text: the text nodes, and the text of each drop-down list.
-  const walker = document.createTreeWalker(dialog, NodeFilter.SHOW_TEXT);
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const parent = node.parentElement;
-    if (!parent || !node.textContent?.trim() || !shown(parent)) {
-      continue;
-    }
-    const range = document.createRange();
-    range.selectNodeContents(node);
-    const points = Array.from(range.getClientRects()).flatMap((rect) => fill(rect, 1));
-    if (points.length > 0) {
-      targets.push({
-        what: `text "${node.textContent.trim().slice(0, 40)}"`,
-        needed: 4.5,
-        colour: getComputedStyle(parent).color,
-        points,
-      });
-    }
-  }
-  for (const select of dialog.querySelectorAll('select')) {
-    if (!shown(select)) {
-      continue;
-    }
-    // The text of a list sits in its content box, inside the border and the padding.
-    const style = getComputedStyle(select);
-    const box = select.getBoundingClientRect();
-    const left = box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
-    const right = box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight);
-    const content = new DOMRect(left, box.top + 4, right - left, box.height - 8);
-    targets.push({
-      what: `text of the list ${select.id}`,
-      needed: 4.5,
-      colour: style.color,
-      points: fill(content, 0),
-    });
-  }
-
-  // Each control: its border, or the edge of its solid fill.
-  const solid = (colour: string) => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    if (!context) {
-      throw new Error('The canvas has no 2D context.');
-    }
-    context.fillStyle = colour;
-    context.fillRect(0, 0, 1, 1);
-    return context.getImageData(0, 0, 1, 1).data[3] === 255;
-  };
-  for (const control of dialog.querySelectorAll('button, select, input, .seg')) {
-    if (!shown(control) || control.closest('[aria-disabled="true"]') !== null) {
-      continue;
-    }
-    if (control instanceof HTMLInputElement && control.type === 'radio') {
-      // A radio button is hidden inside its label, and the segmented control around it is read.
-      continue;
-    }
-    const style = getComputedStyle(control);
-    const box = control.getBoundingClientRect();
-    const border = parseFloat(style.borderTopWidth);
-    if (border >= 1 && style.borderTopStyle !== 'none') {
-      targets.push({
-        what: `border of ${nameOf(control)}`,
-        needed: 3,
-        colour: style.borderTopColor,
-        points: [...ring(box, 2), ...ring(box, -(border + 1))],
-      });
-    } else if (solid(style.backgroundColor)) {
-      targets.push({
-        what: `edge of ${nameOf(control)}`,
-        needed: 3,
-        colour: style.backgroundColor,
-        points: ring(box, 2),
-      });
-    }
-  }
-  return targets;
-}
-
-/**
- * Reads the screenshot in the page and gives, for each target, its lowest contrast against the
- * pixels at its points. A colour with alpha is laid over each pixel first, as the browser draws it.
- */
-async function lowestRatios(page: Page, png: Buffer, targets: Target[]): Promise<Reading[]> {
-  return page.evaluate(
-    async ([data, list]) => {
-      const bitmap = await createImageBitmap(
-        await (await fetch(`data:image/png;base64,${data}`)).blob(),
-      );
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
-      const context = canvas.getContext('2d', { willReadFrequently: true });
-      if (!context) {
-        throw new Error('The canvas has no 2D context.');
-      }
-      context.drawImage(bitmap, 0, 0);
-      const pixels = context.getImageData(0, 0, bitmap.width, bitmap.height).data;
-      const rgba = (colour: string) => {
-        context.clearRect(0, 0, 1, 1);
-        context.fillStyle = colour;
-        context.fillRect(0, 0, 1, 1);
-        const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data;
-        return [r, g, b, a / 255];
-      };
-      const luminance = (r: number, g: number, b: number) => {
-        const channel = (value: number) => {
-          const c = value / 255;
-          return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-        };
-        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-      };
-      return list.map(({ what, needed, colour, points }) => {
-        const [fr, fg, fb, alpha] = rgba(colour);
-        let ratio = Infinity;
-        for (const [x, y] of points) {
-          if (x < 0 || y < 0 || x >= bitmap.width || y >= bitmap.height) {
-            continue;
-          }
-          const at = (y * bitmap.width + x) * 4;
-          const [br, bg, bb] = [pixels[at], pixels[at + 1], pixels[at + 2]];
-          const front = luminance(
-            fr * alpha + br * (1 - alpha),
-            fg * alpha + bg * (1 - alpha),
-            fb * alpha + bb * (1 - alpha),
-          );
-          const back = luminance(br, bg, bb);
-          ratio = Math.min(ratio, (Math.max(front, back) + 0.05) / (Math.min(front, back) + 0.05));
-        }
-        return { what, ratio, needed };
-      });
-    },
-    [png.toString('base64'), targets] as const,
-  );
-}
-
-/**
- * Measures the contrast of the open panel against what is really drawn behind each text and
- * each control. The panel is see-through, so its colour on screen depends on the board behind
- * it, the dimmed page and the blur. The test therefore lists the colours first, then hides every
- * text and icon of the panel, takes a screenshot and reads the background from its pixels. Each
- * text and border is measured against the worst pixel of its own background.
- */
-async function panelContrast(page: Page): Promise<Reading[]> {
-  const targets = await page.evaluate(listTargets);
-  await page.evaluate(() => {
-    const style = document.createElement('style');
-    style.dataset['hideText'] = '';
-    style.textContent = `dialog.panel, dialog.panel *, dialog.panel *::before, dialog.panel *::after {
-      color: transparent !important;
-      -webkit-text-fill-color: transparent !important;
-      transition: none !important;
-    }`;
-    document.head.appendChild(style);
-  });
-  const png = await page.screenshot({ scale: 'css', animations: 'disabled', caret: 'hide' });
-  await page.evaluate(() => document.querySelector('style[data-hide-text]')?.remove());
-  return lowestRatios(page, png, targets);
-}
-
 test('ST1: the settings button opens the panel at 80 parts in 100 of the width of the window, all inside it', async ({
   page,
 }) => {
@@ -371,7 +146,7 @@ test('ST2: Control with comma opens the panel, Tab goes round inside it, and Esc
   await page.keyboard.press('Control+Comma');
   await expect(panel(page)).toHaveAttribute('open', '');
   const first = await focusInPanel(page);
-  expect(first).toEqual({ inside: true, name: 'tab Selection' });
+  expect(first).toEqual({ inside: true, name: 'tab Boards' });
   const visited = [first.name];
   // The focus must come back to the chosen category. The count of presses has a limit, so a
   // focus that never comes back fails the test and does not hang it.
@@ -384,17 +159,8 @@ test('ST2: Control with comma opens the panel, Tab goes round inside it, and Esc
     }
     visited.push(focus.name);
   }
-  expect(visited).toEqual([
-    'tab Selection',
-    'Selection mode',
-    'Shorter scan time',
-    'Longer scan time',
-    'Show progress bar',
-    'Shorter post click delay',
-    'Longer post click delay',
-    'Done',
-  ]);
-  await expect(tab(page, 'Selection')).toBeFocused();
+  expect(visited).toEqual(['tab Boards', 'Edit boards', 'Done']);
+  await expect(tab(page, 'Boards')).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(panel(page)).not.toHaveAttribute('open');
 });
@@ -461,7 +227,10 @@ scanTest(
     expect(await marked(page, 'data-scan')).toEqual(NOTHING);
     await expect(title(page)).toHaveText('Home');
 
-    // The focus is on the chosen category. Tab moves it to the next control, and Enter is pressed there.
+    // The focus is on the chosen category, Boards. The Down arrow chooses Selection, Tab moves
+    // the focus to its first control, and Enter is pressed there.
+    await page.keyboard.press('ArrowDown');
+    await pass(page, 0);
     await page.keyboard.press('Tab');
     await pass(page, 0);
     expect(await focusInPanel(page)).toEqual({ inside: true, name: 'Selection mode' });
@@ -479,6 +248,7 @@ scanTest(
   async ({ open }) => {
     const page = await open('home', 'Home');
     await openPanelByShortcut(page);
+    await press(page, tab(page, 'Selection'));
     const longer = panel(page).getByRole('button', { name: 'Longer scan time' });
     const reading = panel(page).getByRole('group', { name: 'Scan time' }).locator('output');
     // The scanning tests store a scan time of 1.0 s, and each press adds half a second.
@@ -510,6 +280,7 @@ scanTest(
     // A reload would lose this mark.
     await page.evaluate(() => Object.assign(window, { noReload: true }));
     await openPanelByShortcut(page);
+    await press(page, tab(page, 'Selection'));
     await panel(page).locator('#settings-mode').selectOption('step');
     await pass(page, 0);
     await expect(panel(page).locator('#settings-mode')).toHaveValue('step');
@@ -614,7 +385,7 @@ test('ST12: the text and the borders of the controls keep their contrast over th
       await showTab(page, name);
       // The pointer is moved off the panel, so no control shows its hover look.
       await page.mouse.move(1, 1);
-      const readings = await panelContrast(page);
+      const readings = await drawnContrast(page, 'dialog.panel');
       expect(readings.length, `${theme} ${name}`).toBeGreaterThan(0);
       const low = readings
         .filter(({ ratio, needed }) => ratio < needed)
@@ -680,9 +451,9 @@ test.describe('in a window 800 by 768', () => {
       }
     }
     await page.keyboard.press('ArrowRight');
-    await expect(tab(page, 'Speech')).toBeFocused();
-    await expect(tab(page, 'Speech')).toHaveAttribute('aria-selected', 'true');
-    await expect(pane(page, 'Speech')).toBeVisible();
+    await expect(tab(page, 'Selection')).toBeFocused();
+    await expect(tab(page, 'Selection')).toHaveAttribute('aria-selected', 'true');
+    await expect(pane(page, 'Selection')).toBeVisible();
   });
 });
 
@@ -815,6 +586,7 @@ test('ST20: a press on the dimmed page next to the panel closes it', async ({ pa
 test('ST21: a drag from the panel onto the dimmed page leaves the panel open', async ({ page }) => {
   await openBoard(page, 'home');
   await openPanel(page);
+  await showTab(page, 'Selection');
   const box = await panel(page).boundingBox();
   const label = await panel(page).locator('label[for="settings-mode"]').boundingBox();
   if (!box || !label) {

@@ -13,12 +13,12 @@ import {
 import { routes } from './app.routes';
 import { AUTH_SOURCE, Auth } from './auth/auth';
 import { FirebaseAuthSource } from './auth/firebase-auth-source';
-import { Layout } from './layout/layout';
 import { ScanSettings } from './scan/scan-settings';
 import { ScreenTitle } from './shell/screen-title';
 import { SystemVoiceSource } from './speech/system-voice-source';
 import { VoiceSettings } from './speech/voice-settings';
 import { VOICE_SOURCE } from './speech/voice-source';
+import { BoardSync } from './sync/board-sync';
 import { CLOUD_STORE } from './sync/cloud-store';
 import { FirestoreCloudStore } from './sync/firestore-cloud-store';
 import { SettingsSync } from './sync/settings-sync';
@@ -37,22 +37,22 @@ export const appConfig: ApplicationConfig = {
     ),
     // The route title goes to the header. The page title in the browser stays "Symple".
     { provide: TitleStrategy, useExisting: ScreenTitle },
-    // Firebase Auth holds the caregiver accounts, and Firestore holds the cloud copy of the settings.
+    // Firebase Auth holds the caregiver accounts, and Firestore holds the cloud copy of the
+    // settings and the boards.
     { provide: AUTH_SOURCE, useClass: FirebaseAuthSource },
     { provide: CLOUD_STORE, useClass: FirestoreCloudStore },
     // The system voices speak the phrases and the message.
     { provide: VOICE_SOURCE, useClass: SystemVoiceSource },
     // The theme is applied before the first screen is drawn.
     provideAppInitializer(() => inject(Theme).load()),
-    // The layout is read before the first screen is drawn.
-    provideAppInitializer(() => inject(Layout).load()),
     // The scan settings are read before the first screen is drawn.
     provideAppInitializer(() => inject(ScanSettings).load()),
     // The voice and its rate, pitch and volume are read before the first screen is drawn.
     provideAppInitializer(() => inject(VoiceSettings).load()),
     // The stored sign in is read before the first screen is drawn.
     provideAppInitializer(() => inject(Auth).ready()),
-    // The sync starts when the service is made.
+    // Each sync starts when its service is made.
     provideAppInitializer(() => void inject(SettingsSync)),
+    provideAppInitializer(() => void inject(BoardSync)),
   ],
 };

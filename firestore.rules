@@ -1,18 +1,56 @@
 rules_version = '2';
 
-// An account reads and writes only its own settings document, users/{uid},
-// and the documents under it. Everything else is refused, because no other rule allows it.
+// An account reads and writes only two documents of its own: its settings, users/{uid}, and its
+// boards, users/{uid}/data/boards. Everything else is refused, because no other rule allows it.
+// The app writes with a merge, so a write can hold only some of the fields. Each check reads
+// request.resource.data, which is the whole document as it would be after the write.
+// The app never deletes a document, so no rule allows a delete.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    match /users/{uid} {
-      allow read, write: if isOwner(uid);
+    // Whether a field of the document is absent, or is a string of at most max characters.
+    function isTextOrAbsent(data, field, max) {
+      return !(field in data) || (data[field] is string && data[field].size() <= max);
+    }
 
-      match /{document=**} {
-        allow read, write: if isOwner(uid);
+    // The settings document. It takes its twelve known fields and no others. The field layout
+    // is no longer written, and it stays on the list because older documents hold it.
+    function isSettings(data) {
+      return data.keys().hasOnly([
+          'theme', 'layout', 'scanTime', 'postClickDelay', 'selectionMode', 'dwellTime',
+          'dwellStyle', 'showProgressBar', 'voice', 'voiceRate', 'voicePitch', 'voiceVolume'
+        ])
+        && isTextOrAbsent(data, 'theme', 500)
+        && isTextOrAbsent(data, 'layout', 500)
+        && isTextOrAbsent(data, 'scanTime', 500)
+        && isTextOrAbsent(data, 'postClickDelay', 500)
+        && isTextOrAbsent(data, 'selectionMode', 500)
+        && isTextOrAbsent(data, 'dwellTime', 500)
+        && isTextOrAbsent(data, 'dwellStyle', 500)
+        && isTextOrAbsent(data, 'showProgressBar', 500)
+        && isTextOrAbsent(data, 'voice', 500)
+        && isTextOrAbsent(data, 'voiceRate', 500)
+        && isTextOrAbsent(data, 'voicePitch', 500)
+        && isTextOrAbsent(data, 'voiceVolume', 500);
+    }
+
+    // The boards document. It takes the set as the two JSON texts tiles and boards, and nothing else.
+    function isBoards(data) {
+      return data.keys().hasOnly(['tiles', 'boards'])
+        && isTextOrAbsent(data, 'tiles', 500000)
+        && isTextOrAbsent(data, 'boards', 500000);
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isSettings(request.resource.data);
+
+      match /data/boards {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && isBoards(request.resource.data);
       }
     }
   }

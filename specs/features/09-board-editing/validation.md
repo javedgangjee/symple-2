@@ -132,7 +132,7 @@ Dragging and room, in `drag.spec.ts` and `room.spec.ts` of `src/app/edit/`:
 | DR2 | The pointer goes down on a cell and moves over the middle of the third group, above the middle of its first cell. | The place is the third group, first place. |
 | DR3 | The pointer is over a group with no room. | The place is the cell's own place. |
 | DR4 | The pointer goes up after a drag. | One move is asked for, and the click that follows picks nothing up. |
-| RM1 | A group is 400px long with a gap of 16px and holds 6 cells. | It has room for one more cell. |
+| RM1 | A group is 400px long with a gap of 16px and holds 5 cells. | It has room for one more cell. |
 | RM2 | The same group holds 7 cells. | It has no room, because 8 cells would each be under 48px. |
 | RM3 | A grid is 300px across with a gap of 16px and holds 5 groups. | It has no room for one more group. |
 

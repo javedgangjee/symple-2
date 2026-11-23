@@ -1,0 +1,24 @@
+<!-- The dialog has the look of the tile dialog of context/design/home.html. The mockup has no remove dialog. -->
+<!-- The dialog hears a press on the dimmed page and the Tab key from its controls. It is not a control itself, -->
+<!-- and Escape and Cancel close it from the keyboard, so it takes no focus of its own. -->
+<!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+<dialog
+  #dialog
+  class="sheet narrow"
+  aria-labelledby="remove-title"
+  aria-describedby="remove-text"
+  data-caregiver-control
+  (close)="events.closed()"
+  (pointerdown)="events.pointerDown($event)"
+  (click)="events.click($event)"
+  (keydown)="events.key($event)"
+>
+  <div class="body">
+    <h2 id="remove-title">Remove {{ name() }}?</h2>
+    <p id="remove-text">{{ text() }}</p>
+    <div class="actions">
+      <button #cancelButton type="button" (click)="cancel()">Cancel</button>
+      <button type="button" class="primary" (click)="confirmed.emit()">Remove</button>
+    </div>
+  </div>
+</dialog>
