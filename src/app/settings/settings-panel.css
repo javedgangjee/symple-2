@@ -238,7 +238,8 @@ button.row svg {
   gap: 0.5rem;
 }
 
-.stepper button {
+.stepper button,
+.play {
   display: grid;
   place-items: center;
   width: 3rem;
@@ -253,12 +254,14 @@ button.row svg {
     border-color 160ms var(--ease);
 }
 
-.stepper button:hover {
+.stepper button:hover,
+.play:hover {
   border-color: var(--ink);
   background: var(--control-hover);
 }
 
-.stepper button:focus-visible {
+.stepper button:focus-visible,
+.play:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 3px;
 }
@@ -324,6 +327,23 @@ button.row svg {
 
 .pick svg {
   right: 0.75rem;
+}
+
+/* The button that plays a sample sits beside the list of voices. */
+.beside {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.beside .pick {
+  min-width: 0;
+}
+
+.play {
+  flex: none;
 }
 
 /* The dots beside the theme show the colours of the theme in use. */

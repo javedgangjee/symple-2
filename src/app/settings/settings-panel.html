@@ -271,19 +271,34 @@
               <div class="row">
                 @if (voices().length > 0) {
                   <label class="what" for="settings-voice">Voice</label>
-                  <span class="pick">
-                    <select
-                      #voicePick
-                      id="settings-voice"
-                      (change)="voice.set({ voice: voicePick.value })"
+                  <span class="beside">
+                    <span class="pick">
+                      <select
+                        #voicePick
+                        id="settings-voice"
+                        (change)="voice.set({ voice: voicePick.value })"
+                      >
+                        @for (listed of voices(); track listed.id) {
+                          <option [value]="listed.id" [selected]="voiceInUse() === listed.id">
+                            {{ listed.name }}
+                          </option>
+                        }
+                      </select>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </span>
+                    <button
+                      class="play"
+                      type="button"
+                      aria-label="Play a sample"
+                      title="Play a sample"
+                      (click)="playSample()"
                     >
-                      @for (listed of voices(); track listed.id) {
-                        <option [value]="listed.id" [selected]="voiceInUse() === listed.id">
-                          {{ listed.name }}
-                        </option>
-                      }
-                    </select>
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                        />
+                      </svg>
+                    </button>
                   </span>
                 } @else {
                   <span class="what">Voice</span>
@@ -315,18 +330,6 @@
               The list holds the English voices of this device. More can be downloaded in the
               device's own settings.
             </p>
-          </div>
-          <div class="block">
-            <div class="set">
-              <button class="row" type="button" (click)="playSample()">
-                Play a sample
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
         </section>
 
