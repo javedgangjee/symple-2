@@ -512,9 +512,7 @@ scanTest(
     await openPanelByShortcut(page);
     await panel(page).locator('#settings-mode').selectOption('step');
     await pass(page, 0);
-    await expect(panel(page).locator('#settings-mode-note')).toHaveText(
-      'One switch moves the highlight, and a second switch picks.',
-    );
+    await expect(panel(page).locator('#settings-mode')).toHaveValue('step');
     await closePanel(page);
 
     await switchKey(page, 'Tab');

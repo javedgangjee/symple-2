@@ -214,9 +214,7 @@ describe('SettingsPanel', () => {
     expect(rowOf('Scan time')).toBeDefined();
     await choose('#settings-mode', 'dwell');
     expect(localStorage.getItem(SCAN_STORAGE_KEYS.selectionMode)).toBe('dwell');
-    expect(one('#settings-mode-note').textContent?.trim()).toBe(
-      'A pointer that rests on a cell presses it.',
-    );
+    expect(element.querySelector('.note')).toBeNull();
     expect(rowOf('Dwell time')).toBeDefined();
     expect(rowOf('Dwell style')).toBeDefined();
     expect(rowOf('Scan time')).toBeUndefined();

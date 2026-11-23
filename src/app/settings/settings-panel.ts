@@ -44,19 +44,13 @@ type TabId = (typeof TABS)[number]['id'];
 /** The category that the panel shows each time it opens. */
 const FIRST_TAB: TabId = 'selection';
 
-/** The name of each selection mode in the list, and the note that says what the mode does. */
-const MODES: Readonly<Record<SelectionMode, { readonly label: string; readonly note: string }>> = {
-  scan: { label: 'Scan, one switch', note: 'The highlight moves by itself, and one switch picks.' },
-  step: {
-    label: 'Step, two switches',
-    note: 'One switch moves the highlight, and a second switch picks.',
-  },
-  cursor: {
-    label: 'Cursor',
-    note: 'A pointer presses a cell. A round cursor shows where the pointer is.',
-  },
-  touch: { label: 'Touch', note: 'A finger or a pointer presses a cell.' },
-  dwell: { label: 'Dwell', note: 'A pointer that rests on a cell presses it.' },
+/** The name of each selection mode in the list. */
+const MODE_LABELS: Readonly<Record<SelectionMode, string>> = {
+  scan: 'Scan, one switch',
+  step: 'Step, two switches',
+  cursor: 'Cursor',
+  touch: 'Touch',
+  dwell: 'Dwell',
 };
 
 const DWELL_STYLE_LABELS: Readonly<Record<DwellStyle, string>> = { grow: 'Grow', bar: 'Bar' };
@@ -149,7 +143,7 @@ export class SettingsPanel {
 
   protected readonly tabs = TABS;
   protected readonly modes = SELECTION_MODES;
-  protected readonly modeText = MODES;
+  protected readonly modeLabels = MODE_LABELS;
   protected readonly dwellStyles = DWELL_STYLES;
   protected readonly dwellStyleLabels = DWELL_STYLE_LABELS;
   protected readonly themes = THEME_NAMES;

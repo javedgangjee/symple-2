@@ -1,5 +1,5 @@
 <!-- The markup follows the settings dialog of context/design/home-settings.html. -->
-<!-- The labels, the notes and the credits are written here. They are not boards or cells, so they do not come from the data files. -->
+<!-- The labels and the credits are written here. They are not boards or cells, so they do not come from the data files. -->
 <!-- The dialog hears a press on the dimmed page and the Tab key from its controls. It is not a control itself, -->
 <!-- and Escape and Done close it from the keyboard, so it takes no focus of its own. -->
 <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
@@ -88,15 +88,10 @@
               <div class="row">
                 <label class="what" for="settings-mode">Selection mode</label>
                 <span class="pick">
-                  <select
-                    #mode
-                    id="settings-mode"
-                    aria-describedby="settings-mode-note"
-                    (change)="setMode(mode.value)"
-                  >
+                  <select #mode id="settings-mode" (change)="setMode(mode.value)">
                     @for (name of modes; track name) {
                       <option [value]="name" [selected]="scan.selectionMode() === name">
-                        {{ modeText[name].label }}
+                        {{ modeLabels[name] }}
                       </option>
                     }
                   </select>
@@ -104,7 +99,6 @@
                 </span>
               </div>
             </div>
-            <p class="note" id="settings-mode-note">{{ modeText[scan.selectionMode()].note }}</p>
           </div>
 
           @if (scan.selectionMode() === 'scan') {
@@ -155,10 +149,6 @@
                   />
                 </label>
               </div>
-              <p class="note">
-                The scan time is how long the highlight stays on each group or cell. The progress
-                bar counts it down.
-              </p>
             </div>
           }
 
@@ -214,11 +204,6 @@
                   </span>
                 </div>
               </div>
-              <p class="note">
-                The dwell time is how long the pointer rests on a cell before the cell is pressed.
-                Grow makes the cell expand while the time runs. Bar fills a bar along the bottom of
-                the cell.
-              </p>
             </div>
           }
 
@@ -255,7 +240,6 @@
                 </div>
               </div>
             </div>
-            <p class="note">How long presses are ignored after a pick.</p>
           </div>
         </section>
 
@@ -337,10 +321,6 @@
                 </div>
               }
             </div>
-            <p class="note">
-              The list holds the English voices of this device. More can be downloaded in the
-              device's own settings.
-            </p>
           </div>
         </section>
 
@@ -369,10 +349,6 @@
                 </span>
               </div>
             </div>
-            <p class="note">
-              Columns are read top to bottom, and rows left to right. A board that fixes its own
-              layout, such as the keyboard, keeps it.
-            </p>
           </div>
         </section>
 
@@ -390,7 +366,6 @@
                 <span class="val">{{ email() ?? 'An account with no email address' }}</span>
               </div>
             </div>
-            <p class="note">The settings sync to this account.</p>
           </div>
           <div class="block">
             <div class="set">
