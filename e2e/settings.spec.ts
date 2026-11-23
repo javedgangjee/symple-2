@@ -251,12 +251,8 @@ function listTargets(): Target[] {
     if (!shown(control) || control.closest('[aria-disabled="true"]') !== null) {
       continue;
     }
-    if (
-      control instanceof HTMLInputElement &&
-      (control.type === 'radio' || control.type === 'range')
-    ) {
+    if (control instanceof HTMLInputElement && control.type === 'radio') {
       // A radio button is hidden inside its label, and the segmented control around it is read.
-      // A slider is drawn by the browser, and CSS cannot read its colours.
       continue;
     }
     const style = getComputedStyle(control);
@@ -602,16 +598,22 @@ scanTest(
     await press(page, tab(page, 'Speech'));
     await panel(page).locator('#settings-voice').selectOption(VOICE_B.voiceURI);
     await pass(page, 0);
-    for (const [slider, value] of [
-      ['#settings-rate', '1.5'],
-      ['#settings-pitch', '0.8'],
-      ['#settings-volume', '0.5'],
+    for (const [name, presses] of [
+      ['Faster rate', 5],
+      ['Lower pitch', 2],
+      ['Lower volume', 5],
     ] as const) {
-      await panel(page).locator(slider).fill(value);
-      await pass(page, 0);
+      for (let done = 0; done < presses; done++) {
+        await panel(page).getByRole('button', { name }).click();
+        await pass(page, 0);
+      }
     }
-    await expect(panel(page).locator('#settings-rate')).toHaveAttribute('aria-valuetext', '1.5×');
-    await expect(panel(page).locator('#settings-volume')).toHaveAttribute('aria-valuetext', '50%');
+    await expect(panel(page).getByRole('group', { name: 'Rate' }).locator('output')).toHaveText(
+      '1.5×',
+    );
+    await expect(panel(page).getByRole('group', { name: 'Volume' }).locator('output')).toHaveText(
+      '50%',
+    );
     await closePanel(page);
 
     await pickByScan(page, ...(await placeOf(page, 'Help')));
@@ -674,7 +676,7 @@ test('ST12: the text and the borders of the controls keep their contrast over th
   }
 });
 
-test('ST13: every button, list, slider, switch row and tab is at least 48px high and wide', async ({
+test('ST13: every button, list, switch row and tab is at least 48px high and wide', async ({
   page,
 }) => {
   await openBoard(page, 'home');
@@ -683,9 +685,7 @@ test('ST13: every button, list, slider, switch row and tab is at least 48px high
     await showTab(page, name);
     const small = await panel(page).evaluate((dialog) =>
       Array.from(
-        dialog.querySelectorAll(
-          'button, select, input[type="range"], label.row, [role="tab"], .seg label',
-        ),
+        dialog.querySelectorAll('button, select, label.row, [role="tab"], .seg label'),
       ).flatMap((control) => {
         const { width, height } = control.getBoundingClientRect();
         if (width === 0 && height === 0) {

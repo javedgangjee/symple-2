@@ -77,12 +77,38 @@ const TIME_STEP = 500;
 
 type TimeName = keyof typeof TIME_LIMITS;
 
-/** The three sliders of the voice, each with the text that shows its value. */
-const SLIDERS = [
-  { name: 'rate', label: 'Rate', text: (value: number) => `${value.toFixed(1)}×` },
-  { name: 'pitch', label: 'Pitch', text: (value: number) => value.toFixed(1) },
-  { name: 'volume', label: 'Volume', text: (value: number) => `${Math.round(value * 100)}%` },
+/**
+ * The three amounts of the voice. Each is set with a minus and a plus button, as a time is.
+ * `less` and `more` name the two buttons, and `text` shows the value.
+ */
+const AMOUNTS = [
+  {
+    name: 'rate',
+    label: 'Rate',
+    less: 'Slower rate',
+    more: 'Faster rate',
+    text: (value: number) => `${value.toFixed(1)}×`,
+  },
+  {
+    name: 'pitch',
+    label: 'Pitch',
+    less: 'Lower pitch',
+    more: 'Higher pitch',
+    text: (value: number) => value.toFixed(1),
+  },
+  {
+    name: 'volume',
+    label: 'Volume',
+    less: 'Lower volume',
+    more: 'Higher volume',
+    text: (value: number) => `${Math.round(value * 100)}%`,
+  },
 ] as const;
+
+type AmountName = (typeof AMOUNTS)[number]['name'];
+
+/** Two values of the voice closer than this are the same value. It hides the rounding of decimals. */
+const CLOSE = 1e-6;
 
 /** The text that Play a sample speaks. */
 export const VOICE_SAMPLE = 'Hello. This is my voice.';
@@ -134,8 +160,7 @@ export class SettingsPanel {
   protected readonly themeLabels = THEME_LABELS;
   protected readonly layouts = LAYOUT_NAMES;
   protected readonly layoutLabels = LAYOUT_LABELS;
-  protected readonly sliders = SLIDERS;
-  protected readonly ranges = VOICE_RANGES;
+  protected readonly amounts = AMOUNTS;
 
   /** The chosen category. Only its settings are shown. */
   protected readonly tab = signal<TabId>(FIRST_TAB);
@@ -276,6 +301,29 @@ export class SettingsPanel {
         ? Math.floor(value / TIME_STEP) * TIME_STEP + TIME_STEP
         : Math.ceil(value / TIME_STEP) * TIME_STEP - TIME_STEP;
     this.scan.setFromText(name, String(Math.min(max, Math.max(min, next))));
+  }
+
+  /** Whether the rate, the pitch or the volume is at its lowest (`-1`) or at its highest (`1`). */
+  protected atVoiceLimit(name: AmountName, direction: 1 | -1): boolean {
+    const value = this.voice[name]();
+    const { min, max } = VOICE_RANGES[name];
+    return direction === 1 ? value >= max - CLOSE : value <= min + CLOSE;
+  }
+
+  /**
+   * Makes the rate, the pitch or the volume one step lower or higher. A value that is not on a
+   * step moves to the next step in that direction. A press at the end of the range changes nothing.
+   */
+  protected stepVoice(name: AmountName, direction: 1 | -1): void {
+    if (this.atVoiceLimit(name, direction)) {
+      return;
+    }
+    const { min, max, step } = VOICE_RANGES[name];
+    const steps = this.voice[name]() / step;
+    const next =
+      (direction === 1 ? Math.floor(steps + CLOSE) + 1 : Math.ceil(steps - CLOSE) - 1) * step;
+    // Two decimal places drop the rounding error of the sum, so 0.7000000000000001 is stored as 0.7.
+    this.voice.setFromText(name, String(Number(Math.min(max, Math.max(min, next)).toFixed(2))));
   }
 
   protected setTheme(value: string): void {

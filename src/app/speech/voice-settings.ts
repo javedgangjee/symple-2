@@ -2,14 +2,14 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { LocalStore } from '../storage/local-store';
 import { VoiceValues } from './voice-source';
 
-/** The lowest and the highest value of a slider, and the size of one step. */
+/** The lowest and the highest value of an amount, and the size of one step. */
 export interface Range {
   readonly min: number;
   readonly max: number;
   readonly step: number;
 }
 
-/** The ranges of the rate, the pitch and the volume. The sliders of the settings panel use them too. */
+/** The ranges of the rate, the pitch and the volume. The buttons of the settings panel use them too. */
 export const VOICE_RANGES: Readonly<Record<'rate' | 'pitch' | 'volume', Range>> = {
   rate: { min: 0.5, max: 2, step: 0.1 },
   pitch: { min: 0, max: 2, step: 0.1 },

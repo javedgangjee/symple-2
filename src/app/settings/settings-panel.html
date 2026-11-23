@@ -305,24 +305,35 @@
                   <span class="val">No English voice was found on this device.</span>
                 }
               </div>
-              @for (slider of sliders; track slider.name) {
-                @let value = voice[slider.name]();
+              @for (amount of amounts; track amount.name) {
                 <div class="row">
-                  <label class="what" [for]="'settings-' + slider.name">{{ slider.label }}</label>
-                  <span class="slide">
-                    <input
-                      #range
-                      type="range"
-                      [id]="'settings-' + slider.name"
-                      [min]="ranges[slider.name].min"
-                      [max]="ranges[slider.name].max"
-                      [step]="ranges[slider.name].step"
-                      [value]="value"
-                      [attr.aria-valuetext]="slider.text(value)"
-                      (input)="voice.setFromText(slider.name, range.value)"
-                    />
-                    <span class="amount" aria-hidden="true">{{ slider.text(value) }}</span>
-                  </span>
+                  <span class="what" [id]="'settings-' + amount.name">{{ amount.label }}</span>
+                  <div
+                    class="stepper"
+                    role="group"
+                    [attr.aria-labelledby]="'settings-' + amount.name"
+                  >
+                    <button
+                      type="button"
+                      [attr.aria-label]="amount.less"
+                      [attr.aria-disabled]="atVoiceLimit(amount.name, -1)"
+                      (click)="stepVoice(amount.name, -1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                    </button>
+                    <output>{{ amount.text(voice[amount.name]()) }}</output>
+                    <button
+                      type="button"
+                      [attr.aria-label]="amount.more"
+                      [attr.aria-disabled]="atVoiceLimit(amount.name, 1)"
+                      (click)="stepVoice(amount.name, 1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               }
             </div>

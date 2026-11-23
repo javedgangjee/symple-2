@@ -156,13 +156,15 @@ describe('SettingsPanel', () => {
     await fixture.whenStable();
   }
 
-  /** Moves a slider to a value. */
-  async function slide(id: string, value: string): Promise<void> {
-    const slider = one<HTMLInputElement>(`#${id}`);
-    slider.value = value;
-    slider.dispatchEvent(new Event('input', { bubbles: true }));
-    await fixture.whenStable();
+  /** Presses a button a number of times. */
+  async function pressTimes(name: string, times: number): Promise<void> {
+    for (let done = 0; done < times; done++) {
+      await press(name);
+    }
   }
+
+  /** The text of a rate, a pitch or a volume as it is drawn, such as "1.5×". */
+  const amountOf = (label: string) => rowOf(label)?.querySelector('output')?.textContent?.trim();
 
   const chosenVoice = () =>
     one<HTMLSelectElement>('#settings-voice').selectedOptions[0]?.textContent?.trim();
@@ -282,22 +284,43 @@ describe('SettingsPanel', () => {
     await open();
     await showTab('Speech');
     await choose('#settings-voice', VOICE_B.id);
-    await slide('settings-rate', '1.5');
+    await pressTimes('Faster rate', 5);
   }
 
   it('PA11: a chosen voice and a rate are stored, and the rate is shown', async () => {
     await chooseVoiceBAndRate();
     expect(localStorage.getItem(VOICE_STORAGE_KEYS.voice)).toBe(VOICE_B.id);
     expect(localStorage.getItem(VOICE_STORAGE_KEYS.rate)).toBe('1.5');
-    expect(rowOf('Rate')?.querySelector('.amount')?.textContent?.trim()).toBe('1.5×');
+    expect(amountOf('Rate')).toBe('1.5×');
   });
 
-  it('PA12: the volume is shown as a percentage, and the slider says the same', async () => {
+  it('PA12: the volume is shown as a percentage, and it stops at the ends of its range', async () => {
     await open();
     await showTab('Speech');
-    await slide('settings-volume', '0.5');
-    expect(rowOf('Volume')?.querySelector('.amount')?.textContent?.trim()).toBe('50%');
-    expect(one('#settings-volume').getAttribute('aria-valuetext')).toBe('50%');
+    expect(button('Higher volume')?.getAttribute('aria-disabled')).toBe('true');
+    await press('Higher volume');
+    expect(amountOf('Volume')).toBe('100%');
+    await pressTimes('Lower volume', 5);
+    expect(amountOf('Volume')).toBe('50%');
+    expect(localStorage.getItem(VOICE_STORAGE_KEYS.volume)).toBe('0.5');
+    await pressTimes('Lower volume', 6);
+    expect(amountOf('Volume')).toBe('0%');
+    expect(localStorage.getItem(VOICE_STORAGE_KEYS.volume)).toBe('0');
+    expect(button('Lower volume')?.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('PA12b: every step of the rate and the pitch is stored with one decimal place', async () => {
+    await open();
+    await showTab('Speech');
+    const stored: (string | null)[] = [];
+    for (let step = 0; step < 5; step++) {
+      await press('Slower rate');
+      stored.push(localStorage.getItem(VOICE_STORAGE_KEYS.rate));
+    }
+    expect(stored).toEqual(['0.9', '0.8', '0.7', '0.6', '0.5']);
+    await pressTimes('Higher pitch', 10);
+    expect(localStorage.getItem(VOICE_STORAGE_KEYS.pitch)).toBe('2');
+    expect(amountOf('Pitch')).toBe('2.0');
   });
 
   it('PA13: Play a sample speaks the sample with the chosen voice and rate', async () => {

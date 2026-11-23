@@ -478,35 +478,6 @@ label.row {
   outline-offset: 3px;
 }
 
-/* Rate, pitch and volume are native sliders. The arrow keys move them, and the value is shown beside each one. */
-.slide {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.slide input {
-  width: 12rem;
-  max-width: 40vw;
-  height: 3rem;
-  margin: 0;
-  accent-color: var(--dark);
-  cursor: pointer;
-}
-
-.slide input:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 0;
-  border-radius: 0.5rem;
-}
-
-.amount {
-  min-width: 3.5rem;
-  text-align: right;
-  font-weight: 640;
-  font-variant-numeric: tabular-nums;
-}
-
 /* Done is the one filled button. */
 .primary {
   min-width: 8rem;
