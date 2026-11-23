@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AUTH_SOURCE } from '../auth/auth';
 import { FakeAuthSource } from '../auth/fake-auth-source';
-import { LAYOUT_STORAGE_KEY } from '../layout/layout';
 import { SCAN_STORAGE_KEYS, ScanSettingValues, ScanSettings } from '../scan/scan-settings';
 import { FakeVoiceSource } from '../speech/fake-voice-source';
 import { VOICE_STORAGE_KEYS, VoiceSettings } from '../speech/voice-settings';
@@ -338,13 +337,12 @@ describe('SettingsPanel', () => {
     expect(localStorage.getItem(VOICE_STORAGE_KEYS.voice)).toBe('a-voice-of-another-device');
   });
 
-  it('PA15: the theme Teal and the layout Rows apply and are stored', async () => {
+  it('PA15: the theme Teal applies, and the panel has no layout control', async () => {
     await open();
     await showTab('Appearance');
     await choose('#settings-theme', 'teal');
-    await pick('settings-layout', 'rows');
     expect(document.documentElement.getAttribute('data-theme')).toBe('teal');
-    expect(localStorage.getItem(LAYOUT_STORAGE_KEY)).toBe('rows');
+    expect(rowOf('Layout')).toBeUndefined();
   });
 
   it('PA16: the Account tab shows the email address of the account', async () => {

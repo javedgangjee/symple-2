@@ -13,7 +13,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { Auth } from '../auth/auth';
-import { LAYOUT_NAMES, Layout, LayoutName, isLayoutName } from '../layout/layout';
 import {
   DWELL_STYLES,
   DwellStyle,
@@ -69,8 +68,6 @@ const THEME_LABELS: Readonly<Record<ThemeName, string>> = {
   teal: 'Teal',
   dark: 'Dark',
 };
-
-const LAYOUT_LABELS: Readonly<Record<LayoutName, string>> = { columns: 'Columns', rows: 'Rows' };
 
 /** One press of a minus or a plus button changes a time by this much, in milliseconds. */
 const TIME_STEP = 500;
@@ -145,7 +142,6 @@ export class SettingsPanel {
   private readonly speech = inject(Speech);
   private readonly source = inject(VOICE_SOURCE);
   private readonly themeService = inject(Theme);
-  private readonly layoutService = inject(Layout);
   protected readonly scan = inject(ScanSettings);
   protected readonly voice = inject(VoiceSettings);
 
@@ -158,8 +154,6 @@ export class SettingsPanel {
   protected readonly dwellStyleLabels = DWELL_STYLE_LABELS;
   protected readonly themes = THEME_NAMES;
   protected readonly themeLabels = THEME_LABELS;
-  protected readonly layouts = LAYOUT_NAMES;
-  protected readonly layoutLabels = LAYOUT_LABELS;
   protected readonly amounts = AMOUNTS;
 
   /** The chosen category. Only its settings are shown. */
@@ -169,7 +163,6 @@ export class SettingsPanel {
   protected readonly narrow = signal(false);
 
   protected readonly theme = this.themeService.name;
-  protected readonly layout = this.layoutService.name;
 
   /** The voices in the list. */
   protected readonly voices = this.source.voices;
@@ -330,12 +323,6 @@ export class SettingsPanel {
     const name = THEME_NAMES.find((theme) => theme === value);
     if (name) {
       this.themeService.set(name);
-    }
-  }
-
-  protected setLayout(value: string): void {
-    if (isLayoutName(value)) {
-      this.layoutService.set(value);
     }
   }
 

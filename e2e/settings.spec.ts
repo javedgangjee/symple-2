@@ -1,14 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { axeViolations } from './support/axe';
-import {
-  THEMES,
-  askForLessTransparency,
-  cell,
-  expectDirection,
-  measure,
-  openBoard,
-  type ScreenLayout,
-} from './support/boards';
+import { THEMES, askForLessTransparency, cell, openBoard } from './support/boards';
 import { test } from './support/firebase';
 import {
   SCAN_TIME,
@@ -57,15 +49,6 @@ async function showTab(page: Page, name: TabName): Promise<void> {
   );
 }
 
-/** Picks one of the two choices of a segmented control. The radio button is hidden inside its label. */
-async function chooseSegment(page: Page, group: string, value: string): Promise<void> {
-  await panel(page)
-    .locator('.seg label')
-    .filter({ has: page.locator(`input[name="${group}"][value="${value}"]`) })
-    .click();
-  await expect(page.locator(`input[name="${group}"][value="${value}"]`)).toBeChecked();
-}
-
 /**
  * Opens the panel on a page whose clock is stopped, with the shortcut, and lets the app draw it.
  * The scanning tests open the panel this way, so no pointer rests anywhere.
@@ -96,18 +79,6 @@ async function placeOf(page: Page, name: string): Promise<[number, number]> {
     throw new Error(`The board has no cell named "${name}".`);
   }
   return [group, names[group].indexOf(name)];
-}
-
-/** Whether the groups of a board are rows: each lies below the last, and its cells share one top. */
-function inRows(layout: ScreenLayout): boolean {
-  const { groups: found } = layout;
-  return (
-    found.length > 1 &&
-    found.every((group, index) => index === 0 || group.box.top > found[index - 1].box.top) &&
-    found.every((group) =>
-      group.cells.every((item) => Math.abs(item.box.top - group.cells[0].box.top) <= 1),
-    )
-  );
 }
 
 /** What has the focus: whether it is inside the panel, and its name as a screen reader gives it. */
@@ -567,27 +538,6 @@ test('ST7: the theme Purple applies at once and stays after a reload', async ({ 
   await page.reload();
   await expect(title(page)).toHaveText('Home');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'purple');
-});
-
-test('ST8: the layout Rows applies to home, and the keyboard keeps its rows with Columns', async ({
-  page,
-}) => {
-  await openBoard(page, 'home');
-  await openPanel(page);
-  await showTab(page, 'Appearance');
-  await chooseSegment(page, 'settings-layout', 'rows');
-  await done(page).click();
-  await expect(panel(page)).not.toHaveAttribute('open');
-  expectDirection(await measure(page), 'rows');
-
-  await page.goto('/board/keyboard');
-  await expect(title(page)).toHaveText('QWERTY keyboard');
-  await openPanel(page);
-  await showTab(page, 'Appearance');
-  await chooseSegment(page, 'settings-layout', 'columns');
-  await done(page).click();
-  await expect(panel(page)).not.toHaveAttribute('open');
-  expect(inRows(await measure(page))).toBe(true);
 });
 
 scanTest(

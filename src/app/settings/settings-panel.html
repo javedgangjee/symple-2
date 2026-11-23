@@ -368,23 +368,6 @@
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                 </span>
               </div>
-              <div class="row" role="radiogroup" aria-labelledby="settings-layout">
-                <span class="what" id="settings-layout">Layout</span>
-                <span class="seg">
-                  @for (name of layouts; track name) {
-                    <label>
-                      <input
-                        type="radio"
-                        name="settings-layout"
-                        [value]="name"
-                        [checked]="layout() === name"
-                        (change)="setLayout(name)"
-                      />
-                      {{ layoutLabels[name] }}
-                    </label>
-                  }
-                </span>
-              </div>
             </div>
             <p class="note">
               Columns are read top to bottom, and rows left to right. A board that fixes its own
