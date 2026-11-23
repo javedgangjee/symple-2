@@ -480,7 +480,7 @@ scanTest(
     const page = await open('home', 'Home');
     await openPanelByShortcut(page);
     const longer = panel(page).getByRole('button', { name: 'Longer scan time' });
-    const reading = panel(page).locator('.stepper output').first();
+    const reading = panel(page).getByRole('group', { name: 'Scan time' }).locator('output');
     // The scanning tests store a scan time of 1.0 s, and each press adds half a second.
     await expect(reading).toContainText('1.0 s');
     for (const shown of ['1.5 s', '2.0 s', '2.5 s', '3.0 s']) {
@@ -798,4 +798,34 @@ test('ST19: the stop cell shows the symbol of Symple at its full size, and nothi
   const attribution = await request.get('/symbols/ATTRIBUTION.txt');
   expect(attribution.ok()).toBe(true);
   expect(await attribution.text()).not.toContain('OpenMoji');
+});
+
+test('ST20: a press on the dimmed page next to the panel closes it', async ({ page }) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  const box = await panel(page).boundingBox();
+  if (!box) {
+    throw new Error('The panel has no box.');
+  }
+  // The panel sits in the middle, so the dimmed page shows to its left.
+  await page.mouse.click(box.x / 2, box.y + box.height / 2);
+  await expect(panel(page)).not.toHaveAttribute('open');
+});
+
+test('ST21: a drag from the panel onto the dimmed page leaves the panel open', async ({ page }) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  const box = await panel(page).boundingBox();
+  const label = await panel(page).locator('label[for="settings-mode"]').boundingBox();
+  if (!box || !label) {
+    throw new Error('The panel or the label of Selection mode has no box.');
+  }
+  await page.mouse.move(label.x + label.width / 2, label.y + label.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x / 2, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await expect(panel(page)).toHaveAttribute('open', '');
+  // The panel still closes on a press that starts and ends on the dimmed page.
+  await page.mouse.click(box.x / 2, box.y + box.height / 2);
+  await expect(panel(page)).not.toHaveAttribute('open');
 });

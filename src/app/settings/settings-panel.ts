@@ -26,6 +26,7 @@ import { VOICE_RANGES, VoiceSettings } from '../speech/voice-settings';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { THEME_NAMES, Theme, ThemeName } from '../theme/theme';
 import { SettingsOpen } from './settings-open';
+import { Stepper } from './stepper';
 
 /**
  * The five categories of the panel, in the order of the list.
@@ -126,6 +127,7 @@ const TAB_KEYS: Readonly<Record<string, (at: number) => number>> = {
  */
 @Component({
   selector: 'app-settings-panel',
+  imports: [Stepper],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './settings-panel.html',
   styleUrl: './settings-panel.css',
@@ -204,11 +206,24 @@ export class SettingsPanel {
     this.state.close();
   }
 
-  /** A press on the dimmed page closes the panel. Only the backdrop gives the dialog itself as the target. */
+  /** Whether the press that is under way started on the dimmed page. */
+  private pressStartedOnPage = false;
+
+  /** Notes where a press starts. Only the backdrop gives the dialog itself as the target. */
+  protected onDialogPointerDown(event: PointerEvent): void {
+    this.pressStartedOnPage = event.target === this.dialog().nativeElement;
+  }
+
+  /**
+   * A press on the dimmed page closes the panel. A press that starts inside the panel and ends
+   * on the dimmed page, as when text is selected with the mouse, also reports its click on the
+   * dialog, and that press must leave the panel open.
+   */
   protected onDialogClick(event: MouseEvent): void {
-    if (event.target === this.dialog().nativeElement) {
+    if (event.target === this.dialog().nativeElement && this.pressStartedOnPage) {
       this.close();
     }
+    this.pressStartedOnPage = false;
   }
 
   /**

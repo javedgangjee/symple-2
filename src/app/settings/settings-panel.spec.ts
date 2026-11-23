@@ -267,6 +267,30 @@ describe('SettingsPanel', () => {
     expect(localStorage.getItem(SCAN_STORAGE_KEYS.dwellStyle)).toBe('bar');
   });
 
+  it('PA22: Longer dwell time adds half a second', async () => {
+    await open({ selectionMode: 'dwell', dwellTime: 1000 });
+    await press('Longer dwell time');
+    expect(TestBed.inject(ScanSettings).dwellTime()).toBe(1500);
+    expect(timeOf('Dwell time')).toBe('1.5 s');
+  });
+
+  it('PA21: a press on the dimmed page closes the panel, and a drag out of the panel does not', async () => {
+    await open();
+    // Only the dimmed page gives the dialog itself as the target of a press.
+    dialog().dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(state.isOpen()).toBe(false);
+
+    state.open();
+    await fixture.whenStable();
+    // A drag that starts on a control and ends on the dimmed page reports its click on the dialog.
+    one('#settings-mode').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(state.isOpen()).toBe(true);
+  });
+
   it('PA10: with no stored voice the list shows the default voice and stores nothing', async () => {
     await open();
     await showTab('Speech');
