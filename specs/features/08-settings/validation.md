@@ -201,3 +201,37 @@ Run `npm start`, open the app in Chrome on the Mac and sign in.
 
 1. Open the panel, go to Account and check the email address. Press Sign out.
 2. Expected: the address is the one of the account. The sign in screen shows, and the footer of home held no button before.
+
+## Results, 2026-11-23
+
+The checks ran on Node 22.23.5, the version in `.nvmrc`, on commit d92bb5f of the branch `feature/08-settings`. That commit holds the seven changes of item 36 of requirements.md, which lists the user's decisions of 2026-11-23. Step 12 of plan.md, which fixes four findings of the review, has not been implemented yet.
+
+### Automated checks
+
+- Check A1, the build: fail. `npm run build` ended with no errors and no warnings. The second point fails: `specs/tech-stack.md` does not name the style budget of a component or say why it was raised, which finding 6 of review.md asks for.
+- Check A2, lint and format: pass. `npm run lint` and `npm run format:check` both ended with no errors.
+- Check A3, the unit tests: fail. All 338 tests in 27 files passed, but two listed cases have no test. Case PA21, which checks that a press on the dimmed page closes the panel and a drag out of the panel does not, is missing. Case PA22, which checks the stepper of the dwell time after the three steppers share one block of markup, is missing.
+- Check A4, the end to end tests: fail. All 247 tests passed in one run, with no retry, but two listed cases have no test. Case ST20, which presses the dimmed page next to the panel and expects the panel to close, is missing. Case ST21, which drags from the label of Selection mode onto the dimmed page and expects the panel to stay open, is missing.
+- The four changed cases in other files pass: case N14, which signs out through the panel, case B18, which fetches the Lucide licence, case K20, which rests the pointer on the settings button in `dwell` mode, and the removal of case N15, which checked the place of Sign out in the footer.
+
+### Manual checks
+
+Checks H1 to H7 were not run. H1 compares the look with the mockup, H2 uses the keyboard and VoiceOver, H3 checks that changes apply at once, H4 checks the voice, H5 speaks a long text with a server voice, H6 checks the sync in the Firebase console, and H7 checks Sign out. The automated checks already fail, and the fixes of step 12 of plan.md change the panel again, so the user would have to repeat each manual check after them.
+
+Two manual checks need a note before they are run. Check H1 expects the panel to match the mockup, and the panel now differs from it on purpose in the ways that item 36 of requirements.md lists. Check H4 changes the rate, the pitch and the volume, which is now done with the minus and the plus buttons.
+
+### Requirements
+
+- Items 1 to 8, 14, 16 and 18 to 28 are covered by passing unit cases, and items 9, 10, 17, 29, 30, 31 and 34 by passing end to end cases. Item 18 says that Done, Escape and a press on the dimmed page close the panel. Case PA19 passes for Done and Escape. The press on the dimmed page has no passing check, because cases PA21, ST20 and ST21 are missing.
+- Item 36, the decisions of 2026-11-23, passes through cases PA3, PA11, PA12, PA12b and PA15 of the unit tests and cases ST1, ST9 and ST10 of the end to end tests. Its last point, that each row is a fifth higher, has no check. `src/app/settings/settings-panel.css` sets the least height of a row to 4.2rem.
+- Item 35, the Lucide icons, passes through case PA18, which reads the credits, and case B18, which fetches the licence.
+- Items 11 and 15 have manual checks only, H1 and H5, which were not run.
+- Items 12, 13, 32 and 33 have no check of their own. Item 12 says the feature adds no cloud service, item 13 records the patent check, item 32 says the tests make no sound, and item 33 names files that exist.
+
+### Verdict
+
+The feature is not ready. Three things stand in the way.
+
+1. Step 12 of plan.md is not implemented. It fixes finding 2 of review.md, a drag out of the panel that closes it, and finding 4, the stepper markup that is written out three times, and it records the style budget in `specs/tech-stack.md` for finding 6. Cases PA21, PA22, ST20 and ST21 come with it. The stepper markup is now written out four times, because the rate, the pitch and the volume use a fourth copy.
+2. The press on the dimmed page, part of item 18 of requirements.md, has no passing check until those cases exist.
+3. The manual checks H1 to H7 have not been run.
