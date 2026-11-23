@@ -84,7 +84,7 @@ The panel, in `src/app/settings/settings-panel.spec.ts`, with the fakes of the a
 | --- | --- | --- |
 | PA1 | The panel opens. | A dialog named "Settings" is shown with the five tabs Selection, Speech, Appearance, Account and About. Selection is chosen and holds the focus. |
 | PA2 | The Down arrow is pressed on the Selection tab, and then End and Home. | Speech, About and Selection are chosen in turn, each takes the focus, and only the settings of the chosen tab are shown. |
-| PA3 | The selection mode is changed to "Dwell". | The stored mode is `dwell`, the note reads "A pointer that rests on a cell presses it.", the dwell time and the dwell style show, and the scan time and Show progress bar do not. |
+| PA3 | The selection mode is changed to "Dwell". | The stored mode is `dwell`, the panel shows no note, the dwell time and the dwell style show, and the scan time and Show progress bar do not. |
 | PA4 | The scan time is 1500, and "Longer scan time" is pressed once. | The scan time is 2000, and the control reads "2.0 s". |
 | PA5 | The scan time is 500. | "Shorter scan time" carries `aria-disabled="true"`, and a press on it changes nothing. |
 | PA6 | The post click delay is 500, and "Shorter post click delay" is pressed once. | The delay is 0, and the button carries `aria-disabled="true"`. |
@@ -92,11 +92,12 @@ The panel, in `src/app/settings/settings-panel.spec.ts`, with the fakes of the a
 | PA8 | Show progress bar is pressed. | The stored value is `true`, and the switch is checked. |
 | PA9 | In `dwell` mode, the dwell style "Bar" is chosen. | The stored dwell style is `bar`. |
 | PA10 | Nothing is stored for the voice, and the Speech tab is opened. | The list holds Voice A and Voice B, Voice A is chosen, and `symple.voice` is still empty. |
-| PA11 | Voice B is chosen, and the rate is set to 1.5. | The stored voice is the id of Voice B, the stored rate is 1.5, and the text next to the slider reads "1.5×". |
-| PA12 | The volume is set to 0.5. | The text next to the slider reads "50%", and the slider carries that text as `aria-valuetext`. |
+| PA11 | Voice B is chosen, and "Faster rate" is pressed five times. | The stored voice is the id of Voice B, the stored rate is 1.5, and the text between the buttons reads "1.5×". |
+| PA12 | "Higher volume" is pressed at 100%. Then "Lower volume" is pressed five times, and then six times more. | "Higher volume" says it is disabled and the volume stays at "100%". After five presses the text reads "50%" and the stored volume is 0.5. After the rest the text reads "0%", the stored volume is 0, and "Lower volume" says it is disabled. |
+| PA12b | "Slower rate" is pressed five times, and "Higher pitch" ten times. | The stored rate is 0.9, 0.8, 0.7, 0.6 and 0.5 in turn, with no rounding error. The stored pitch is 2 and the text reads "2.0". |
 | PA13 | After case PA11, Play a sample is pressed. | The fake gets "Hello. This is my voice." with Voice B and a rate of 1.5. |
 | PA14 | The stored voice id is not in the list. | Voice A is chosen in the list, and the stored id does not change. |
-| PA15 | On the Appearance tab, the theme "Teal" and the layout "Rows" are chosen. | The html element carries `data-theme="teal"`, and the stored layout is `rows`. |
+| PA15 | On the Appearance tab, the theme "Teal" is chosen. | The html element carries `data-theme="teal"`, and the tab has no Layout row. |
 | PA16 | The account has the email address "carer@example.com", and the Account tab is opened. | The tab shows "Signed in as" with that address. |
 | PA17 | Sign out is pressed. | The fake auth source gets one sign out, and the panel is closed. |
 | PA18 | The About tab is opened. | It shows the three credits of item 27 of requirements.md, with "Javed Gangjee", "Mulberry Symbols", "CC BY-SA 4.0", "Lucide" and "ISC License" in them. The words "OpenMoji" and "Material" are not in the panel. This case named "Apache License 2.0" until item 35 of requirements.md replaced the Material icons. |
@@ -122,19 +123,19 @@ The cases are in `e2e/settings.spec.ts` and run at both window sizes, 1024 by 76
 
 | Case | Input | Expected result |
 | --- | --- | --- |
-| ST1 | On home, the settings button is pressed. | The panel is shown at about 95 parts in 100 of the width and the height of the window, and nothing in it runs past the window. |
+| ST1 | On home, the settings button is pressed. | The panel is shown at about 80 parts in 100 of the width of the window and 95 of its height, and nothing in it runs past the window. |
 | ST2 | On home, Control with comma is pressed. Then Tab is pressed until the focus comes round, and Escape is pressed. | The panel opens. The focus visits the chosen tab, each control of the Selection settings and Done, and never leaves the panel. Escape closes it. |
 | ST3 | On home in `scan` mode, the scan runs through every group and cell for two rounds. | The highlight never lands on the settings button, and the panel never opens. |
 | ST4 | The panel is open on home, and ten scan times pass. Then Tab and Enter are pressed on a control of the panel. | No group and no cell is highlighted, and the title still reads "Home". |
 | ST5 | The scan time is set to 3.0 s in the panel, the panel is closed, and Enter starts the scan. | The highlight moves to the second group after 3000 ms and not before. |
 | ST6 | The selection mode is changed to "Step, two switches", and the panel is closed. | Tab moves the highlight and no time moves it, with no reload. |
 | ST7 | The theme "Purple" is chosen. | The page behind the panel carries `data-theme="purple"` at once, and it still does after a reload. |
-| ST8 | The layout "Rows" is chosen, and the panel is closed. | The groups of home are rows. The keyboard board is still drawn in rows when the layout is set back to "Columns". |
-| ST9 | Voice B, a rate of 1.5, a pitch of 0.8 and a volume of 0.5 are set, the panel is closed, and Help is picked on Needs by scan. | The stand-in records "I need help" with Voice B and those three values. |
+| ST8 | Removed on 2026-11-23 with the layout control. | Cases B2 and the others of `e2e/boards.spec.ts` still check the two layouts from the stored value. |
+| ST9 | Voice B is chosen, and a rate of 1.5, a pitch of 0.8 and a volume of 0.5 are set with the minus and the plus buttons, the panel is closed, and Help is picked on Needs by scan. | The stand-in records "I need help" with Voice B and those three values. |
 | ST10 | Play a sample is pressed. | The stand-in records "Hello. This is my voice." |
 | ST11 | Each of the five tabs is opened in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
-| ST12, changed after the review | Each of the five tabs is opened in each of the five themes, with the Needs board behind the panel. | Each label, value and note keeps 4.5 to 1 against the panel, and the border of each control keeps 3 to 1. The three voice sliders are no longer left out: the border of the track and the thumb of each one keep 3 to 1 against the card behind them, with the volume at 20%. This covers finding 1 of review.md. |
-| ST13 | Each tab is opened. | Every button, list, slider, switch row and tab is at least 48px high and wide. |
+| ST12, changed after the review | Each of the five tabs is opened in each of the five themes, with the Needs board behind the panel. | Each label and value keeps 4.5 to 1 against the panel, and the border of each control keeps 3 to 1. The voice sliders of finding 1 of review.md were replaced by buttons on 2026-11-23, and the check reads those buttons like any other. |
+| ST13 | Each tab is opened. | Every button, list, switch row and tab is at least 48px high and wide. |
 | ST14 | The window is 800 by 768, and the panel is opened. | The tabs lie in one row above the settings, the list of tabs says it is horizontal, and the Right arrow moves to the next tab. |
 | ST15 | Less transparency is asked for, and the panel is opened. | The panel is solid and has no blur. |
 | ST16 | The mode is `cursor`, and the panel is opened. | No round cursor is drawn over the panel. |
@@ -142,7 +143,7 @@ The cases are in `e2e/settings.spec.ts` and run at both window sizes, 1024 by 76
 | ST18 | The footer of home is drawn. | It holds no button, and the main area is as high as it was with the Sign out button. |
 | ST19 | The Core words board is opened, and the files `symbols/stop.svg` and `symbols/ATTRIBUTION.txt` are fetched. | The stop cell shows its symbol at its full size. The svg file does not hold the id "emoji" of the OpenMoji drawing, and the attribution file does not hold the word "OpenMoji". |
 | ST20, added after the review | The panel is open, and the dimmed page next to it is pressed. | The panel is closed. |
-| ST21, added after the review | The panel is open. The pointer goes down on the note under Selection mode, moves onto the dimmed page and goes up there. | The panel stays open. This case and case ST20 cover finding 2 of review.md. |
+| ST21, added after the review | The panel is open. The pointer goes down on the label of Selection mode, moves onto the dimmed page and goes up there. | The panel stays open. This case and case ST20 cover finding 2 of review.md. |
 
 Changed cases in other files:
 
