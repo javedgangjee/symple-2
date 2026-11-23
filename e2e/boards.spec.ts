@@ -395,12 +395,10 @@ test('B14: the label of Help uses Libre Franklin', async ({ page }) => {
   expect(family).toBe('Libre Franklin');
 });
 
-test('B18: the licence of the Material icons is served', async ({ request }) => {
-  const response = await request.get('/licenses/material-icons.txt');
+test('B18: the licence of the Lucide icons is served', async ({ request }) => {
+  const response = await request.get('/licenses/lucide.txt');
   expect(response.ok()).toBe(true);
-  const text = await response.text();
-  expect(text).toContain('Apache License');
-  expect(text).toContain('Version 2.0');
+  expect(await response.text()).toContain('ISC License');
 });
 
 test('B15: the symbol credit is served', async ({ request }) => {

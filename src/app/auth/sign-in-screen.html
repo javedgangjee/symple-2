@@ -41,10 +41,11 @@
         @for (said of [message()]; track said.count) {
           @if (said.text && said.error) {
             <span class="said">
+              <!-- Lucide circle-alert. -->
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
-                <path d="M12 7v6" />
-                <circle class="dot" cx="12" cy="16.75" r="1.25" />
+                <line x1="12" x2="12" y1="8" y2="12" />
+                <line x1="12" x2="12.01" y1="16" y2="16" />
               </svg>
               <span>{{ said.text }}</span>
             </span>

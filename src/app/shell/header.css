@@ -48,20 +48,13 @@ h1 {
   transition: background-color 160ms var(--ease);
 }
 
-.settings:hover:not(:disabled) {
+.settings:hover {
   background: var(--glass-button-hover);
 }
 
 .settings:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 3px;
-}
-
-/* The button is dimmed until feature 8 adds the settings panel. */
-/* Only the icon is dimmed, so the fill stays solid when glass.css makes it solid. */
-.settings:disabled {
-  cursor: default;
-  color: color-mix(in oklab, var(--ink) 45%, var(--light));
 }
 
 .settings svg {

@@ -1,6 +1,8 @@
 import { Injectable, effect, inject, untracked } from '@angular/core';
 import { Auth } from '../auth/auth';
 import { Layout, isLayoutName } from '../layout/layout';
+import { ScanSettingName, ScanSettings } from '../scan/scan-settings';
+import { VoiceSettingName, VoiceSettings } from '../speech/voice-settings';
 import { THEME_NAMES, Theme, ThemeName } from '../theme/theme';
 import { CLOUD_STORE, CloudDocument } from './cloud-store';
 
@@ -17,7 +19,8 @@ function isThemeName(value: unknown): value is ThemeName {
 }
 
 /**
- * Keeps the theme and the layout of the device in step with the settings document of the account.
+ * Keeps the settings of the device in step with the settings document of the account. They are
+ * the theme, the layout, the six scan values and the four voice values, each saved as text.
  * The settings stay stored on the device, and the cloud holds a second copy.
  * The service starts when it is made and runs until the app ends.
  */
@@ -27,8 +30,10 @@ export class SettingsSync {
   private readonly store = inject(CLOUD_STORE);
   private readonly theme = inject(Theme);
   private readonly layout = inject(Layout);
+  private readonly scan = inject(ScanSettings);
+  private readonly voice = inject(VoiceSettings);
 
-  /** The settings in the sync. Feature 8 adds the others here. */
+  /** The settings in the sync. A new setting is added here. */
   private readonly settings: Readonly<Record<string, SyncedSetting>> = {
     theme: {
       read: () => this.theme.name(),
@@ -50,6 +55,16 @@ export class SettingsSync {
         return true;
       },
     },
+    scanTime: this.scanValue('scanTime'),
+    postClickDelay: this.scanValue('postClickDelay'),
+    selectionMode: this.scanValue('selectionMode'),
+    dwellTime: this.scanValue('dwellTime'),
+    dwellStyle: this.scanValue('dwellStyle'),
+    showProgressBar: this.scanValue('showProgressBar'),
+    voice: this.voiceValue('voice'),
+    voiceRate: this.voiceValue('rate'),
+    voicePitch: this.voiceValue('pitch'),
+    voiceVolume: this.voiceValue('volume'),
   };
 
   /**
@@ -57,6 +72,12 @@ export class SettingsSync {
    * was changed on the device, so it is saved to the cloud.
    */
   private readonly seen = new Map<string, string>();
+
+  /**
+   * How many saves of each field the cloud has not answered yet. While a field has one, the
+   * value of the device is on its way, and a report can still hold the value from before it.
+   */
+  private readonly unanswered = new Map<string, number>();
 
   constructor() {
     // The document of the account is watched from sign in to sign out.
@@ -88,6 +109,22 @@ export class SettingsSync {
     });
   }
 
+  /** One scan value. The service that holds it says whether a text of the cloud is usable. */
+  private scanValue(name: ScanSettingName): SyncedSetting {
+    return {
+      read: () => String(this.scan[name]()),
+      use: (value) => typeof value === 'string' && this.scan.setFromText(name, value),
+    };
+  }
+
+  /** One voice value, checked in the same way. */
+  private voiceValue(name: VoiceSettingName): SyncedSetting {
+    return {
+      read: () => String(this.voice[name]()),
+      use: (value) => typeof value === 'string' && this.voice.setFromText(name, value),
+    };
+  }
+
   /** Takes the known values of the document, and fills the fields that the document lacks. */
   private onDocument(accountId: string, document: CloudDocument): void {
     // A watch that was stopped can still report once. A report for another account is dropped.
@@ -97,6 +134,12 @@ export class SettingsSync {
     const missing: Record<string, string> = {};
     for (const [field, setting] of Object.entries(this.settings)) {
       const value = document.fields?.[field];
+      if (this.unanswered.has(field)) {
+        // The cloud store also reports the saves of this device, a moment after each one. Such a
+        // report must not undo a newer change, as it would when a slider is dragged. The value
+        // of the device is saved last, so it is the one that the cloud ends with.
+        continue;
+      }
       if (value === undefined || value === null) {
         missing[field] = setting.read();
       } else if (setting.use(value)) {
@@ -118,7 +161,24 @@ export class SettingsSync {
     if (Object.keys(fields).length === 0) {
       return;
     }
+    const names = Object.keys(fields);
+    for (const field of names) {
+      this.unanswered.set(field, (this.unanswered.get(field) ?? 0) + 1);
+    }
     // A save that fails is dropped. The device keeps its value and stays usable with no cloud.
-    this.store.save(accountId, fields).catch(() => undefined);
+    void this.store
+      .save(accountId, fields)
+      .catch(() => undefined)
+      .then(() => names.forEach((field) => this.answered(field)));
+  }
+
+  /** One save of a field was answered, or failed. */
+  private answered(field: string): void {
+    const left = (this.unanswered.get(field) ?? 1) - 1;
+    if (left > 0) {
+      this.unanswered.set(field, left);
+    } else {
+      this.unanswered.delete(field);
+    }
   }
 }

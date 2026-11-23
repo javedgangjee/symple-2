@@ -31,11 +31,26 @@ export function isSwitchMode(mode: SelectionMode): boolean {
   return mode === 'scan' || mode === 'step';
 }
 
+/** The shortest and the longest time, in milliseconds. */
+export interface TimeLimits {
+  readonly min: number;
+  readonly max: number;
+}
+
+/** The limits of the three times. The settings panel uses them too. */
+export const TIME_LIMITS: Readonly<
+  Record<'scanTime' | 'postClickDelay' | 'dwellTime', TimeLimits>
+> = {
+  scanTime: { min: 500, max: 5000 },
+  postClickDelay: { min: 0, max: 5000 },
+  dwellTime: { min: 500, max: 5000 },
+};
+
 /** Reads one stored text as a value. It gives `undefined` for a text that is not a usable value. */
 type Parser<T> = (stored: string) => T | undefined;
 
-/** A whole number of milliseconds from `min` to `max`. */
-function time(min: number, max: number): Parser<number> {
+/** A whole number of milliseconds inside the limits. */
+function time({ min, max }: TimeLimits): Parser<number> {
   return (stored) => {
     if (!/^\d+$/.test(stored)) {
       return undefined;
@@ -64,24 +79,28 @@ interface Setting<T> {
 
 /** The one table of the stored values. `load` and `set` go through it, so a new value is added here. */
 const SETTINGS: { readonly [K in keyof ScanSettingValues]: Setting<ScanSettingValues[K]> } = {
-  scanTime: { key: 'symple.scanTime', fallback: 1500, parse: time(500, 5000) },
-  postClickDelay: { key: 'symple.postClickDelay', fallback: 500, parse: time(0, 5000) },
+  scanTime: { key: 'symple.scanTime', fallback: 1500, parse: time(TIME_LIMITS.scanTime) },
+  postClickDelay: {
+    key: 'symple.postClickDelay',
+    fallback: 500,
+    parse: time(TIME_LIMITS.postClickDelay),
+  },
   selectionMode: { key: 'symple.selectionMode', fallback: 'scan', parse: oneOf(SELECTION_MODES) },
-  dwellTime: { key: 'symple.dwellTime', fallback: 1000, parse: time(500, 5000) },
+  dwellTime: { key: 'symple.dwellTime', fallback: 1000, parse: time(TIME_LIMITS.dwellTime) },
   dwellStyle: { key: 'symple.dwellStyle', fallback: 'grow', parse: oneOf(DWELL_STYLES) },
   showProgressBar: { key: 'symple.showProgressBar', fallback: false, parse: yesOrNo },
 };
 
-type SettingName = keyof ScanSettingValues;
+export type ScanSettingName = keyof ScanSettingValues;
 
-function isSettingName(name: string): name is SettingName {
+function isSettingName(name: string): name is ScanSettingName {
   return Object.hasOwn(SETTINGS, name);
 }
 
 const SETTING_KEYS = Object.keys(SETTINGS).filter(isSettingName);
 
 /** The local storage key of each value. */
-export const SCAN_STORAGE_KEYS: Readonly<Record<SettingName, string>> = {
+export const SCAN_STORAGE_KEYS: Readonly<Record<ScanSettingName, string>> = {
   scanTime: SETTINGS.scanTime.key,
   postClickDelay: SETTINGS.postClickDelay.key,
   selectionMode: SETTINGS.selectionMode.key,
@@ -101,8 +120,8 @@ export const DEFAULT_SCAN_SETTINGS: ScanSettingValues = {
 };
 
 /**
- * Reads the stored scan settings. The values are stored on the device and are not synced yet.
- * Feature 8 adds the controls that call `set`.
+ * Holds the scan settings. The values are stored on the device, and the sync keeps a second
+ * copy in the cloud. The settings panel calls `set`.
  */
 @Injectable({ providedIn: 'root' })
 export class ScanSettings {
@@ -140,15 +159,29 @@ export class ScanSettings {
     this.values.set(values);
   }
 
+  /**
+   * Uses one value given as text, as the cloud holds it, and stores it. It returns false and
+   * changes nothing for a text that `load` would not accept.
+   */
+  setFromText<K extends ScanSettingName>(name: K, text: string): boolean {
+    const value = SETTINGS[name].parse(text);
+    if (value === undefined) {
+      return false;
+    }
+    this.store.write(SETTINGS[name].key, String(value));
+    this.values.update((values) => ({ ...values, [name]: value }));
+    return true;
+  }
+
   /** The values with one of them read from storage, when what is stored is usable. */
-  private read<K extends SettingName>(values: ScanSettingValues, name: K): ScanSettingValues {
+  private read<K extends ScanSettingName>(values: ScanSettingValues, name: K): ScanSettingValues {
     const stored = this.store.read(SETTINGS[name].key);
     const value = stored === null ? undefined : SETTINGS[name].parse(stored);
     return value === undefined ? values : { ...values, [name]: value };
   }
 
   /** The values with one of them changed and stored, when the change holds a usable value for it. */
-  private accept<K extends SettingName>(
+  private accept<K extends ScanSettingName>(
     values: ScanSettingValues,
     name: K,
     changes: Partial<ScanSettingValues>,

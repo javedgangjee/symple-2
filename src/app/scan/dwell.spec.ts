@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subscription } from 'rxjs';
+import { SettingsOpen } from '../settings/settings-open';
 import { Dwell } from './dwell';
 import { CellPosition } from './scan';
 import { ScanSettings, SelectionMode } from './scan-settings';
@@ -163,6 +164,23 @@ describe('Dwell', () => {
     TestBed.inject(ScanSettings).set({ selectionMode: 'touch' });
     TestBed.tick();
     expect(dwell.running()).toBeNull();
+    pass(5000);
+    expect(dwell.running()).toBeNull();
+    expect(presses).toEqual([]);
+  });
+
+  it('PB5: a dwell that runs is dropped when the settings panel opens', () => {
+    setUp();
+    dwell.enter(A);
+    pass(400);
+    expect(dwell.running()).toEqual(A);
+    TestBed.inject(SettingsOpen).open();
+    TestBed.tick();
+    expect(dwell.running()).toBeNull();
+    pass(5000);
+    expect(presses).toEqual([]);
+    // No dwell starts while the panel is open.
+    dwell.move(B);
     pass(5000);
     expect(dwell.running()).toBeNull();
     expect(presses).toEqual([]);

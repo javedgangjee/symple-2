@@ -137,4 +137,19 @@ describe('ScanSettings', () => {
     expect(() => settings.set({ scanTime: 3000 })).not.toThrow();
     expect(settings.scanTime()).toBe(3000);
   });
+
+  it('T16: uses and stores a scan time given as text', () => {
+    expect(settings.setFromText('scanTime', '2000')).toBe(true);
+    expect(settings.scanTime()).toBe(2000);
+    expect(localStorage.getItem(SCAN_STORAGE_KEYS.scanTime)).toBe('2000');
+  });
+
+  it('T17: refuses a text that is out of range or unknown and stores nothing', () => {
+    expect(settings.setFromText('scanTime', '99999')).toBe(false);
+    expect(settings.setFromText('showProgressBar', 'maybe')).toBe(false);
+    expect(settings.scanTime()).toBe(1500);
+    expect(settings.showProgressBar()).toBe(false);
+    expect(localStorage.getItem(SCAN_STORAGE_KEYS.scanTime)).toBeNull();
+    expect(localStorage.getItem(SCAN_STORAGE_KEYS.showProgressBar)).toBeNull();
+  });
 });

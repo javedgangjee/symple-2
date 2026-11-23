@@ -1,5 +1,6 @@
 import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { Subject } from 'rxjs';
+import { SettingsOpen } from '../settings/settings-open';
 import { ScanSettings } from './scan-settings';
 
 /** The place of a cell on a board: the index of its group, and its index in that group. */
@@ -46,6 +47,7 @@ const PASSES = 2;
 @Injectable({ providedIn: 'root' })
 export class Scan {
   private readonly settings = inject(ScanSettings);
+  private readonly panel = inject(SettingsOpen);
 
   private readonly current = signal(REST);
   private readonly picked = new Subject<CellPosition>();
@@ -53,6 +55,8 @@ export class Scan {
   /** The number of cells in each group of the board on show. */
   private sizes: readonly number[] = [];
   private timer: ReturnType<typeof setTimeout> | undefined;
+  /** When the scan time that runs now began, or null when no scan time runs. */
+  private waitingSince: number | null = null;
   /** How many times the scan time has moved the highlight since the last switch press. */
   private steps = 0;
   /** Whether the scan started again after a pick and nothing has happened since. */
@@ -76,6 +80,25 @@ export class Scan {
         untracked(() => this.rest());
       }
     });
+
+    // The scan rests while the settings panel is open. It starts from rest, with the values
+    // that the caregiver set, at the first switch press after the panel is closed.
+    effect(() => {
+      if (this.panel.isOpen()) {
+        untracked(() => this.rest());
+      }
+    });
+
+    // A scan time that changes while the highlight waits applies to that wait too, so the
+    // next step comes one new scan time after the last step.
+    effect(() => {
+      const scanTime = this.settings.scanTime();
+      untracked(() => {
+        if (this.waitingSince !== null) {
+          this.wait(Math.max(0, scanTime - (Date.now() - this.waitingSince)));
+        }
+      });
+    });
   }
 
   /**
@@ -86,7 +109,9 @@ export class Scan {
    */
   show(sizes: readonly number[]): void {
     this.sizes = [...sizes];
-    if (this.current().phase === 'confirmed') {
+    if (this.panel.isOpen()) {
+      this.rest();
+    } else if (this.current().phase === 'confirmed') {
       // The picked cell is not on the new board, so nothing is marked while the delay runs.
       this.current.set({ phase: 'confirmed', group: null, cell: null });
     } else if (this.resumed) {
@@ -98,9 +123,13 @@ export class Scan {
 
   /**
    * The switch that picks. At rest it starts the scan and picks nothing. On a group it goes into
-   * the cells of the group, and on a cell it picks the cell. It does nothing in the post click delay.
+   * the cells of the group, and on a cell it picks the cell. It does nothing in the post click delay
+   * or while the settings panel is open.
    */
   press(): void {
+    if (this.panel.isOpen()) {
+      return;
+    }
     const { phase, group, cell } = this.current();
     this.resumed = false;
     if (phase === 'rest') {
@@ -119,6 +148,9 @@ export class Scan {
    * start again. It does nothing in the post click delay.
    */
   move(direction: 1 | -1 = 1): void {
+    if (this.panel.isOpen()) {
+      return;
+    }
     const { phase, group, cell } = this.current();
     this.resumed = false;
     if (phase === 'rest') {
@@ -225,8 +257,15 @@ export class Scan {
   private schedule(): void {
     this.stopTimer();
     if (this.settings.selectionMode() === 'scan') {
-      this.timer = setTimeout(() => this.tick(), this.settings.scanTime());
+      this.waitingSince = Date.now();
+      this.wait(this.settings.scanTime());
     }
+  }
+
+  /** Moves the highlight after a time. A wait that still runs is dropped, and its start is kept. */
+  private wait(ms: number): void {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.tick(), ms);
   }
 
   /**
@@ -265,5 +304,6 @@ export class Scan {
   private stopTimer(): void {
     clearTimeout(this.timer);
     this.timer = undefined;
+    this.waitingSince = null;
   }
 }

@@ -4,12 +4,28 @@ import { provideRouter } from '@angular/router';
 import { AUTH_SOURCE, Account } from '../auth/auth';
 import { FakeAuthSource } from '../auth/fake-auth-source';
 import { LAYOUT_STORAGE_KEY, Layout } from '../layout/layout';
+import { SCAN_STORAGE_KEYS, ScanSettings } from '../scan/scan-settings';
+import { VoiceSettings } from '../speech/voice-settings';
 import { THEME_STORAGE_KEY, Theme } from '../theme/theme';
 import { CLOUD_STORE, CloudDocument, CloudStore } from './cloud-store';
 import { SettingsSync } from './settings-sync';
 
 @Component({ template: '' })
 class Blank {}
+
+/** The ten fields that feature 8 added, with the values of a device that has stored nothing. */
+const TEN_FIELDS: Readonly<Record<string, string>> = {
+  scanTime: '1500',
+  postClickDelay: '500',
+  selectionMode: 'scan',
+  dwellTime: '1000',
+  dwellStyle: 'grow',
+  showProgressBar: 'false',
+  voice: '',
+  voiceRate: '1',
+  voicePitch: '1',
+  voiceVolume: '1',
+};
 
 /** A cloud store that keeps its watches in memory and records each save. */
 class FakeCloudStore implements CloudStore {
@@ -19,6 +35,8 @@ class FakeCloudStore implements CloudStore {
   readonly everWatched: string[] = [];
   readonly saves: { accountId: string; fields: Record<string, string> }[] = [];
   failSaves = false;
+  /** When set, a save waits for this promise before it answers, as a slow network makes it. */
+  holdSaves: Promise<void> | null = null;
 
   watch(accountId: string, listener: (document: CloudDocument) => void): () => void {
     this.watched.set(accountId, listener);
@@ -28,6 +46,7 @@ class FakeCloudStore implements CloudStore {
 
   async save(accountId: string, fields: Readonly<Record<string, string>>): Promise<void> {
     this.saves.push({ accountId, fields: { ...fields } });
+    await this.holdSaves;
     if (this.failSaves) {
       throw new Error('The save failed.');
     }
@@ -41,14 +60,26 @@ class FakeCloudStore implements CloudStore {
     await this.save(accountId, fields);
   }
 
-  /** Reports the document of an account as the cloud holds it. Null means there is no document. */
+  /**
+   * Reports the document of an account as the cloud holds it. Null means there is no document.
+   * The document also holds the ten fields of feature 8, so a case on the theme and the layout
+   * tells only of those two.
+   */
   report(accountId: string, fields: Record<string, unknown> | null): void {
+    this.reportOnly(accountId, fields && { ...TEN_FIELDS, ...fields });
+  }
+
+  /** Reports a document that holds the given fields and no others. */
+  reportOnly(accountId: string, fields: Record<string, unknown> | null): void {
     this.watched.get(accountId)?.({ fields, fromCloud: true });
   }
 
   /** Reports the document of an account as the cache on the device holds it, which can lack what the cloud holds. */
   reportFromCache(accountId: string, fields: Record<string, unknown> | null): void {
-    this.watched.get(accountId)?.({ fields, fromCloud: false });
+    this.watched.get(accountId)?.({
+      fields: fields && { ...TEN_FIELDS, ...fields },
+      fromCloud: false,
+    });
   }
 }
 
@@ -60,6 +91,8 @@ describe('SettingsSync', () => {
   let store: FakeCloudStore;
   let theme: Theme;
   let layout: Layout;
+  let scan: ScanSettings;
+  let voice: VoiceSettings;
 
   /** Signs an account in and reports its document. */
   function signIn(account: Account, fields: Record<string, unknown> | null): void {
@@ -89,6 +122,8 @@ describe('SettingsSync', () => {
     layout = TestBed.inject(Layout);
     theme.load();
     layout.load();
+    scan = TestBed.inject(ScanSettings);
+    voice = TestBed.inject(VoiceSettings);
     TestBed.inject(SettingsSync);
     TestBed.tick();
   });
@@ -117,7 +152,7 @@ describe('SettingsSync', () => {
   it('Y3: with no document the device saves its theme and its layout', () => {
     signIn(ANNA, null);
     expect(store.saves).toEqual([
-      { accountId: ANNA.id, fields: { theme: 'blue', layout: 'columns' } },
+      { accountId: ANNA.id, fields: { theme: 'blue', layout: 'columns', ...TEN_FIELDS } },
     ]);
   });
 
@@ -229,5 +264,76 @@ describe('SettingsSync', () => {
     TestBed.tick();
     expect(store.fills.length).toBe(1);
     expect(store.saves.at(-1)).toEqual({ accountId: ANNA.id, fields: { theme: 'teal' } });
+  });
+
+  it('Y16: the device uses the scan values and the voice values of the document', () => {
+    signIn(ANNA, {
+      theme: 'teal',
+      layout: 'rows',
+      scanTime: '2000',
+      selectionMode: 'dwell',
+      voiceRate: '1.5',
+    });
+    expect(scan.scanTime()).toBe(2000);
+    expect(scan.selectionMode()).toBe('dwell');
+    expect(voice.rate()).toBe(1.5);
+    expect(localStorage.getItem(SCAN_STORAGE_KEYS.scanTime)).toBe('2000');
+    expect(store.saves).toEqual([]);
+  });
+
+  it('Y17: the ten new fields are saved as text when the document lacks them', () => {
+    source.report(ANNA);
+    TestBed.tick();
+    store.reportOnly(ANNA.id, { theme: 'teal', layout: 'rows' });
+    TestBed.tick();
+    expect(store.fills).toEqual([{ accountId: ANNA.id, fields: TEN_FIELDS }]);
+    expect(store.saves.length).toBe(1);
+  });
+
+  it('Y18: a scan time set on the device is the only field saved', () => {
+    signInWithBoth();
+    scan.set({ scanTime: 2500 });
+    TestBed.tick();
+    expect(store.saves).toEqual([{ accountId: ANNA.id, fields: { scanTime: '2500' } }]);
+  });
+
+  it('Y19: a volume set on the device is the only field saved', () => {
+    signInWithBoth();
+    voice.set({ volume: 0.4 });
+    TestBed.tick();
+    expect(store.saves).toEqual([{ accountId: ANNA.id, fields: { voiceVolume: '0.4' } }]);
+  });
+
+  it('Y20: a scan time and a dwell style that this version cannot use are left alone', () => {
+    signIn(ANNA, { theme: 'teal', layout: 'rows', scanTime: '99999', dwellStyle: 'spin' });
+    expect(scan.scanTime()).toBe(1500);
+    expect(scan.dwellStyle()).toBe('grow');
+    expect(store.saves).toEqual([]);
+  });
+
+  it('Y21: a report of an older save does not undo a newer change on the device', async () => {
+    signInWithBoth();
+    let answer: () => void = () => undefined;
+    store.holdSaves = new Promise<void>((resolve) => (answer = resolve));
+    scan.set({ scanTime: 2000 });
+    TestBed.tick();
+    scan.set({ scanTime: 2500 });
+    TestBed.tick();
+    // The cloud store reports the first save back while the second is on its way.
+    store.report(ANNA.id, { theme: 'teal', layout: 'rows', scanTime: '2000' });
+    TestBed.tick();
+    expect(scan.scanTime()).toBe(2500);
+    expect(store.saves.map((save) => save.fields)).toEqual([
+      { scanTime: '2000' },
+      { scanTime: '2500' },
+    ]);
+
+    // Once the cloud has answered both saves, a change in the document is used again.
+    answer();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    store.report(ANNA.id, { theme: 'teal', layout: 'rows', scanTime: '3000' });
+    TestBed.tick();
+    expect(scan.scanTime()).toBe(3000);
+    expect(store.saves.length).toBe(2);
   });
 });

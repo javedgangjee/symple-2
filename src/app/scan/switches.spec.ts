@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { SettingsOpen } from '../settings/settings-open';
 import { Scan } from './scan';
 import { ScanSettings, SelectionMode } from './scan-settings';
 import { Switches } from './switches';
@@ -163,6 +164,27 @@ describe('Switches', () => {
     // and case K22 of the end to end tests checks that the browser then presses the cell.
     expect(event.defaultPrevented).toBe(false);
     expect(clicks).toHaveBeenCalledTimes(1);
+    expect(scan.press).not.toHaveBeenCalled();
+  });
+
+  it('PB2: Tab and Enter are left to the browser while the settings panel is open', () => {
+    setUp('scan');
+    TestBed.inject(SettingsOpen).open();
+    const tab = key('Tab');
+    const enter = key('Enter');
+    expect(scan.move).not.toHaveBeenCalled();
+    expect(scan.press).not.toHaveBeenCalled();
+    expect(tab.defaultPrevented).toBe(false);
+    expect(enter.defaultPrevented).toBe(false);
+  });
+
+  it('PB3: Control with comma opens the settings panel and does not move the scan', () => {
+    setUp('scan');
+    const panel = TestBed.inject(SettingsOpen);
+    expect(panel.isOpen()).toBe(false);
+    key(',', document.body, { ctrlKey: true });
+    expect(panel.isOpen()).toBe(true);
+    expect(scan.move).not.toHaveBeenCalled();
     expect(scan.press).not.toHaveBeenCalled();
   });
 });

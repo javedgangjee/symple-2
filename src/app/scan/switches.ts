@@ -1,4 +1,5 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
+import { SettingsOpen } from '../settings/settings-open';
 import { Scan } from './scan';
 import { ScanSettings, isSwitchMode } from './scan-settings';
 
@@ -24,17 +25,35 @@ function isTextField(target: EventTarget | null): boolean {
 }
 
 /**
+ * The key that opens the settings panel when it is pressed with Control. Chrome keeps Command
+ * with comma, the habit of the Mac, for its own settings.
+ */
+const SETTINGS_KEY = ',';
+
+/** What `aria-keyshortcuts` says for the shortcut of the settings panel. */
+export const SETTINGS_SHORTCUT = `Control+${SETTINGS_KEY}`;
+
+/**
  * Turns key presses into switch presses while a board is on show. In `scan` and `step` mode
  * Tab moves the highlight, Shift with Tab moves it back, and Enter picks. The browser does
  * nothing with those keys then. In the other modes the keys are left to the browser.
+ * While the settings panel is open no key is a switch, so the caregiver has Tab and Enter.
+ * Control with the comma key opens the panel in every mode. It is the caregiver's way to the
+ * panel with the keyboard, because nothing outside the grid is in the tab order.
  */
 @Injectable({ providedIn: 'root' })
 export class Switches {
   private readonly document = inject(DOCUMENT);
   private readonly scan = inject(Scan);
   private readonly settings = inject(ScanSettings);
+  private readonly panel = inject(SettingsOpen);
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
+    if (this.isSettingsShortcut(event)) {
+      event.preventDefault();
+      this.panel.open();
+      return;
+    }
     if (!this.isSwitchKey(event)) {
       return;
     }
@@ -70,8 +89,19 @@ export class Switches {
     this.document.removeEventListener('keyup', this.onKeyUp);
   }
 
+  private isSettingsShortcut(event: KeyboardEvent): boolean {
+    return (
+      event.key === SETTINGS_KEY &&
+      event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey &&
+      !event.shiftKey
+    );
+  }
+
   private isSwitchKey(event: KeyboardEvent): boolean {
     return (
+      !this.panel.isOpen() &&
       isSwitchMode(this.settings.selectionMode()) &&
       KEYS.includes(event.key) &&
       !event.ctrlKey &&

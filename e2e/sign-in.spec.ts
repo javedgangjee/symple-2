@@ -5,7 +5,6 @@ import {
   THEMES,
   askForLessTransparency,
   cellNames,
-  focusedName,
   openBoard,
   type ThemeName,
 } from './support/boards';
@@ -280,9 +279,13 @@ test.describe('on a signed in device', () => {
     await expect(card(page)).toHaveCount(0);
   });
 
-  test('N14: Sign out shows the sign in screen, and it stays after a reload', async ({ page }) => {
+  test('N14: Sign out in the panel shows the sign in screen, and it stays after a reload', async ({
+    page,
+  }) => {
     await page.goto('/');
     await expect(page.locator('h1')).toHaveText('Home');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('tab', { name: 'Account' }).click();
     await signOutButton(page).click();
     await expect(page).toHaveURL(/\/sign-in$/);
     await expect(card(page)).toBeVisible();
@@ -291,55 +294,13 @@ test.describe('on a signed in device', () => {
     await expect(card(page)).toBeVisible();
   });
 
-  test('N15: Sign out sits in the bottom right corner, and Tab does not reach it', async ({
-    page,
-  }) => {
-    for (const id of ['home', 'needs']) {
-      // In `scan` mode Tab stops on a group first. In `touch` mode it goes from cell to cell.
-      await openBoard(page, id, { selectionMode: 'touch' });
-      const boxes = await page.evaluate(() => {
-        const box = (selector: string) => {
-          const element = document.querySelector(selector);
-          if (!element) {
-            throw new Error(`No element matches ${selector}`);
-          }
-          const { left, top, right, bottom, width, height } = element.getBoundingClientRect();
-          return { left, top, right, bottom, width, height };
-        };
-        return {
-          button: box('footer button'),
-          footer: box('footer'),
-          main: box('main'),
-          windowHeight: window.innerHeight,
-        };
-      });
-      const { button, footer, main } = boxes;
-      // The button is inside the footer, at its right edge, and the footer is the bottom row.
-      expect(button.top, id).toBeGreaterThanOrEqual(footer.top);
-      expect(button.bottom, id).toBeLessThanOrEqual(footer.bottom);
-      expect(button.left, id).toBeGreaterThanOrEqual(footer.left);
-      expect(Math.abs(button.right - footer.right), id).toBeLessThanOrEqual(1);
-      expect(footer.top, id).toBeGreaterThanOrEqual(main.bottom);
-      expect(footer.bottom, id).toBeLessThanOrEqual(boxes.windowHeight);
-      expect(button.width, id).toBeGreaterThanOrEqual(24);
-      expect(button.height, id).toBeGreaterThanOrEqual(24);
-
-      // Sign out is a caregiver control, so it is not in the tab order. One press more than
-      // there are cells does not land on it.
-      const names = await cellNames(page);
-      for (const name of names) {
-        await page.keyboard.press('Tab');
-        expect(await focusedName(page), id).toBe(name);
-      }
-      await page.keyboard.press('Tab');
-      await expect(signOutButton(page)).not.toBeFocused();
-    }
-  });
+  // Case N15 checked that Sign out sat in the bottom right corner of the footer. Feature 8 moved
+  // the button into the settings panel, and cases ST18 and ST2 of e2e/settings.spec.ts take its place.
 
   test('N16: axe reports no WCAG 2.2 Level AA violation on home in any theme', async ({ page }) => {
     for (const theme of THEMES) {
       await openBoard(page, 'home', { theme });
-      await expect(signOutButton(page)).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Settings' })).toBeVisible();
       expect(await axeViolations(page), theme).toEqual([]);
     }
   });

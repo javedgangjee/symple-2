@@ -1,0 +1,413 @@
+<!-- The markup follows the settings dialog of context/design/home-settings.html. -->
+<!-- The labels and the credits are written here. They are not boards or cells, so they do not come from the data files. -->
+<!-- The dialog hears a press on the dimmed page and the Tab key from its controls. It is not a control itself, -->
+<!-- and Escape and Done close it from the keyboard, so it takes no focus of its own. -->
+<!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+<dialog
+  #dialog
+  class="panel"
+  aria-labelledby="settings-title"
+  data-caregiver-control
+  (close)="close()"
+  (click)="onDialogClick($event)"
+  (keydown)="onDialogKey($event)"
+>
+  <div class="panel-body">
+    <div class="rail">
+      <h2 id="settings-title">Settings</h2>
+      <!-- The categories are tabs. Only the chosen one takes a Tab stop, and the arrow keys reach the others. -->
+      <div
+        class="cats"
+        role="tablist"
+        aria-label="Settings categories"
+        [attr.aria-orientation]="narrow() ? 'horizontal' : 'vertical'"
+      >
+        @for (item of tabs; track item.id; let at = $index) {
+          <button
+            type="button"
+            role="tab"
+            [id]="'settings-tab-' + item.id"
+            [attr.aria-controls]="'settings-pane-' + item.id"
+            [attr.aria-selected]="tab() === item.id"
+            [tabindex]="tab() === item.id ? 0 : -1"
+            (click)="showTab(item.id)"
+            (keydown)="onTabKey($event, at)"
+          >
+            <!-- Each icon is copied from the Lucide icon set, and the comment in each case names it. -->
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              @switch (item.id) {
+                @case ('selection') {
+                  <!-- Lucide target. -->
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                }
+                @case ('speech') {
+                  <!-- Lucide volume-2. -->
+                  <path
+                    d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+                  />
+                  <path d="M16 9a5 5 0 0 1 0 6" />
+                  <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
+                }
+                @case ('appearance') {
+                  <!-- Lucide contrast. -->
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 18a6 6 0 0 0 0-12v12z" />
+                }
+                @case ('account') {
+                  <!-- Lucide user. -->
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                }
+                @case ('about') {
+                  <!-- Lucide info. -->
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
+                }
+              }
+            </svg>
+            {{ item.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="panes">
+      <div class="scroll">
+        <section
+          role="tabpanel"
+          id="settings-pane-selection"
+          aria-labelledby="settings-tab-selection"
+          [hidden]="tab() !== 'selection'"
+        >
+          <h3>Selection</h3>
+          <div class="block">
+            <div class="set">
+              <div class="row">
+                <label class="what" for="settings-mode">Selection mode</label>
+                <span class="pick">
+                  <select #mode id="settings-mode" (change)="setMode(mode.value)">
+                    @for (name of modes; track name) {
+                      <option [value]="name" [selected]="scan.selectionMode() === name">
+                        {{ modeLabels[name] }}
+                      </option>
+                    }
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          @if (scan.selectionMode() === 'scan') {
+            <div class="block">
+              <h4 class="set-title">Scanning</h4>
+              <div class="set">
+                <div class="row">
+                  <span class="what" id="settings-scan-time">Scan time</span>
+                  <div class="stepper" role="group" aria-labelledby="settings-scan-time">
+                    <button
+                      type="button"
+                      aria-label="Shorter scan time"
+                      [attr.aria-disabled]="atLimit('scanTime', -1)"
+                      (click)="stepTime('scanTime', -1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                    </button>
+                    <!-- The unit shows as s. A screen reader hears the whole word. -->
+                    <output>
+                      <span aria-hidden="true">{{ seconds(scan.scanTime()) }} s</span>
+                      <span class="sr-only"
+                        >{{ seconds(scan.scanTime()) }} {{ unit(scan.scanTime()) }}</span
+                      >
+                    </output>
+                    <button
+                      type="button"
+                      aria-label="Longer scan time"
+                      [attr.aria-disabled]="atLimit('scanTime', 1)"
+                      (click)="stepTime('scanTime', 1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <!-- The whole row is the label of the switch, so the whole row can be pressed. -->
+                <label class="row">
+                  <span class="what">Show progress bar</span>
+                  <input
+                    #bar
+                    type="checkbox"
+                    role="switch"
+                    class="switch"
+                    [checked]="scan.showProgressBar()"
+                    (change)="scan.set({ showProgressBar: bar.checked })"
+                  />
+                </label>
+              </div>
+            </div>
+          }
+
+          @if (scan.selectionMode() === 'dwell') {
+            <div class="block">
+              <h4 class="set-title">Dwell</h4>
+              <div class="set">
+                <div class="row">
+                  <span class="what" id="settings-dwell-time">Dwell time</span>
+                  <div class="stepper" role="group" aria-labelledby="settings-dwell-time">
+                    <button
+                      type="button"
+                      aria-label="Shorter dwell time"
+                      [attr.aria-disabled]="atLimit('dwellTime', -1)"
+                      (click)="stepTime('dwellTime', -1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                    </button>
+                    <output>
+                      <span aria-hidden="true">{{ seconds(scan.dwellTime()) }} s</span>
+                      <span class="sr-only"
+                        >{{ seconds(scan.dwellTime()) }} {{ unit(scan.dwellTime()) }}</span
+                      >
+                    </output>
+                    <button
+                      type="button"
+                      aria-label="Longer dwell time"
+                      [attr.aria-disabled]="atLimit('dwellTime', 1)"
+                      (click)="stepTime('dwellTime', 1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="row" role="radiogroup" aria-labelledby="settings-dwell-style">
+                  <span class="what" id="settings-dwell-style">Dwell style</span>
+                  <span class="seg">
+                    @for (style of dwellStyles; track style) {
+                      <label>
+                        <input
+                          type="radio"
+                          name="settings-dwell-style"
+                          [value]="style"
+                          [checked]="scan.dwellStyle() === style"
+                          (change)="scan.set({ dwellStyle: style })"
+                        />
+                        {{ dwellStyleLabels[style] }}
+                      </label>
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="block">
+            <div class="set">
+              <div class="row">
+                <span class="what" id="settings-post-click">Post click delay</span>
+                <div class="stepper" role="group" aria-labelledby="settings-post-click">
+                  <button
+                    type="button"
+                    aria-label="Shorter post click delay"
+                    [attr.aria-disabled]="atLimit('postClickDelay', -1)"
+                    (click)="stepTime('postClickDelay', -1)"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                  </button>
+                  <output>
+                    <span aria-hidden="true">{{ seconds(scan.postClickDelay()) }} s</span>
+                    <span class="sr-only"
+                      >{{ seconds(scan.postClickDelay()) }} {{ unit(scan.postClickDelay()) }}</span
+                    >
+                  </output>
+                  <button
+                    type="button"
+                    aria-label="Longer post click delay"
+                    [attr.aria-disabled]="atLimit('postClickDelay', 1)"
+                    (click)="stepTime('postClickDelay', 1)"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="M12 5v14" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          role="tabpanel"
+          id="settings-pane-speech"
+          aria-labelledby="settings-tab-speech"
+          [hidden]="tab() !== 'speech'"
+        >
+          <h3>Speech</h3>
+          <div class="block">
+            <div class="set">
+              <div class="row">
+                @if (voices().length > 0) {
+                  <label class="what" for="settings-voice">Voice</label>
+                  <span class="beside">
+                    <span class="pick">
+                      <select
+                        #voicePick
+                        id="settings-voice"
+                        (change)="voice.set({ voice: voicePick.value })"
+                      >
+                        @for (listed of voices(); track listed.id) {
+                          <option [value]="listed.id" [selected]="voiceInUse() === listed.id">
+                            {{ listed.name }}
+                          </option>
+                        }
+                      </select>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                    </span>
+                    <button
+                      class="play"
+                      type="button"
+                      aria-label="Play a sample"
+                      title="Play a sample"
+                      (click)="playSample()"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+                        />
+                      </svg>
+                    </button>
+                  </span>
+                } @else {
+                  <span class="what">Voice</span>
+                  <span class="val">No English voice was found on this device.</span>
+                }
+              </div>
+              @for (amount of amounts; track amount.name) {
+                <div class="row">
+                  <span class="what" [id]="'settings-' + amount.name">{{ amount.label }}</span>
+                  <div
+                    class="stepper"
+                    role="group"
+                    [attr.aria-labelledby]="'settings-' + amount.name"
+                  >
+                    <button
+                      type="button"
+                      [attr.aria-label]="amount.less"
+                      [attr.aria-disabled]="atVoiceLimit(amount.name, -1)"
+                      (click)="stepVoice(amount.name, -1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+                    </button>
+                    <output>{{ amount.text(voice[amount.name]()) }}</output>
+                    <button
+                      type="button"
+                      [attr.aria-label]="amount.more"
+                      [attr.aria-disabled]="atVoiceLimit(amount.name, 1)"
+                      (click)="stepVoice(amount.name, 1)"
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section
+          role="tabpanel"
+          id="settings-pane-appearance"
+          aria-labelledby="settings-tab-appearance"
+          [hidden]="tab() !== 'appearance'"
+        >
+          <h3>Appearance</h3>
+          <div class="block">
+            <div class="set">
+              <div class="row">
+                <label class="what" for="settings-theme">Theme</label>
+                <span class="pick">
+                  <select #themePick id="settings-theme" (change)="setTheme(themePick.value)">
+                    @for (name of themes; track name) {
+                      <option [value]="name" [selected]="theme() === name">
+                        {{ themeLabels[name] }}
+                      </option>
+                    }
+                  </select>
+                  <!-- The dots show the colours of the theme in use. -->
+                  <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          role="tabpanel"
+          id="settings-pane-account"
+          aria-labelledby="settings-tab-account"
+          [hidden]="tab() !== 'account'"
+        >
+          <h3>Account</h3>
+          <div class="block">
+            <div class="set">
+              <div class="row">
+                <span class="what">Signed in as</span>
+                <span class="val">{{ email() ?? 'An account with no email address' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="block">
+            <div class="set">
+              <button class="row" type="button" (click)="signOut()">Sign out</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- This category holds no control, so the category itself takes a Tab stop and can be scrolled with the keys. -->
+        <section
+          role="tabpanel"
+          id="settings-pane-about"
+          aria-labelledby="settings-tab-about"
+          tabindex="0"
+          [hidden]="tab() !== 'about'"
+        >
+          <h3>About</h3>
+          <div class="block">
+            <h4 class="set-title">Credits</h4>
+            <div class="set">
+              <div class="row">
+                <span class="what">Created by</span>
+                <span class="val">Javed Gangjee</span>
+              </div>
+              <div class="row">
+                <span class="what">Symbols</span>
+                <span class="val"
+                  >Mulberry Symbols, copyright 2018 to 2026 Steve Lee, CC BY-SA 4.0</span
+                >
+              </div>
+              <div class="row">
+                <span class="what">Icons</span>
+                <span class="val">Lucide, ISC License</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="button" (click)="close()">Done</button>
+      </div>
+    </div>
+  </div>
+</dialog>
