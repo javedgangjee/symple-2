@@ -6,14 +6,14 @@
   display: contents;
 }
 
-/* The panel is 95 parts in 100 of the window and sits in the middle. */
+/* The panel is 80 parts in 100 of the width of the window and 95 of its height, and sits in the middle. */
 /* Its glass is light, so the outlines of the controls are dark enough to keep 3:1 against it. */
 .panel {
   --line: color-mix(in oklab, var(--ink) 70%, var(--light));
   --quiet: color-mix(in oklab, var(--ink) 78%, var(--light));
   --control: oklch(1 0 0 / 0.5);
   --control-hover: oklch(1 0 0 / 0.85);
-  width: 95vw;
+  width: 80vw;
   height: 95dvh;
   max-width: none;
   max-height: none;

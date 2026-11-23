@@ -329,7 +329,7 @@ async function panelContrast(page: Page): Promise<Reading[]> {
   return lowestRatios(page, png, targets);
 }
 
-test('ST1: the settings button opens the panel at 95 parts in 100 of the window, all inside it', async ({
+test('ST1: the settings button opens the panel at 80 parts in 100 of the width of the window, all inside it', async ({
   page,
 }) => {
   await openBoard(page, 'home');
@@ -355,7 +355,7 @@ test('ST1: the settings button opens the panel at 95 parts in 100 of the window,
       outside,
     };
   });
-  expect(layout.box.width / layout.windowWidth).toBeCloseTo(0.95, 2);
+  expect(layout.box.width / layout.windowWidth).toBeCloseTo(0.8, 2);
   expect(layout.box.height / layout.windowHeight).toBeCloseTo(0.95, 2);
   expect(layout.box.left).toBeGreaterThanOrEqual(0);
   expect(layout.box.top).toBeGreaterThanOrEqual(0);
