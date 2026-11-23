@@ -53,6 +53,15 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 5 writes a warning to the console and speaks nothing when the browser has no Web Speech API, has no English voice, does not load its voices within one second, or fails to speak.
 - Feature 5 adds the action type `speak-message` to the tile data, and gives it to the message tile in `src/data/cells.json`.
 - Feature 5 adds unit tests with a fake voice source, and end to end tests that put a stand-in for the Web Speech API on the page, so no test speaks aloud.
+- Feature 8 adds the settings panel for the caregiver, with the categories Selection, Speech, Appearance, Account and About. The settings button in the header opens it, and so does Control with the comma key from any board.
+- Feature 8 lets the caregiver set the selection mode, the scan time, the post click delay, the dwell time, the dwell style and whether the progress bar is shown. The times are set with a minus and a plus button in steps of 0.5 seconds.
+- Feature 8 lets the caregiver pick the voice from the English voices of the device and set its rate, pitch and volume with a minus and a plus button in steps of 0.1. The four values are stored under `symple.voice`, `symple.voiceRate`, `symple.voicePitch` and `symple.voiceVolume`.
+- Feature 8 adds a Play a sample button beside the list of voices, which speaks "Hello. This is my voice." with the chosen voice, rate, pitch and volume.
+- Feature 8 lets the caregiver pick the theme in the panel.
+- Feature 8 shows the email address of the signed in account in the panel, and the credits for the author, the Mulberry symbols and the Lucide icons.
+- Feature 8 syncs the six scan values and the four voice values to the Firestore document `users/{uid}`, next to the theme and the layout, so the document holds twelve fields.
+- Feature 8 adds `public/licenses/lucide.txt` with the ISC licence of the Lucide icons.
+- Feature 8 adds unit tests for the panel, the voice values and the sync of the new values, and end to end tests in `e2e/settings.spec.ts`.
 
 ### Changed
 
@@ -62,7 +71,16 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 4 makes Tab stop on a group before its cells in `scan` and `step` mode. In `cursor`, `touch` and `dwell` mode Tab still goes from cell to cell.
 - Feature 4 moves the safe reading and writing of local storage into one service, which the theme, the layout and the scan settings use.
 - Feature 4 changes `CLAUDE.md` to say that `PRODUCT.md` is initial context only and that the roadmap wins when the two disagree.
+- Feature 8 enables the settings button in the header, which was disabled since feature 1.
+- Feature 8 applies a changed setting at once, with no reload. The scan rests while the panel is open, and it starts from rest at the first switch press after the panel closes.
+- Feature 8 moves the Sign out button from the footer into the Account category of the panel, so the footer holds no button.
+- Feature 8 replaces every line icon in the app with a Lucide icon, drawn inline from Lucide 1.77.0.
+- Feature 8 replaces the OpenMoji stop symbol in `public/symbols/stop.svg` with a drawing made for Symple, a red octagon with a white hand.
+- Feature 8 raises the style budget of a component in `angular.json` to a warning at 8 kB and an error at 16 kB, because the styles of the panel are larger than 4 kB.
+- Feature 8 changes the Scanning section of `README.md` to describe the panel, and its Symbols section to credit Lucide.
 
 ### Removed
 
 - Feature 5 removes the end to end case Y7 of `e2e/keyboard.spec.ts`, which said that pressing the message asks for no speech.
+- Feature 8 removes `public/licenses/material-icons.txt` and every credit for the Material icons and for OpenMoji.
+- Feature 8 removes the end to end case N15 of `e2e/sign-in.spec.ts`, which checked that Sign out sits in the bottom right corner of the footer, and the unit case O2 of the footer, which pressed Sign out there.
