@@ -235,3 +235,29 @@ The feature is not ready. Three things stand in the way.
 1. Step 12 of plan.md is not implemented. It fixes finding 2 of review.md, a drag out of the panel that closes it, and finding 4, the stepper markup that is written out three times, and it records the style budget in `specs/tech-stack.md` for finding 6. Cases PA21, PA22, ST20 and ST21 come with it. The stepper markup is now written out four times, because the rate, the pitch and the volume use a fourth copy.
 2. The press on the dimmed page, part of item 18 of requirements.md, has no passing check until those cases exist.
 3. The manual checks H1 to H7 have not been run.
+
+## Results of the manual checks, 2026-11-23
+
+The user reported these results after the merge, with no other detail. They replace the line of the section above that says checks H1 to H7 were not run. The automated results above do not change.
+
+- Check H1, which compares the look of the panel with the mockup and looks at the stop symbol: pass.
+- Check H2, which uses the panel with the keyboard only and listens with VoiceOver: not run. It is the only check of this file that was not run.
+- Check H3, which checks that a changed scan time and the progress bar apply at once: pass.
+- Check H4, which plays the sample and a phrase with the chosen voice, rate, pitch and volume: pass.
+- Check H5, which speaks a long text with a Google voice and with a voice of the Mac: pass. The user did not report whether either voice was cut off, so `specs/tech-stack.md` still has no answer on a cut after about 15 seconds.
+- Check H6, which checks the sync of the twelve fields in the Firebase console: pass.
+- Check H7, which checks the email address and Sign out on the Account tab: pass.
+
+Items 11 and 15 of requirements.md, the look of the panel and the answer on a cut of a server voice, now have a passing check. Items 9, 10 and 14, on the keyboard and screen readers, keep their passing end to end cases ST2, which goes round the panel with Tab, and ST11, the axe check, and wait for check H2 to be heard with VoiceOver.
+
+## Results of step 12, 2026-11-23
+
+Step 12 of plan.md was implemented after the merge, on the branch `feature/09-board-editing`, on the user's instruction. The checks ran on Node 22.23.5.
+
+- Finding 2 of review.md, a drag out of the panel that closed it: fixed. The panel closes only when a press starts and ends on the dimmed page. Case PA21 of the unit tests and cases ST20 and ST21 of the end to end tests pass. They press the dimmed page, and drag from the label of Selection mode onto it.
+- Finding 4 of review.md, the markup of the minus and plus buttons: fixed. One component, `src/app/settings/stepper.ts`, draws the three times and the rate, the pitch and the volume. Case PA22, which presses "Longer dwell time", passes with cases PA4 to PA7 and PA11 to PA12b, which press the other steppers.
+- Finding 6 of review.md, the style budget: `specs/tech-stack.md` has named the budget and its reason since the replan after this feature, so the second point of check A1 passes.
+- Check A3, the unit tests: pass. All 340 tests in 27 files passed.
+- Check A4, the end to end tests: pass. The 41 tests of `e2e/settings.spec.ts` passed after case ST5, which reads the scan time in the panel, was pointed at the new component. The full run before that change had 249 passes and 2 failures, both case ST5 at the two window sizes.
+
+Every automated check of this file now passes, and the press on the dimmed page of item 18 of requirements.md has a passing check. Check H2, the keyboard and VoiceOver, is still not run.
