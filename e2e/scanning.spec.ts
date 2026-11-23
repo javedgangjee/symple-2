@@ -67,7 +67,7 @@ const NOTHING = { groups: [], cells: [] };
 
 const title = (page: Page) => page.locator('h1');
 const settingsButton = (page: Page) => page.getByRole('button', { name: 'Settings' });
-const signOutButton = (page: Page) => page.getByRole('button', { name: 'Sign out' });
+const panel = (page: Page) => page.locator('dialog.panel');
 
 /**
  * Picks every cell of a board with one switch, in the order of the data. A cell that opens
@@ -113,6 +113,7 @@ async function caregiverControls(page: Page) {
   );
 }
 
+/** The settings button and the settings panel carry the mark. */
 const UNTOUCHED = [
   { scanned: false, focused: false, tabIndex: -1 },
   { scanned: false, focused: false, tabIndex: -1 },
@@ -519,15 +520,13 @@ test('K18: in the bar style a bar fills across the bottom of the cell in every t
   }
 });
 
-test('K20: a dwell never presses a caregiver control', async ({ open }) => {
+test('K20: a dwell never presses the settings button', async ({ open }) => {
   const page = await open('home', 'Home', { selectionMode: 'dwell', dwellTime: DWELL_TIME });
-  for (const control of [settingsButton(page), signOutButton(page)]) {
-    await pointAt(page, control);
-    await pass(page, 5000);
-    await expect(page.locator('[data-dwell]')).toHaveCount(0);
-    await expect(title(page)).toHaveText('Home');
-    await expect(page).not.toHaveURL(/\/sign-in$/);
-  }
+  await pointAt(page, settingsButton(page));
+  await pass(page, 5000);
+  await expect(page.locator('[data-dwell]')).toHaveCount(0);
+  await expect(panel(page)).not.toHaveAttribute('open');
+  await expect(title(page)).toHaveText('Home');
 });
 
 test('K21: axe reports no WCAG 2.2 Level AA violation while a dwell runs', async ({ open }) => {
@@ -674,7 +673,7 @@ test('K30: in cursor mode a round cursor follows the pointer over the whole page
   const cursor = page.locator('main .cursor');
   await expect(cursor).toHaveCount(0);
   // The cursor is drawn on the cells and off the grid too, on the title and on a caregiver control.
-  for (const target of [cell(page, 'My boards'), title(page), signOutButton(page)]) {
+  for (const target of [cell(page, 'My boards'), title(page), settingsButton(page)]) {
     const box = await target.boundingBox();
     if (!box) {
       throw new Error('The element to point at is not on the page.');
@@ -702,7 +701,8 @@ test('K30: in cursor mode a round cursor follows the pointer over the whole page
     expect(await target.evaluate((element) => getComputedStyle(element).cursor)).toBe('none');
     // The cursor is drawn above everything, and does not take the press from what is under it.
     const under = await page.evaluate(
-      ([px, py]) => document.elementFromPoint(px, py)?.className ?? '',
+      // An icon is an svg element, whose className is not a text, so the attribute is read.
+      ([px, py]) => document.elementFromPoint(px, py)?.getAttribute('class') ?? '',
       [x, y] as const,
     );
     expect(under).not.toContain('cursor');

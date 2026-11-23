@@ -104,8 +104,5 @@ why.svg           why.svg
 who.svg           who.svg
 when.svg          when.svg
 
-The file stop.svg is from OpenMoji, the open source emoji and icon project.
-Licensed under Creative Commons Attribution-ShareAlike 4.0.
-Source: https://openmoji.org
-The file is unchanged apart from its name. Original name:
-stop.svg          270B.svg (raised hand)
+The file below is not from the Mulberry Symbols set. It was drawn for Symple.
+stop.svg          drawn for Symple

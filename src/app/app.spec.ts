@@ -3,13 +3,20 @@ import { provideRouter } from '@angular/router';
 import { App } from './app';
 import { AUTH_SOURCE } from './auth/auth';
 import { FakeAuthSource } from './auth/fake-auth-source';
+import { FakeVoiceSource } from './speech/fake-voice-source';
+import { VOICE_SOURCE } from './speech/voice-source';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      // The footer holds the Sign out button, which needs an auth source.
-      providers: [provideRouter([]), { provide: AUTH_SOURCE, useValue: new FakeAuthSource() }],
+      // The settings panel holds the Sign out button and the voice list, which need an auth
+      // source and a voice source.
+      providers: [
+        provideRouter([]),
+        { provide: AUTH_SOURCE, useValue: new FakeAuthSource() },
+        { provide: VOICE_SOURCE, useValue: new FakeVoiceSource() },
+      ],
     }).compileComponents();
   });
 

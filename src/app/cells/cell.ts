@@ -23,7 +23,6 @@ export class Cell {
   /** Tells the screen that the cell was pressed. */
   readonly press = output<Tile>();
 
-  /** The label as shown. A key that types its own label shows a capital while caps lock is on. */
   protected readonly label = computed(() => {
     const { label, action } = this.tile();
     return action?.type === 'type' && action.text === label ? this.message.cased(label) : label;

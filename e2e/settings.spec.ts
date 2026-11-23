@@ -1,0 +1,853 @@
+import { expect, type Locator, type Page } from '@playwright/test';
+import { axeViolations } from './support/axe';
+import {
+  THEMES,
+  askForLessTransparency,
+  cell,
+  expectDirection,
+  measure,
+  openBoard,
+  type ScreenLayout,
+} from './support/boards';
+import { test } from './support/firebase';
+import {
+  SCAN_TIME,
+  boardCells,
+  cellAt,
+  grid,
+  groups,
+  marked,
+  pass,
+  pickByScan,
+  pointAt,
+  switchKey,
+  test as scanTest,
+} from './support/scan';
+import { VOICE_A, VOICE_B, spokenWithVoice } from './support/speech';
+
+/** The five categories of the panel, in the order of the list. */
+const TABS = ['Selection', 'Speech', 'Appearance', 'Account', 'About'] as const;
+type TabName = (typeof TABS)[number];
+
+const SAMPLE = 'Hello. This is my voice.';
+const NOTHING = { groups: [], cells: [] };
+
+const title = (page: Page) => page.locator('h1');
+const settingsButton = (page: Page) => page.getByRole('button', { name: 'Settings' });
+const panel = (page: Page) => page.locator('dialog.panel');
+const tab = (page: Page, name: TabName) => panel(page).getByRole('tab', { name, exact: true });
+const pane = (page: Page, name: TabName) => page.locator(`#settings-pane-${name.toLowerCase()}`);
+const done = (page: Page) => panel(page).getByRole('button', { name: 'Done', exact: true });
+
+/** Presses the settings button and waits for the panel, which opens on Selection. */
+async function openPanel(page: Page): Promise<void> {
+  await settingsButton(page).click();
+  await expect(panel(page)).toHaveAttribute('open', '');
+  await expect(tab(page, 'Selection')).toBeFocused();
+}
+
+/** Chooses a category of the open panel and waits for its settings. */
+async function showTab(page: Page, name: TabName): Promise<void> {
+  await tab(page, name).click();
+  await expect(tab(page, name)).toHaveAttribute('aria-selected', 'true');
+  await expect(pane(page, name)).toBeVisible();
+  // The chosen category fades its colours in. The checks read the colours once they have settled.
+  await page.waitForFunction(() =>
+    document.getAnimations().every((animation) => !(animation instanceof CSSTransition)),
+  );
+}
+
+/** Picks one of the two choices of a segmented control. The radio button is hidden inside its label. */
+async function chooseSegment(page: Page, group: string, value: string): Promise<void> {
+  await panel(page)
+    .locator('.seg label')
+    .filter({ has: page.locator(`input[name="${group}"][value="${value}"]`) })
+    .click();
+  await expect(page.locator(`input[name="${group}"][value="${value}"]`)).toBeChecked();
+}
+
+/**
+ * Opens the panel on a page whose clock is stopped, with the shortcut, and lets the app draw it.
+ * The scanning tests open the panel this way, so no pointer rests anywhere.
+ */
+async function openPanelByShortcut(page: Page): Promise<void> {
+  await page.keyboard.press('Control+Comma');
+  await pass(page, 0);
+  await expect(panel(page)).toHaveAttribute('open', '');
+}
+
+/** Presses a control of the panel on a page whose clock is stopped, and lets the app draw the change. */
+async function press(page: Page, target: Locator): Promise<void> {
+  await target.click();
+  await pass(page, 0);
+}
+
+/** Closes the panel with Done on a page whose clock is stopped. */
+async function closePanel(page: Page): Promise<void> {
+  await press(page, done(page));
+  await expect(panel(page)).not.toHaveAttribute('open');
+}
+
+/** Finds a cell of the board on show by its name, as a group and a place in the group. */
+async function placeOf(page: Page, name: string): Promise<[number, number]> {
+  const names = await boardCells(page);
+  const group = names.findIndex((groupNames) => groupNames.includes(name));
+  if (group === -1) {
+    throw new Error(`The board has no cell named "${name}".`);
+  }
+  return [group, names[group].indexOf(name)];
+}
+
+/** Whether the groups of a board are rows: each lies below the last, and its cells share one top. */
+function inRows(layout: ScreenLayout): boolean {
+  const { groups: found } = layout;
+  return (
+    found.length > 1 &&
+    found.every((group, index) => index === 0 || group.box.top > found[index - 1].box.top) &&
+    found.every((group) =>
+      group.cells.every((item) => Math.abs(item.box.top - group.cells[0].box.top) <= 1),
+    )
+  );
+}
+
+/** What has the focus: whether it is inside the panel, and its name as a screen reader gives it. */
+async function focusInPanel(page: Page): Promise<{ inside: boolean; name: string }> {
+  return page.evaluate(() => {
+    const active = document.activeElement;
+    const dialog = document.querySelector('dialog.panel');
+    if (!(active instanceof HTMLElement) || !dialog) {
+      return { inside: false, name: 'none' };
+    }
+    const labelled =
+      active.getAttribute('aria-label') ??
+      (active instanceof HTMLInputElement || active instanceof HTMLSelectElement
+        ? active.labels?.[0]?.textContent
+        : undefined) ??
+      active.textContent;
+    const name = (labelled ?? '').replace(/\s+/g, ' ').trim();
+    return {
+      inside: dialog.contains(active),
+      name: active.getAttribute('role') === 'tab' ? `tab ${name}` : name,
+    };
+  });
+}
+
+/** One measured contrast: what was measured, its lowest ratio and the ratio it needs. */
+interface Reading {
+  what: string;
+  ratio: number;
+  needed: number;
+}
+
+/** A colour that a test measures, and the places of the page where it meets its background. */
+interface Target {
+  what: string;
+  needed: number;
+  /** The colour of the text or of the border, as the browser gives it. */
+  colour: string;
+  /** The points where the background is read, in pixels of the window. */
+  points: [number, number][];
+}
+
+/**
+ * Lists what ST12 measures in the open panel, with the points where each one meets its
+ * background. Text is read over the line boxes of each text, inside its own element. The border
+ * of a control is read against the pixels just inside it and just outside it. A control that has
+ * no border but a solid fill, such as the switch, Done and the chosen category, is read against
+ * the pixels just outside it. A control that is turned off at the end of its range is left out,
+ * as WCAG 1.4.11 allows.
+ */
+function listTargets(): Target[] {
+  const dialog = document.querySelector('dialog.panel');
+  if (!dialog) {
+    throw new Error('There is no settings panel.');
+  }
+  const targets: Target[] = [];
+  const shown = (element: Element) =>
+    element.getClientRects().length > 0 && element.closest('.sr-only, option') === null;
+  const fill = (rect: DOMRect, inset: number): [number, number][] => {
+    const points: [number, number][] = [];
+    for (let y = Math.ceil(rect.top + inset); y < rect.bottom - inset; y++) {
+      for (let x = Math.ceil(rect.left + inset); x < rect.right - inset; x++) {
+        points.push([x, y]);
+      }
+    }
+    return points;
+  };
+  // Points on a ring at a distance from the edge of a box: outside it when the distance is
+  // above 0 and inside it when it is below. Only the middle half of each side is read, so the
+  // rounded corners are left out.
+  const ring = (rect: DOMRect, distance: number): [number, number][] => {
+    const points: [number, number][] = [];
+    const left = Math.floor(rect.left - distance);
+    const right = Math.ceil(rect.right + distance) - 1;
+    const top = Math.floor(rect.top - distance);
+    const bottom = Math.ceil(rect.bottom + distance) - 1;
+    for (let x = rect.left + rect.width / 4; x <= rect.right - rect.width / 4; x++) {
+      points.push([Math.round(x), top], [Math.round(x), bottom]);
+    }
+    for (let y = rect.top + rect.height / 4; y <= rect.bottom - rect.height / 4; y++) {
+      points.push([left, Math.round(y)], [right, Math.round(y)]);
+    }
+    return points;
+  };
+  const nameOf = (element: Element) =>
+    (element.getAttribute('aria-label') ?? element.textContent ?? element.tagName)
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 40);
+
+  // Each text: the text nodes, and the text of each drop-down list.
+  const walker = document.createTreeWalker(dialog, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const parent = node.parentElement;
+    if (!parent || !node.textContent?.trim() || !shown(parent)) {
+      continue;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const points = Array.from(range.getClientRects()).flatMap((rect) => fill(rect, 1));
+    if (points.length > 0) {
+      targets.push({
+        what: `text "${node.textContent.trim().slice(0, 40)}"`,
+        needed: 4.5,
+        colour: getComputedStyle(parent).color,
+        points,
+      });
+    }
+  }
+  for (const select of dialog.querySelectorAll('select')) {
+    if (!shown(select)) {
+      continue;
+    }
+    // The text of a list sits in its content box, inside the border and the padding.
+    const style = getComputedStyle(select);
+    const box = select.getBoundingClientRect();
+    const left = box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
+    const right = box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight);
+    const content = new DOMRect(left, box.top + 4, right - left, box.height - 8);
+    targets.push({
+      what: `text of the list ${select.id}`,
+      needed: 4.5,
+      colour: style.color,
+      points: fill(content, 0),
+    });
+  }
+
+  // Each control: its border, or the edge of its solid fill.
+  const solid = (colour: string) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) {
+      throw new Error('The canvas has no 2D context.');
+    }
+    context.fillStyle = colour;
+    context.fillRect(0, 0, 1, 1);
+    return context.getImageData(0, 0, 1, 1).data[3] === 255;
+  };
+  for (const control of dialog.querySelectorAll('button, select, input, .seg')) {
+    if (!shown(control) || control.closest('[aria-disabled="true"]') !== null) {
+      continue;
+    }
+    if (
+      control instanceof HTMLInputElement &&
+      (control.type === 'radio' || control.type === 'range')
+    ) {
+      // A radio button is hidden inside its label, and the segmented control around it is read.
+      // A slider is drawn by the browser, and CSS cannot read its colours.
+      continue;
+    }
+    const style = getComputedStyle(control);
+    const box = control.getBoundingClientRect();
+    const border = parseFloat(style.borderTopWidth);
+    if (border >= 1 && style.borderTopStyle !== 'none') {
+      targets.push({
+        what: `border of ${nameOf(control)}`,
+        needed: 3,
+        colour: style.borderTopColor,
+        points: [...ring(box, 2), ...ring(box, -(border + 1))],
+      });
+    } else if (solid(style.backgroundColor)) {
+      targets.push({
+        what: `edge of ${nameOf(control)}`,
+        needed: 3,
+        colour: style.backgroundColor,
+        points: ring(box, 2),
+      });
+    }
+  }
+  return targets;
+}
+
+/**
+ * Reads the screenshot in the page and gives, for each target, its lowest contrast against the
+ * pixels at its points. A colour with alpha is laid over each pixel first, as the browser draws it.
+ */
+async function lowestRatios(page: Page, png: Buffer, targets: Target[]): Promise<Reading[]> {
+  return page.evaluate(
+    async ([data, list]) => {
+      const bitmap = await createImageBitmap(
+        await (await fetch(`data:image/png;base64,${data}`)).blob(),
+      );
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) {
+        throw new Error('The canvas has no 2D context.');
+      }
+      context.drawImage(bitmap, 0, 0);
+      const pixels = context.getImageData(0, 0, bitmap.width, bitmap.height).data;
+      const rgba = (colour: string) => {
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = colour;
+        context.fillRect(0, 0, 1, 1);
+        const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data;
+        return [r, g, b, a / 255];
+      };
+      const luminance = (r: number, g: number, b: number) => {
+        const channel = (value: number) => {
+          const c = value / 255;
+          return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        };
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      };
+      return list.map(({ what, needed, colour, points }) => {
+        const [fr, fg, fb, alpha] = rgba(colour);
+        let ratio = Infinity;
+        for (const [x, y] of points) {
+          if (x < 0 || y < 0 || x >= bitmap.width || y >= bitmap.height) {
+            continue;
+          }
+          const at = (y * bitmap.width + x) * 4;
+          const [br, bg, bb] = [pixels[at], pixels[at + 1], pixels[at + 2]];
+          const front = luminance(
+            fr * alpha + br * (1 - alpha),
+            fg * alpha + bg * (1 - alpha),
+            fb * alpha + bb * (1 - alpha),
+          );
+          const back = luminance(br, bg, bb);
+          ratio = Math.min(ratio, (Math.max(front, back) + 0.05) / (Math.min(front, back) + 0.05));
+        }
+        return { what, ratio, needed };
+      });
+    },
+    [png.toString('base64'), targets] as const,
+  );
+}
+
+/**
+ * Measures the contrast of the open panel against what is really drawn behind each text and
+ * each control. The panel is see-through, so its colour on screen depends on the board behind
+ * it, the dimmed page and the blur. The test therefore lists the colours first, then hides every
+ * text and icon of the panel, takes a screenshot and reads the background from its pixels. Each
+ * text and border is measured against the worst pixel of its own background.
+ */
+async function panelContrast(page: Page): Promise<Reading[]> {
+  const targets = await page.evaluate(listTargets);
+  await page.evaluate(() => {
+    const style = document.createElement('style');
+    style.dataset['hideText'] = '';
+    style.textContent = `dialog.panel, dialog.panel *, dialog.panel *::before, dialog.panel *::after {
+      color: transparent !important;
+      -webkit-text-fill-color: transparent !important;
+      transition: none !important;
+    }`;
+    document.head.appendChild(style);
+  });
+  const png = await page.screenshot({ scale: 'css', animations: 'disabled', caret: 'hide' });
+  await page.evaluate(() => document.querySelector('style[data-hide-text]')?.remove());
+  return lowestRatios(page, png, targets);
+}
+
+test('ST1: the settings button opens the panel at 95 parts in 100 of the window, all inside it', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  const layout = await panel(page).evaluate((dialog) => {
+    const { left, top, right, bottom, width, height } = dialog.getBoundingClientRect();
+    const outside = Array.from(dialog.querySelectorAll('*')).flatMap((element) => {
+      const box = element.getBoundingClientRect();
+      if (box.width === 0 || box.height === 0 || element.closest('.sr-only') !== null) {
+        return [];
+      }
+      return box.left < 0 ||
+        box.top < 0 ||
+        box.right > window.innerWidth ||
+        box.bottom > window.innerHeight
+        ? [element.outerHTML.slice(0, 80)]
+        : [];
+    });
+    return {
+      box: { left, top, right, bottom, width, height },
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      outside,
+    };
+  });
+  expect(layout.box.width / layout.windowWidth).toBeCloseTo(0.95, 2);
+  expect(layout.box.height / layout.windowHeight).toBeCloseTo(0.95, 2);
+  expect(layout.box.left).toBeGreaterThanOrEqual(0);
+  expect(layout.box.top).toBeGreaterThanOrEqual(0);
+  expect(layout.box.right).toBeLessThanOrEqual(layout.windowWidth);
+  expect(layout.box.bottom).toBeLessThanOrEqual(layout.windowHeight);
+  expect(layout.outside).toEqual([]);
+});
+
+test('ST2: Control with comma opens the panel, Tab goes round inside it, and Escape closes it', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await page.keyboard.press('Control+Comma');
+  await expect(panel(page)).toHaveAttribute('open', '');
+  const first = await focusInPanel(page);
+  expect(first).toEqual({ inside: true, name: 'tab Selection' });
+  const visited = [first.name];
+  // The focus must come back to the chosen category. The count of presses has a limit, so a
+  // focus that never comes back fails the test and does not hang it.
+  for (let pressCount = 0; pressCount < 30; pressCount++) {
+    await page.keyboard.press('Tab');
+    const focus = await focusInPanel(page);
+    expect(focus.inside, `after ${visited.join(', ')}`).toBe(true);
+    if (focus.name === first.name) {
+      break;
+    }
+    visited.push(focus.name);
+  }
+  expect(visited).toEqual([
+    'tab Selection',
+    'Selection mode',
+    'Shorter scan time',
+    'Longer scan time',
+    'Show progress bar',
+    'Shorter post click delay',
+    'Longer post click delay',
+    'Done',
+  ]);
+  await expect(tab(page, 'Selection')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(panel(page)).not.toHaveAttribute('open');
+});
+
+scanTest(
+  'ST3: the scan never highlights the settings button and never opens the panel',
+  async ({ open }) => {
+    const page = await open('home', 'Home');
+    const names = await boardCells(page);
+    /** Checks the settings button and the panel after each step of the scan. */
+    const check = async (step: string) => {
+      const highlighted = await marked(page, 'data-scan');
+      expect(highlighted.cells, step).not.toContain('Settings');
+      await expect(settingsButton(page), step).not.toHaveAttribute('data-scan');
+      await expect(settingsButton(page), step).not.toBeFocused();
+      await expect(panel(page), step).not.toHaveAttribute('open');
+    };
+
+    // Two rounds of the groups. The scan then goes to rest by itself.
+    await switchKey(page, 'Enter');
+    for (let step = 0; step < 2 * names.length; step++) {
+      await expect(groups(page).nth(step % names.length)).toHaveAttribute('data-scan', '');
+      await check(`group step ${step}`);
+      await pass(page, SCAN_TIME);
+    }
+    await expect(grid(page)).toHaveAttribute('data-state', 'rest');
+    await check('at rest after the groups');
+
+    // Two rounds of the cells of each group.
+    for (const [group, groupNames] of names.entries()) {
+      await switchKey(page, 'Enter');
+      await pass(page, group * SCAN_TIME);
+      await expect(groups(page).nth(group)).toHaveAttribute('data-scan', '');
+      await switchKey(page, 'Enter');
+      for (let step = 0; step < 2 * groupNames.length; step++) {
+        await expect(cellAt(page, group, step % groupNames.length)).toHaveAttribute(
+          'data-scan',
+          '',
+        );
+        await check(`group ${group} cell step ${step}`);
+        await pass(page, SCAN_TIME);
+      }
+      // After the cells the scan goes back to the groups or to rest, and is then sent to rest.
+      await check(`after the cells of group ${group}`);
+      for (let step = 0; step < 2 * names.length; step++) {
+        if ((await grid(page).getAttribute('data-state')) === 'rest') {
+          break;
+        }
+        await pass(page, SCAN_TIME);
+        await check(`after the cells of group ${group}, step ${step}`);
+      }
+      await expect(grid(page)).toHaveAttribute('data-state', 'rest');
+    }
+    await expect(title(page)).toHaveText('Home');
+  },
+);
+
+scanTest(
+  'ST4: while the panel is open nothing is highlighted, and Tab and Enter are not switches',
+  async ({ open }) => {
+    const page = await open('home', 'Home');
+    await openPanelByShortcut(page);
+    await pass(page, 10 * SCAN_TIME);
+    expect(await marked(page, 'data-scan')).toEqual(NOTHING);
+    await expect(title(page)).toHaveText('Home');
+
+    // The focus is on the chosen category. Tab moves it to the next control, and Enter is pressed there.
+    await page.keyboard.press('Tab');
+    await pass(page, 0);
+    expect(await focusInPanel(page)).toEqual({ inside: true, name: 'Selection mode' });
+    await page.keyboard.press('Enter');
+    await pass(page, SCAN_TIME);
+    expect(await marked(page, 'data-scan')).toEqual(NOTHING);
+    await expect(grid(page)).toHaveAttribute('data-state', 'rest');
+    await expect(title(page)).toHaveText('Home');
+    await expect(panel(page)).toHaveAttribute('open', '');
+  },
+);
+
+scanTest(
+  'ST5: a scan time of 3.0 s set in the panel applies at the next scan',
+  async ({ open }) => {
+    const page = await open('home', 'Home');
+    await openPanelByShortcut(page);
+    const longer = panel(page).getByRole('button', { name: 'Longer scan time' });
+    const reading = panel(page).locator('.stepper output').first();
+    // The scanning tests store a scan time of 1.0 s, and each press adds half a second.
+    await expect(reading).toContainText('1.0 s');
+    for (const shown of ['1.5 s', '2.0 s', '2.5 s', '3.0 s']) {
+      await press(page, longer);
+      await expect(reading).toContainText(shown);
+    }
+    await closePanel(page);
+
+    await switchKey(page, 'Enter');
+    await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
+    // The key press lets 1 ms pass, and each wait lets 1 ms more pass to draw the page, so the
+    // clock is now 2999 ms after the press.
+    await pass(page, 3000 - 3);
+    await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
+    await expect(groups(page).nth(1)).not.toHaveAttribute('data-scan');
+    // The clock now reaches 3000 ms after the press, and the next millisecond draws the page.
+    await pass(page, 1);
+    await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
+    await expect(groups(page).nth(0)).not.toHaveAttribute('data-scan');
+  },
+);
+
+scanTest(
+  'ST6: the mode Step, two switches applies when the panel closes, with no reload',
+  async ({ open }) => {
+    const page = await open('home', 'Home');
+    // A reload would lose this mark.
+    await page.evaluate(() => Object.assign(window, { noReload: true }));
+    await openPanelByShortcut(page);
+    await panel(page).locator('#settings-mode').selectOption('step');
+    await pass(page, 0);
+    await expect(panel(page).locator('#settings-mode-note')).toHaveText(
+      'One switch moves the highlight, and a second switch picks.',
+    );
+    await closePanel(page);
+
+    await switchKey(page, 'Tab');
+    await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
+    await pass(page, 5 * SCAN_TIME);
+    await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
+    await switchKey(page, 'Tab');
+    await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
+    await pass(page, 5 * SCAN_TIME);
+    await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
+    expect(await page.evaluate(() => Reflect.get(window, 'noReload'))).toBe(true);
+  },
+);
+
+test('ST7: the theme Purple applies at once and stays after a reload', async ({ page }) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  await showTab(page, 'Appearance');
+  await panel(page).locator('#settings-theme').selectOption('purple');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'purple');
+  await page.reload();
+  await expect(title(page)).toHaveText('Home');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'purple');
+});
+
+test('ST8: the layout Rows applies to home, and the keyboard keeps its rows with Columns', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  await showTab(page, 'Appearance');
+  await chooseSegment(page, 'settings-layout', 'rows');
+  await done(page).click();
+  await expect(panel(page)).not.toHaveAttribute('open');
+  expectDirection(await measure(page), 'rows');
+
+  await page.goto('/board/keyboard');
+  await expect(title(page)).toHaveText('QWERTY keyboard');
+  await openPanel(page);
+  await showTab(page, 'Appearance');
+  await chooseSegment(page, 'settings-layout', 'columns');
+  await done(page).click();
+  await expect(panel(page)).not.toHaveAttribute('open');
+  expect(inRows(await measure(page))).toBe(true);
+});
+
+scanTest(
+  'ST9: Help is spoken with the voice, the rate, the pitch and the volume set in the panel',
+  async ({ open }) => {
+    const page = await open('needs', 'Needs');
+    await openPanelByShortcut(page);
+    await press(page, tab(page, 'Speech'));
+    await panel(page).locator('#settings-voice').selectOption(VOICE_B.voiceURI);
+    await pass(page, 0);
+    for (const [slider, value] of [
+      ['#settings-rate', '1.5'],
+      ['#settings-pitch', '0.8'],
+      ['#settings-volume', '0.5'],
+    ] as const) {
+      await panel(page).locator(slider).fill(value);
+      await pass(page, 0);
+    }
+    await expect(panel(page).locator('#settings-rate')).toHaveAttribute('aria-valuetext', '1.5×');
+    await expect(panel(page).locator('#settings-volume')).toHaveAttribute('aria-valuetext', '50%');
+    await closePanel(page);
+
+    await pickByScan(page, ...(await placeOf(page, 'Help')));
+    expect((await spokenWithVoice(page)).at(-1)).toEqual({
+      text: 'I need help',
+      voice: VOICE_B.voiceURI,
+      rate: 1.5,
+      pitch: 0.8,
+      volume: 0.5,
+    });
+  },
+);
+
+test('ST10: Play a sample speaks the sample', async ({ page }) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  await showTab(page, 'Speech');
+  // Nothing is stored for the voice, so the list shows the default voice.
+  await expect(panel(page).locator('#settings-voice')).toHaveValue(VOICE_A.voiceURI);
+  await panel(page).getByRole('button', { name: 'Play a sample' }).click();
+  await expect
+    .poll(async () => (await spokenWithVoice(page)).map(({ text }) => text))
+    .toEqual([SAMPLE]);
+});
+
+test('ST11: axe reports no WCAG 2.2 Level AA violation on any tab in any theme', async ({
+  page,
+}) => {
+  test.slow();
+  for (const theme of THEMES) {
+    await openBoard(page, 'home', { theme });
+    await openPanel(page);
+    for (const name of TABS) {
+      await showTab(page, name);
+      expect(await axeViolations(page), `${theme} ${name}`).toEqual([]);
+    }
+  }
+});
+
+test('ST12: the text and the borders of the controls keep their contrast over the Needs board', async ({
+  page,
+}) => {
+  // The case takes 25 screenshots and reads each one in the page, which is slow when the other
+  // tests run at the same time.
+  test.setTimeout(300_000);
+  for (const theme of THEMES) {
+    await openBoard(page, 'needs', { theme });
+    await openPanel(page);
+    for (const name of TABS) {
+      await showTab(page, name);
+      // The pointer is moved off the panel, so no control shows its hover look.
+      await page.mouse.move(1, 1);
+      const readings = await panelContrast(page);
+      expect(readings.length, `${theme} ${name}`).toBeGreaterThan(0);
+      const low = readings
+        .filter(({ ratio, needed }) => ratio < needed)
+        .map(({ what, ratio, needed }) => `${what}: ${ratio.toFixed(2)} of ${needed}`);
+      expect(low, `${theme} ${name}`).toEqual([]);
+    }
+  }
+});
+
+test('ST13: every button, list, slider, switch row and tab is at least 48px high and wide', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  await openPanel(page);
+  for (const name of TABS) {
+    await showTab(page, name);
+    const small = await panel(page).evaluate((dialog) =>
+      Array.from(
+        dialog.querySelectorAll(
+          'button, select, input[type="range"], label.row, [role="tab"], .seg label',
+        ),
+      ).flatMap((control) => {
+        const { width, height } = control.getBoundingClientRect();
+        if (width === 0 && height === 0) {
+          // The control is in a category that is not shown.
+          return [];
+        }
+        const label = (control.getAttribute('aria-label') ?? control.textContent ?? '').trim();
+        return width < 48 || height < 48 ? [`${label}: ${width} by ${height}`] : [];
+      }),
+    );
+    expect(small, name).toEqual([]);
+  }
+});
+
+test.describe('in a window 800 by 768', () => {
+  test.use({ viewport: { width: 800, height: 768 } });
+
+  test('ST14: the tabs lie in one row above the settings, and the Right arrow moves along them', async ({
+    page,
+  }) => {
+    await openBoard(page, 'home');
+    await openPanel(page);
+    const tablist = panel(page).getByRole('tablist');
+    await expect(tablist).toHaveAttribute('aria-orientation', 'horizontal');
+    const boxes = await panel(page).evaluate((dialog) => {
+      const box = (element: Element | null) => {
+        if (!element) {
+          throw new Error('The panel lacks a part.');
+        }
+        const { left, top, right, bottom } = element.getBoundingClientRect();
+        return { left, top, right, bottom };
+      };
+      return {
+        tabs: Array.from(dialog.querySelectorAll('[role="tab"]')).map(box),
+        panes: box(dialog.querySelector('.panes')),
+      };
+    });
+    expect(boxes.tabs).toHaveLength(TABS.length);
+    for (const [index, box] of boxes.tabs.entries()) {
+      expect(box.top, TABS[index]).toBeCloseTo(boxes.tabs[0].top, 0);
+      expect(box.bottom, TABS[index]).toBeLessThanOrEqual(boxes.panes.top);
+      if (index > 0) {
+        expect(box.left, TABS[index]).toBeGreaterThan(boxes.tabs[index - 1].left);
+      }
+    }
+    await page.keyboard.press('ArrowRight');
+    await expect(tab(page, 'Speech')).toBeFocused();
+    await expect(tab(page, 'Speech')).toHaveAttribute('aria-selected', 'true');
+    await expect(pane(page, 'Speech')).toBeVisible();
+  });
+});
+
+test('ST15: the panel is solid with no blur when less transparency is asked for', async ({
+  page,
+}) => {
+  await askForLessTransparency(page);
+  await openBoard(page, 'home');
+  expect(
+    await page.evaluate(() => matchMedia('(prefers-reduced-transparency: reduce)').matches),
+  ).toBe(true);
+  await openPanel(page);
+  const surface = await panel(page).evaluate((dialog) => {
+    const style = getComputedStyle(dialog);
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) {
+      throw new Error('The canvas has no 2D context.');
+    }
+    context.fillStyle = style.backgroundColor;
+    context.fillRect(0, 0, 1, 1);
+    return {
+      alpha: context.getImageData(0, 0, 1, 1).data[3],
+      backdropFilter: style.backdropFilter,
+    };
+  });
+  expect(surface.alpha).toBe(255);
+  expect(surface.backdropFilter).toBe('none');
+});
+
+scanTest('ST16: in cursor mode no round cursor is drawn over the panel', async ({ open }) => {
+  const page = await open('home', 'Home', { selectionMode: 'cursor' });
+  await pointAt(page, cell(page, 'Needs'));
+  await expect(page.locator('.cursor')).toHaveCount(1);
+  await openPanelByShortcut(page);
+  await pointAt(page, panel(page));
+  await expect(page.locator('.cursor')).toHaveCount(0);
+  await expect(page.locator('html')).not.toHaveAttribute('data-cursor');
+});
+
+scanTest(
+  'ST17: in dwell mode a pointer that rests on Done leaves the panel open',
+  async ({ open }) => {
+    const page = await open('home', 'Home', { selectionMode: 'dwell', dwellTime: 1000 });
+    await openPanelByShortcut(page);
+    await pointAt(page, done(page));
+    await pass(page, 5000);
+    await expect(panel(page)).toHaveAttribute('open', '');
+    await expect(page.locator('[data-dwell]')).toHaveCount(0);
+  },
+);
+
+test('ST18: the footer holds no button, and the main area is as high as with Sign out', async ({
+  page,
+}) => {
+  await openBoard(page, 'home');
+  const footer = page.locator('footer');
+  await expect(footer.locator('button')).toHaveCount(0);
+  const mainHeight = () =>
+    page.locator('main').evaluate((main) => main.getBoundingClientRect().height);
+  const empty = await mainHeight();
+  // The Sign out button of feature 3 is put back into the footer, with the size rules it had,
+  // to measure the main area as it was.
+  await footer.evaluate((element) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Sign out';
+    Object.assign(button.style, {
+      minHeight: '48px',
+      padding: '0 1.25rem',
+      border: '0',
+      borderRadius: '24px',
+      font: 'inherit',
+      fontWeight: '600',
+    });
+    element.appendChild(button);
+  });
+  expect(await mainHeight()).toBe(empty);
+});
+
+test('ST19: the stop cell shows the symbol of Symple at its full size, and nothing names OpenMoji', async ({
+  page,
+  request,
+}) => {
+  await openBoard(page, 'core-words');
+  const stop = cell(page, 'stop').locator('img');
+  await expect(stop).toHaveJSProperty('complete', true);
+  const sizes = await page.evaluate(() =>
+    Array.from(document.querySelectorAll<HTMLImageElement>('main img')).map((image) => ({
+      file: new URL(image.currentSrc || image.src).pathname,
+      natural: image.naturalWidth,
+      width: image.getBoundingClientRect().width,
+      height: image.getBoundingClientRect().height,
+    })),
+  );
+  const stopSize = sizes.find(({ file }) => file.endsWith('/stop.svg'));
+  const others = sizes.filter(({ file }) => !file.endsWith('/stop.svg'));
+  if (!stopSize) {
+    throw new Error('The stop cell has no symbol.');
+  }
+  expect(stopSize.natural).toBeGreaterThan(0);
+  // Every cell of Core words is the same size, so every symbol is drawn at the same size.
+  for (const other of others) {
+    expect(Math.abs(stopSize.width - other.width), other.file).toBeLessThanOrEqual(1);
+    expect(Math.abs(stopSize.height - other.height), other.file).toBeLessThanOrEqual(1);
+  }
+
+  const svg = await request.get('/symbols/stop.svg');
+  expect(svg.ok()).toBe(true);
+  expect(await svg.text()).not.toMatch(/id=["']emoji["']/);
+  const attribution = await request.get('/symbols/ATTRIBUTION.txt');
+  expect(attribution.ok()).toBe(true);
+  expect(await attribution.text()).not.toContain('OpenMoji');
+});

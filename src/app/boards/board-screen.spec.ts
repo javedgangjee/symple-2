@@ -4,6 +4,7 @@ import { Router, provideRouter } from '@angular/router';
 import { Message } from '../keyboard/message';
 import { Layout } from '../layout/layout';
 import { ScanSettingValues, ScanSettings } from '../scan/scan-settings';
+import { SettingsOpen } from '../settings/settings-open';
 import { FakeVoiceSource } from '../speech/fake-voice-source';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { Back } from './back';
@@ -505,6 +506,21 @@ describe('BoardScreen', () => {
         expect(cursor(), selectionMode).toBeNull();
         expect(document.documentElement.hasAttribute('data-cursor'), selectionMode).toBe(false);
       }
+    });
+
+    it('PB6: no round cursor is drawn while the settings panel is open', async () => {
+      await drawWithScan({ selectionMode: 'cursor' });
+      const panel = TestBed.inject(SettingsOpen);
+      pointerMoves(120, 80);
+      expect(cursor()).not.toBeNull();
+      panel.open();
+      fixture.detectChanges();
+      expect(cursor()).toBeNull();
+      expect(document.documentElement.hasAttribute('data-cursor')).toBe(false);
+      panel.close();
+      fixture.detectChanges();
+      expect(cursor()).not.toBeNull();
+      expect(document.documentElement.hasAttribute('data-cursor')).toBe(true);
     });
 
     it('R10: a pointer of the touch kind starts no dwell', async () => {

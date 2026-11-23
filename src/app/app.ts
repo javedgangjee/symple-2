@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { BARE_SCREEN } from './app.routes';
+import { SettingsPanel } from './settings/settings-panel';
 import { Footer } from './shell/footer';
 import { Header } from './shell/header';
 import { ScreenTitle } from './shell/screen-title';
@@ -13,7 +14,7 @@ import { ScreenTitle } from './shell/screen-title';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer],
+  imports: [RouterOutlet, Header, Footer, SettingsPanel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
   styleUrl: './app.css',

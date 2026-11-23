@@ -1,5 +1,13 @@
-import { DOCUMENT, Injectable, InjectionToken, inject } from '@angular/core';
-import { VoiceSource } from './voice-source';
+import {
+  DOCUMENT,
+  DestroyRef,
+  Injectable,
+  InjectionToken,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { Voice, VoiceSource, VoiceValues } from './voice-source';
 
 /**
  * How long the source waits for the list of voices when the browser has not filled it yet,
@@ -11,6 +19,9 @@ export const VOICES_WAIT_MS = 1000;
 export interface WebUtterance {
   voice: SpeechSynthesisVoice | null;
   lang: string;
+  rate: number;
+  pitch: number;
+  volume: number;
   addEventListener(type: 'end' | 'error', listener: (event: Event) => void): void;
 }
 
@@ -52,15 +63,26 @@ export const WEB_SPEECH = new InjectionToken<WebSpeech | null>('WEB_SPEECH', {
 /** A language tag for English, such as "en", "en-GB" or "en_US". */
 const ENGLISH = /^en([-_]|$)/i;
 
+/** The English voices of a list, in the order of the list. */
+function englishVoices(voices: readonly SpeechSynthesisVoice[]): SpeechSynthesisVoice[] {
+  return voices.filter((voice) => ENGLISH.test(voice.lang));
+}
+
 /**
- * Picks the voice: the default voice of the browser when it is English, or else the first
- * English voice in the list. A voice that runs on a server is used like any other.
+ * Picks the voice. The voice with the given id is used when the list has it among its English
+ * voices. Otherwise the pick is the default voice of the browser when it is English, or else
+ * the first English voice in the list. A voice that runs on a server is used like any other.
  */
 export function englishVoice(
   voices: readonly SpeechSynthesisVoice[],
+  id = '',
 ): SpeechSynthesisVoice | undefined {
-  const english = voices.filter((voice) => ENGLISH.test(voice.lang));
-  return english.find((voice) => voice.default) ?? english[0];
+  const english = englishVoices(voices);
+  return (
+    (id === '' ? undefined : english.find((voice) => voice.voiceURI === id)) ??
+    english.find((voice) => voice.default) ??
+    english[0]
+  );
 }
 
 /** Gives the list of voices once the browser has filled it, or the list as it is after the wait. */
@@ -108,13 +130,31 @@ export class SystemVoiceSource implements VoiceSource {
    */
   private turn = 0;
 
+  /** The English voices that the browser has now. */
+  private readonly english = signal<readonly SpeechSynthesisVoice[]>([]);
+
+  readonly voices = computed<readonly Voice[]>(() =>
+    this.english().map((voice) => ({ id: voice.voiceURI, name: voice.name })),
+  );
+
   constructor() {
+    const synthesis = this.speech?.synthesis;
+    if (!synthesis) {
+      return;
+    }
     // Chrome starts to load its list of voices on the first call, so the list is asked for
-    // before the first pick.
-    this.speech?.synthesis.getVoices();
+    // before the first pick. It tells of the loaded list, and of each later change, with an event.
+    this.english.set(englishVoices(synthesis.getVoices()));
+    const refill = () => this.english.set(englishVoices(synthesis.getVoices()));
+    synthesis.addEventListener('voiceschanged', refill);
+    inject(DestroyRef).onDestroy(() => synthesis.removeEventListener('voiceschanged', refill));
   }
 
-  speak(text: string): Promise<void> {
+  inUse(id: string): string {
+    return englishVoice(this.english(), id)?.voiceURI ?? '';
+  }
+
+  speak(text: string, values: VoiceValues): Promise<void> {
     const speech = this.speech;
     if (!speech) {
       console.warn('Nothing was spoken: this browser has no Web Speech API.');
@@ -124,11 +164,11 @@ export class SystemVoiceSource implements VoiceSource {
     const voices = speech.synthesis.getVoices();
     if (voices.length > 0) {
       // The text is spoken in the same turn as the press, with no wait.
-      return this.utter(speech, text, voices);
+      return this.utter(speech, text, values, voices);
     }
     const turn = this.turn;
     return voicesLoaded(speech.synthesis).then((loaded) =>
-      turn === this.turn ? this.utter(speech, text, loaded) : undefined,
+      turn === this.turn ? this.utter(speech, text, values, loaded) : undefined,
     );
   }
 
@@ -142,6 +182,7 @@ export class SystemVoiceSource implements VoiceSource {
   private utter(
     speech: WebSpeech,
     text: string,
+    values: VoiceValues,
     voices: readonly SpeechSynthesisVoice[],
   ): Promise<void> {
     if (voices.length === 0) {
@@ -149,7 +190,8 @@ export class SystemVoiceSource implements VoiceSource {
       console.warn('Nothing was spoken: the voices of this browser did not load.');
       return Promise.resolve();
     }
-    const voice = englishVoice(voices);
+    // A stored voice that this device lacks, such as one synced from another device, gives the default voice.
+    const voice = englishVoice(voices, values.voice);
     if (!voice) {
       console.warn('Nothing was spoken: this browser has no English voice.');
       return Promise.resolve();
@@ -157,6 +199,9 @@ export class SystemVoiceSource implements VoiceSource {
     const utterance = new speech.Utterance(text);
     utterance.voice = voice;
     utterance.lang = voice.lang;
+    utterance.rate = values.rate;
+    utterance.pitch = values.pitch;
+    utterance.volume = values.volume;
     return new Promise((resolve) => {
       const done = () => {
         if (this.current === utterance) {

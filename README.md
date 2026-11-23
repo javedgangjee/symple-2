@@ -24,7 +24,7 @@ The tests never reach Firebase. The end to end tests answer the Firebase Auth ca
 
 Sign in, then press Enter on the home screen. The first column is outlined, and the outline moves by itself. Press Enter to pick the outlined column, and again to pick the outlined cell. Tab moves the outline by one, and Shift with Tab moves it back.
 
-The settings screen does not exist yet, so the scan settings are changed in the local storage of the browser, followed by a reload. `symple.selectionMode` is `scan`, `step`, `cursor`, `touch` or `dwell`. `symple.scanTime`, `symple.postClickDelay` and `symple.dwellTime` are times in milliseconds. `symple.dwellStyle` is `grow` or `bar`. `symple.showProgressBar` is `true` to show a bar that counts down the scan time, and the bar is hidden without it.
+The caregiver changes the settings in the settings panel. The settings button in the header opens it, and so does Control with the comma key. Each change applies at once and syncs to the account. The scan settings are also kept in the local storage of the browser. `symple.selectionMode` is `scan`, `step`, `cursor`, `touch` or `dwell`. `symple.scanTime`, `symple.postClickDelay` and `symple.dwellTime` are times in milliseconds. `symple.dwellStyle` is `grow` or `bar`. `symple.showProgressBar` is `true` to show a bar that counts down the scan time, and the bar is hidden without it.
 
 ## npm scripts
 
@@ -45,9 +45,9 @@ The settings screen does not exist yet, so the scan settings are changed in the 
 
 ## Symbols
 
-The boards use the Mulberry Symbols set, copyright 2018-2026 Steve Lee, licensed under Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). The source is https://mulberrysymbols.org. The files in `public/symbols/` are unchanged apart from their names, and `public/symbols/ATTRIBUTION.txt` lists each file with its original name. One symbol, `stop.svg`, is from OpenMoji (https://openmoji.org) under the same licence.
+The boards use the Mulberry Symbols set, copyright 2018-2026 Steve Lee, licensed under Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). The source is https://mulberrysymbols.org. The files in `public/symbols/` are unchanged apart from their names, and `public/symbols/ATTRIBUTION.txt` lists each file with its original name. One symbol, `stop.svg`, is not from Mulberry. It was drawn for Symple.
 
-Some line icons in `src/app/cells/icon.ts` are the outlined Material icons by Google, used under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0). The source is https://fonts.google.com/icons. The licence text ships with the app in `public/licenses/material-icons.txt`.
+Every line icon in the app is copied from Lucide version 1.77.0, used under the ISC License. The source is https://lucide.dev. The icons are drawn inline in `src/app/cells/icon.ts`, `src/app/shell/header.html`, `src/app/settings/settings-panel.html` and `src/app/auth/sign-in-screen.html`, and each one names the Lucide icon it copies. A few Lucide icons come from the Feather project and are also under the MIT License, as the Lucide licence says. The licence text ships with the app in `public/licenses/lucide.txt`.
 
 ## Specs
 

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { FakeVoiceSource } from './fake-voice-source';
 import { Speech } from './speech';
+import { VoiceSettings } from './voice-settings';
 import { VOICE_SOURCE } from './voice-source';
 
 describe('Speech', () => {
@@ -8,6 +9,7 @@ describe('Speech', () => {
   let speech: Speech;
 
   beforeEach(() => {
+    localStorage.clear();
     source = new FakeVoiceSource();
     TestBed.configureTestingModule({ providers: [{ provide: VOICE_SOURCE, useValue: source }] });
     speech = TestBed.inject(Speech);
@@ -36,5 +38,13 @@ describe('Speech', () => {
   it('SP7: a text of only spaces is not spoken and stops nothing', () => {
     speech.say('   ');
     expect(source.calls).toEqual([]);
+  });
+
+  it('SP8: a text goes to the voice source with the voice, the rate, the pitch and the volume', () => {
+    TestBed.inject(VoiceSettings).set({ voice: 'voice-b', rate: 1.5, pitch: 0.8, volume: 0.5 });
+    speech.say('Hello');
+    expect(source.spoken).toEqual([
+      { text: 'Hello', voice: 'voice-b', rate: 1.5, pitch: 0.8, volume: 0.5 },
+    ]);
   });
 });

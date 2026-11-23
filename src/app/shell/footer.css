@@ -12,32 +12,3 @@ footer {
   min-height: 48px;
   margin-inline: 4%;
 }
-
-/* The Sign out button is glass, like the settings button, with a text label. */
-/* glass.css makes it solid when the device asks for less transparency. */
-.sign-out {
-  min-height: 48px;
-  padding: 0 1.25rem;
-  border: 0;
-  border-radius: 24px;
-  background: var(--glass-button);
-  color: var(--ink);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
-  box-shadow:
-    var(--rim),
-    0 6px 14px -6px oklch(0.25 var(--shc) var(--shade) / 0.3);
-  transition: background-color 160ms var(--ease);
-}
-
-.sign-out:hover {
-  background: var(--glass-button-hover);
-}
-
-.sign-out:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 3px;
-}

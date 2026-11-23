@@ -1,5 +1,6 @@
 import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { Subject } from 'rxjs';
+import { SettingsOpen } from '../settings/settings-open';
 import { CellPosition, sameCell } from './scan';
 import { ScanSettings } from './scan-settings';
 
@@ -13,6 +14,7 @@ type Timer = ReturnType<typeof setTimeout> | undefined;
 @Injectable({ providedIn: 'root' })
 export class Dwell {
   private readonly settings = inject(ScanSettings);
+  private readonly panel = inject(SettingsOpen);
 
   private readonly runningOn = signal<CellPosition | null>(null);
   private readonly confirmedOn = signal<CellPosition | null>(null);
@@ -51,6 +53,13 @@ export class Dwell {
       const next = this.settings.selectionMode();
       if (next !== mode) {
         mode = next;
+        untracked(() => this.stop());
+      }
+    });
+
+    // A dwell that runs when the settings panel opens is dropped, so it presses nothing behind the panel.
+    effect(() => {
+      if (this.panel.isOpen()) {
         untracked(() => this.stop());
       }
     });
@@ -110,6 +119,7 @@ export class Dwell {
 
   private begin(position: CellPosition): void {
     if (
+      this.panel.isOpen() ||
       this.settings.selectionMode() !== 'dwell' ||
       this.delayTimer !== undefined ||
       this.mustMove ||

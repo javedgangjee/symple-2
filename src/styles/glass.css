@@ -7,7 +7,10 @@
   --glass-soft: 78%;
   --glass-light: 58%;
   --glass-panel: 80%;
+  /* The settings panel is more solid than the sign in card, so its text keeps its contrast over any board. */
+  --glass-settings: 92%;
   --blur: blur(22px) saturate(1.7);
+  --blur-settings: blur(30px) saturate(1.8);
   /* The bright rim. A line of light along the top edge, a faint line all round, and a soft glow inside the bottom edge. */
   --rim:
     inset 0 1px 0 oklch(1 0 0 / 0.55), inset 0 0 0 1px oklch(1 0 0 / 0.16),
@@ -44,7 +47,9 @@ body {
     --glass-soft: 100%;
     --glass-light: 100%;
     --glass-panel: 100%;
+    --glass-settings: 100%;
     --blur: none;
+    --blur-settings: none;
     --glass-button: var(--light);
     --glass-button-hover: var(--light);
   }

@@ -6,4 +6,6 @@
 </main>
 @if (!bare()) {
   <app-footer />
+  <!-- The settings panel is drawn once for every screen with a header. It is a dialog, so it takes no room here. -->
+  <app-settings-panel />
 }

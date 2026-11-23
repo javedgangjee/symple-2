@@ -17,6 +17,7 @@ import { Layout } from './layout/layout';
 import { ScanSettings } from './scan/scan-settings';
 import { ScreenTitle } from './shell/screen-title';
 import { SystemVoiceSource } from './speech/system-voice-source';
+import { VoiceSettings } from './speech/voice-settings';
 import { VOICE_SOURCE } from './speech/voice-source';
 import { CLOUD_STORE } from './sync/cloud-store';
 import { FirestoreCloudStore } from './sync/firestore-cloud-store';
@@ -47,6 +48,8 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => inject(Layout).load()),
     // The scan settings are read before the first screen is drawn.
     provideAppInitializer(() => inject(ScanSettings).load()),
+    // The voice and its rate, pitch and volume are read before the first screen is drawn.
+    provideAppInitializer(() => inject(VoiceSettings).load()),
     // The stored sign in is read before the first screen is drawn.
     provideAppInitializer(() => inject(Auth).ready()),
     // The sync starts when the service is made.

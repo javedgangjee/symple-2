@@ -23,6 +23,7 @@ import { PointerPlace } from '../scan/pointer-place';
 import { CellPosition, Scan, sameCell } from '../scan/scan';
 import { ScanSettings, isSwitchMode } from '../scan/scan-settings';
 import { Switches } from '../scan/switches';
+import { SettingsOpen } from '../settings/settings-open';
 import { Speech } from '../speech/speech';
 import { Back } from './back';
 import { BoardData, Cell, Group, HOME_BOARD_ID, NAMED_SIZES, Tile } from './board-data';
@@ -81,11 +82,18 @@ export class BoardScreen {
   );
 
   protected readonly pointer = inject(PointerPlace);
+  private readonly settingsOpen = inject(SettingsOpen);
 
   protected readonly cursorMode = computed(() => this.settings.selectionMode() === 'cursor');
 
-  /** Where the round cursor of `cursor` mode is drawn, or nothing in another mode. */
-  protected readonly cursor = computed(() => (this.cursorMode() ? this.pointer.at() : null));
+  /**
+   * Whether the round cursor takes the place of the arrow of the system. It does not while the
+   * settings panel is open, so the caregiver sees the arrow over the panel.
+   */
+  private readonly drawsCursor = computed(() => this.cursorMode() && !this.settingsOpen.isOpen());
+
+  /** Where the round cursor of `cursor` mode is drawn, or nothing when it is not drawn. */
+  protected readonly cursor = computed(() => (this.drawsCursor() ? this.pointer.at() : null));
 
   constructor() {
     // The switch keys are heard only while a board is on show, so the sign in screen is not scanned.
@@ -111,7 +119,7 @@ export class BoardScreen {
 
     // In `cursor` mode the page hides the arrow of the system, because the screen draws a cursor.
     const page = inject(DOCUMENT).documentElement;
-    effect(() => page.toggleAttribute('data-cursor', this.cursorMode()));
+    effect(() => page.toggleAttribute('data-cursor', this.drawsCursor()));
     inject(DestroyRef).onDestroy(() => page.removeAttribute('data-cursor'));
 
     // The keyboard focus follows the highlight, so a screen reader tells each group and cell.

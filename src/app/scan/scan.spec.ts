@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subscription } from 'rxjs';
+import { SettingsOpen } from '../settings/settings-open';
 import { CellPosition, Scan, ScanState } from './scan';
 import { ScanSettings, SelectionMode } from './scan-settings';
 
@@ -345,6 +346,48 @@ describe('Scan', () => {
       expect(scan.state()).toEqual(cell(1, 1));
       scan.move(-1);
       expect(scan.state()).toEqual(cell(1, 3));
+    });
+  });
+
+  describe('with the settings panel', () => {
+    beforeEach(() => setUp('scan'));
+
+    it('PB1: the scan goes to rest when the panel opens, and stays at rest', () => {
+      scan.press();
+      pass(1000);
+      expect(scan.state()).toEqual(group(2));
+      TestBed.inject(SettingsOpen).open();
+      TestBed.tick();
+      expect(scan.state()).toEqual(REST);
+      pass(10_000);
+      expect(scan.state()).toEqual(REST);
+    });
+
+    it('PB4: after the panel closes a press starts the scan at the first group', () => {
+      const panel = TestBed.inject(SettingsOpen);
+      scan.press();
+      pass(1000);
+      panel.open();
+      TestBed.tick();
+      scan.press();
+      expect(scan.state()).toEqual(REST);
+      panel.close();
+      TestBed.tick();
+      scan.press();
+      expect(scan.state()).toEqual(group(1));
+      expect(picks).toEqual([]);
+    });
+
+    it('PB7: a scan time set while the scan runs times the next step', () => {
+      scan.press();
+      pass(1000);
+      expect(scan.state()).toEqual(group(2));
+      TestBed.inject(ScanSettings).set({ scanTime: 3000 });
+      TestBed.tick();
+      pass(2999);
+      expect(scan.state()).toEqual(group(2));
+      pass(1);
+      expect(scan.state()).toEqual(group(1));
     });
   });
 });

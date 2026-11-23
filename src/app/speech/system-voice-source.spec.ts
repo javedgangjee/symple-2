@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { DEFAULT_VOICE_SETTINGS } from './voice-settings';
 import {
   SystemVoiceSource,
   WEB_SPEECH,
@@ -22,6 +23,9 @@ function voice(name: string, lang: string, options: { default?: true; server?: t
 class StandInUtterance extends EventTarget implements WebUtterance {
   voice: SpeechSynthesisVoice | null = null;
   lang = '';
+  rate = 1;
+  pitch = 1;
+  volume = 1;
 
   constructor(readonly text: string) {
     super();
@@ -60,8 +64,14 @@ class StandInSynthesis extends EventTarget implements WebSynthesis {
   }
 }
 
+/** No chosen voice, and a rate, a pitch and a volume of 1. */
+const PLAIN = DEFAULT_VOICE_SETTINGS;
+
 describe('SystemVoiceSource', () => {
   const ENGLISH = voice('Daniel', 'en-GB', { default: true });
+  const VOICE_A = voice('Voice A', 'en-US', { default: true });
+  const VOICE_B = voice('Voice B', 'en-GB');
+  const FRENCH = voice('Voix', 'fr-FR');
   let warn: ReturnType<typeof vi.spyOn>;
 
   function sourceWith(speech: WebSpeech | null): SystemVoiceSource {
@@ -97,7 +107,7 @@ describe('SystemVoiceSource', () => {
 
   it('VS1: a text is spoken as one utterance with the default English voice', () => {
     const { synthesis, source } = sourceWithVoices([ENGLISH]);
-    void source.speak('I need help');
+    void source.speak('I need help', PLAIN);
     expect(synthesis.spoken.length).toBe(1);
     expect(synthesis.spoken[0].text).toBe('I need help');
     expect(synthesis.spoken[0].voice).toBe(ENGLISH);
@@ -105,7 +115,7 @@ describe('SystemVoiceSource', () => {
 
   it('VS2: the promise settles when the speech ends', async () => {
     const { synthesis, source } = sourceWithVoices([ENGLISH]);
-    const promise = source.speak('I need help');
+    const promise = source.speak('I need help', PLAIN);
     const state = follow(promise);
     await Promise.resolve();
     expect(state.settled).toBe(false);
@@ -115,7 +125,7 @@ describe('SystemVoiceSource', () => {
 
   it('VS3: the promise settles when the speech fails, and nothing is thrown', async () => {
     const { synthesis, source } = sourceWithVoices([ENGLISH]);
-    const promise = source.speak('I need help');
+    const promise = source.speak('I need help', PLAIN);
     expect(() => synthesis.fire('error')).not.toThrow();
     await expect(promise).resolves.toBeUndefined();
   });
@@ -123,7 +133,7 @@ describe('SystemVoiceSource', () => {
   it('VS4: a default English voice that runs on a server is used before one on the device', () => {
     const server = voice('Google UK English Female', 'en-GB', { default: true, server: true });
     const { synthesis, source } = sourceWithVoices([voice('Samantha', 'en-US'), server]);
-    void source.speak('I need help');
+    void source.speak('I need help', PLAIN);
     expect(synthesis.spoken[0].voice).toBe(server);
   });
 
@@ -133,13 +143,13 @@ describe('SystemVoiceSource', () => {
       voice('Thomas', 'fr-FR', { default: true }),
       english,
     ]);
-    void source.speak('I need help');
+    void source.speak('I need help', PLAIN);
     expect(synthesis.spoken[0].voice).toBe(english);
   });
 
   it('VS10: with no English voice nothing is spoken, and one warning is written', async () => {
     const { synthesis, source } = sourceWithVoices([voice('Thomas', 'fr-FR', { default: true })]);
-    await expect(source.speak('I need help')).resolves.toBeUndefined();
+    await expect(source.speak('I need help', PLAIN)).resolves.toBeUndefined();
     expect(synthesis.spoken).toEqual([]);
     expect(warn).toHaveBeenCalledTimes(1);
   });
@@ -147,7 +157,7 @@ describe('SystemVoiceSource', () => {
   it('VS6: a text waits for the voices when the list is empty at first', async () => {
     vi.useFakeTimers();
     const { synthesis, source } = sourceWithVoices([]);
-    void source.speak('I need help');
+    void source.speak('I need help', PLAIN);
     expect(synthesis.spoken).toEqual([]);
     await vi.advanceTimersByTimeAsync(200);
     synthesis.voices = [ENGLISH];
@@ -159,21 +169,21 @@ describe('SystemVoiceSource', () => {
 
   it('VS7: with no Web Speech API nothing is thrown, and the promise settles at once', async () => {
     const source = sourceWith(null);
-    await expect(source.speak('I need help')).resolves.toBeUndefined();
+    await expect(source.speak('I need help', PLAIN)).resolves.toBeUndefined();
     expect(() => source.stop()).not.toThrow();
   });
 
   it('VS8: a second text cancels the first speech before it starts', () => {
     const { synthesis, source } = sourceWithVoices([ENGLISH]);
-    void source.speak('I need help');
+    void source.speak('I need help', PLAIN);
     const before = synthesis.log.length;
-    void source.speak('I am in pain');
+    void source.speak('I am in pain', PLAIN);
     expect(synthesis.log.slice(before)).toEqual(['cancel', 'speak:I am in pain']);
   });
 
   it('VS9: a stop cancels the speech that runs', async () => {
     const { synthesis, source } = sourceWithVoices([ENGLISH]);
-    const promise = source.speak('I need help');
+    const promise = source.speak('I need help', PLAIN);
     const before = synthesis.log.length;
     source.stop();
     expect(synthesis.log.slice(before)).toEqual(['cancel']);
@@ -189,12 +199,51 @@ describe('SystemVoiceSource', () => {
   it('VS12: voices that never load give a warning that says so', async () => {
     vi.useFakeTimers();
     const { synthesis, source } = sourceWithVoices([]);
-    const state = follow(source.speak('I need help'));
+    const state = follow(source.speak('I need help', PLAIN));
     await vi.advanceTimersByTimeAsync(1000);
     expect(synthesis.spoken).toEqual([]);
     expect(state.settled).toBe(true);
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('did not load'));
     expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('no English voice'));
+  });
+
+  it('VS13: the list holds the English voices with their ids', () => {
+    const { source } = sourceWithVoices([VOICE_A, VOICE_B, FRENCH]);
+    expect(source.voices()).toEqual([
+      { id: VOICE_A.voiceURI, name: 'Voice A' },
+      { id: VOICE_B.voiceURI, name: 'Voice B' },
+    ]);
+  });
+
+  it('VS14: the list fills when the browser tells of its voices', () => {
+    const { synthesis, source } = sourceWithVoices([]);
+    expect(source.voices()).toEqual([]);
+    synthesis.voices = [VOICE_A, VOICE_B, FRENCH];
+    synthesis.dispatchEvent(new Event('voiceschanged'));
+    expect(source.voices().map((listed) => listed.name)).toEqual(['Voice A', 'Voice B']);
+  });
+
+  it('VS15: a text is spoken with the given voice, rate, pitch and volume', () => {
+    const { synthesis, source } = sourceWithVoices([VOICE_A, VOICE_B, FRENCH]);
+    void source.speak('Hello', { voice: VOICE_B.voiceURI, rate: 1.5, pitch: 0.8, volume: 0.5 });
+    expect(synthesis.spoken.length).toBe(1);
+    const [utterance] = synthesis.spoken;
+    expect(utterance.voice).toBe(VOICE_B);
+    expect(utterance.rate).toBe(1.5);
+    expect(utterance.pitch).toBe(0.8);
+    expect(utterance.volume).toBe(0.5);
+  });
+
+  it('VS16: an id that is not in the list gives the voice of the rule of feature 5', () => {
+    const { synthesis, source } = sourceWithVoices([VOICE_A, VOICE_B, FRENCH]);
+    void source.speak('Hello', { ...PLAIN, voice: 'A voice of another device' });
+    expect(synthesis.spoken[0].voice).toBe(VOICE_A);
+  });
+
+  it('VS17: the voice in use is the default voice for no id, and the voice of a known id', () => {
+    const { source } = sourceWithVoices([VOICE_A, VOICE_B, FRENCH]);
+    expect(source.inUse('')).toBe(VOICE_A.voiceURI);
+    expect(source.inUse(VOICE_B.voiceURI)).toBe(VOICE_B.voiceURI);
   });
 });
