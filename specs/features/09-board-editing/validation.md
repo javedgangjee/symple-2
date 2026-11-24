@@ -264,3 +264,85 @@ Claude does not sign in or out, so the user does the two steps that need it.
 3. Claude opens Needs. Expected: the second account sees the built-in Needs or its own, and no "Test juice".
 4. The user: sign out, and sign in with the first account again.
 5. Claude removes "Test juice" from Needs and presses Done.
+
+## Results of 2026-11-23
+
+The automated checks ran with Node 22.23.5, the version in `.nvmrc`. The default Node of the shell was 22.22.1, which the Angular CLI refuses, so the commands fail there until `nvm use` is run.
+
+### Automated checks
+
+| Check | Result | What was seen |
+| --- | --- | --- |
+| A1, the build | Pass | `npm run build` ended with no errors and no warnings. |
+| A2, lint and format | Pass | `npm run lint` reported that all files pass, and `npm run format:check` reported that all files use the Prettier style. |
+| A3, the unit tests | Pass | `npm test` passed 423 tests in 36 files. Every case that A3 lists is named in a spec file, and no test is skipped. |
+| A4, the end to end tests | Pass | `npm run e2e` passed 289 tests at both window sizes. Every case that A4 lists is named in a spec file, and no test is skipped. |
+
+### Manual checks
+
+None of the six manual checks ran. The session had no Claude in Chrome tools, and the user chose to connect the extension and run validate again.
+
+| Check | Result |
+| --- | --- |
+| H1, the look in the five themes | Not run |
+| H2, the keyboard and the names for screen readers | Not run |
+| H3, dragging with a mouse | Not run |
+| H4, the sync between two tabs and Firestore | Not run |
+| H5, the Firestore rules in the Rules Playground | Not run |
+| H6, a second account on the same device | Not run |
+
+### Requirements
+
+- Item 17, the Firestore rules that check what an account writes, has no passing check yet. Its only check is H5, the manual check of the rules, which did not run.
+- Items 1 to 8, 11 to 13, 15, 16 and 18 to 39 each have at least one passing automated check.
+- Four items have no check in this file, because none of them is a behaviour of the app. Item 9 says the feature adds no cloud service, and the branch adds no dependency to `package.json`. Item 10 says the patent check does not apply. Item 14 says the two fixes left over from feature 8 were done first, and their cases PA21, PA22, ST20 and ST21 passed in the runs above. Item 40 names the files, and each named file exists.
+
+### Verdict
+
+The feature is not ready. The six manual checks have not run, and item 17 has no passing check.
+
+## Results of 2026-11-24
+
+This run started late on 2026-11-23 and ended on 2026-11-24. The automated checks ran with Node 22.23.5. Claude ran the manual checks in Chrome, in tabs of its own, with the app from `npm start` on port 51387. Port 4200 held another project.
+
+### Automated checks
+
+| Check | Result | What was seen |
+| --- | --- | --- |
+| A1, the build | Pass | `npm run build` ended with no errors and no warnings. |
+| A2, lint and format | Pass | `npm run lint` reported that all files pass, and `npm run format:check` reported that all files use the Prettier style. |
+| A3, the unit tests | Pass | `npm test` passed 423 tests in 36 files. No test is skipped. |
+| A4, the end to end tests | Fail | No full run was clean. The first run passed 270 of 289 while Claude drove Chrome on the same machine, and most of its 19 failures hit the 90 second limit of a test. The second run, on a quiet machine, passed 288 of 289 in 9.6 minutes. Every case of `e2e/editing.spec.ts` passed in it. The one failure was ST5 of `e2e/settings.spec.ts` at 1024 by 768, the case that checks that a scan time of 3.0 s set in the panel applies at the next scan. It stopped before its first step, because the app showed the sign in screen on a device with a stored sign in. ST5 then passed 10 times out of 10 on its own, so the fault comes and goes and is in how a test starts signed in. |
+
+### Manual checks
+
+| Check | Result | What was seen |
+| --- | --- | --- |
+| H1, the look in the five themes | Pass | In Blue, Colours, Purple, Teal and Dark each cell showed a round Edit button at its top left and a round Remove button at its top right, with no Move button. The footer showed Add Board, Add Tile, Configure Board and Done at its right edge, and the first three were 200px wide each. Add column was a dashed box 48px wide in the right margin, as high as the grid. The grid measured the same in and out of edit mode. Every label could be read. The theme was set back to Blue. Chrome did not open the mockup as a file, so Claude served `context/design/` on a local port for the comparison and stopped that server after it. The edit buttons, the footer buttons and the dialog match the mockup in shape and colour. Beyond the four meant differences, the app shows an Open button on a cell that opens a board, as item 22 of the requirements says, its dialog has no Type row, as item 28 says, its dialog is narrower with each label above its field, and its header reads the name of the board where the mockup reads "Editing". |
+| H2, the keyboard and the names for screen readers | Fail | One expectation failed: after Enter on Done, the focus was on the page body. The rest held. Control and comma opened the panel with the focus on the Boards tab, and Edit boards by keyboard put the focus on Done. Tab went through Go back, then Edit and Remove of each cell in the order of the cells, then Add column, Add Board, Add Tile, Configure Board and Done. Add Tile, the typed label and Enter gave the status "Test juice added to column 2, place 5" with the focus on Add Tile. The edit gave "Test juice saved" with the focus on "Edit Test juice", and the stored phrase was "Test". Remove gave "Test juice removed" with the focus on "Remove Blanket". Each edit button was named after its cell. The arrow keys moved no cell, and Tab met no Move button. The user did not repeat the steps with VoiceOver. |
+| H3, dragging with a mouse | Pass | A mouse drag put Help first in the third column, with the status "Help moved to column 3, place 1". On the way back, made with scripted pointer events so that the drag could be seen half way, the cell was lifted under the pointer and the cells of the first column had opened a place for it. Help ended under Back, and the order matched the order written down at the start. |
+| H4, the sync between two tabs and Firestore | Pass | A second tab on Needs showed "Test juice" with no reload, and lost it with no reload after the removal. The Firebase console showed the document `users/{uid}/data/boards` with the two text fields `tiles` and `boards`. The console shows only the first 500 characters of a field, so the user read the `tiles` field and confirmed that it held "Test juice". |
+| H5, the Firestore rules in the Rules Playground | Pass | The user deployed the rules, and the console showed them as published on 2026-11-23 at 10:29 pm, the same text as `firestore.rules`. Six simulated requests ran as the signed in account. Four were refused: a read of the boards document under another uid, a write of `tiles`, `boards` and a third field to the boards document, a write of a `theme` of 741 characters to the settings document, and a write of `theme` and an unknown field to the settings document. Two were allowed: a write of `tiles` and `boards`, and a write of the twelve known settings fields. Claude left the page with no press on Publish. Two things differ from the steps: the settings document is `users/{uid}`, where step 3 names `users/{uid}/data/settings`, and the unknown field was tried beside one known field, where the step says a thirteenth field. |
+| H6, a second account on the same device | Not run | The user chose to skip it. |
+
+After the last check the theme was Blue, Needs was in columns with its thirteen cells in the order of the start, and local storage held no "Test juice". Claude could not read the whole `tiles` field in the console to confirm the same for Firestore.
+
+### Requirements
+
+- Item 17, the Firestore rules that check what an account writes, now has a passing check, H5.
+- Items 1 to 8, 11 to 13, 15, 16 and 18 to 39 each have at least one passing check. Item 16, the device that forgets the boards at sign out, rests on the unit case AU1, which checks that a sign out removes the stored set, because H6 did not run.
+- Items 9, 10, 14 and 40 have no check in this file, for the reasons the results of 2026-11-23 give.
+
+### Verdict
+
+The feature is not ready by the rule that every check passes. Three things stand in the way.
+
+1. H2, the keyboard check, found the focus on the page body after Done. Either Done should send the focus to a control, such as the settings button, or the expectation of H2 should say that it holds only while edit mode is on.
+2. A4, the end to end tests, had no clean full run. The only failure on a quiet machine was ST5, the settings case above, which lost its stored sign in once in eleven runs and is not a case of this feature.
+3. H6, the second account, was not run.
+
+### After the results: three fixes of 2026-11-24
+
+The user asked for three changes after the checks above, and they are on this branch. The tab icon is the Symple icon. An empty group shows nothing out of edit mode, which changes cases ES7 and ED18 and items 5 and 32 of the requirements. The tile dialog has the size of the settings panel, which adds case ED21 and a sentence to item 29. The manual checks above ran before these changes, so H1 describes the smaller dialog.
+
+After the changes the build, the lint, the format check and the 423 unit tests passed. A full end to end run passed 287 of 291. Two failures were ED21 at both window sizes, a fault in the new test, which pressed the settings button while edit mode hides it. The test was fixed and then passed four times out of four. The other two failures were SE4, which checks that the message is spoken when the scan picks it, and K3, which checks that scanning reaches each cell of the QWERTY keyboard. Both stopped at the sign in screen before their first step, the same fault as ST5 above, and both passed in the next run of their files. ED13, the axe check of edit mode in every theme, ran past its 90 second limit once in that next run and then passed four times out of four, in 44 to 60 seconds. No full end to end run has been clean in this session.
