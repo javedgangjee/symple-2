@@ -200,38 +200,66 @@ Changed cases in other files:
 
 ## Manual checks
 
-Run `npm start`, open the app in Chrome on the Mac and sign in.
+Claude runs these checks in Chrome, through the Claude in Chrome extension. The user keeps two tabs open and signed in: the Symple tab, which shows the app from `npm start` at `http://localhost:4200`, and the Firestore tab, which shows the database of the project in the Firebase console. A step marked "The user" is done by the user, and Claude waits for it.
+
+### Rules for Claude
+
+The Symple tab is signed in to a real account, so each edit there is saved to the real Firestore document. These rules keep the account and the database as they were.
+
+1. Use the Symple tab, the Firestore tab and tabs that Claude opens itself. Do not close, reload or change any other tab of the user.
+2. The Firebase console is for reading. Do not add, edit or delete a document, a field or a collection. Do not publish or edit the rules, and do not change a setting of the project. In the Rules Playground press Run only, which tries a request against the rules and writes nothing.
+3. Do not sign in or out, and do not type a password. Ask the user when a check needs it.
+4. Before the first check, write down the theme, the cells of Needs in their order, and the layout of Needs. Every check ends with the app in that state.
+5. Make changes only with a tile that the check itself adds, named "Test juice". Do not edit, move or remove another cell, unless a step names that cell and the same check puts it back. Never remove a cell that opens a board, such as My boards or Keyboards. Its board stays in the set, but the app has no way to put the cell back.
+6. If the app or the console shows something that the steps do not expect, stop and tell the user what is on the screen. Do not try another way.
+7. After the last check, read the document `users/{uid}/data/boards` in the Firestore tab and confirm that no tile named "Test juice" is left in it. Record a pass or a fail for each check, with what was seen.
 
 ### H1. The look (22, 24, 25, 31)
 
-1. Open `context/design/home.html?edit` in a second window, and `context/design/home.html?edit&tile=Needs` in a third.
-2. In the app, turn edit mode on over home and open the tile dialog for Needs, in each of the five themes.
-3. Expected: the edit buttons, the footer and the dialog match the mockup in place, size and colour. The footer also holds Configure Board, which the mockup does not have.
+1. In the Symple tab, open the settings panel and press Edit boards over home. Take a screenshot. Open Needs with its Open button and take a second one.
+2. Press Add Tile, take a screenshot of the tile dialog, and press Cancel.
+3. Press Done, set the next theme in the settings panel, and repeat steps 1 and 2. Do this for each of the five themes, and set the first theme again at the end.
+4. Expected in every theme: each cell but Back shows a round Edit button at its top left and a round Remove button at its top right, and no third button. The footer shows Add Board, Add Tile, Configure Board and Done at its right edge, and the first three have one width. A dashed box with a plus stands in the right margin, as high as the grid, and the grid does not move when edit mode turns on or off. Every label can be read against its background.
+5. Open `context/design/home.html?edit` from the repo in a new tab, as a file. If Chrome does not let Claude open the file, say so, and the user compares it. Expected: the edit buttons, the footer buttons and the tile dialog match the mockup in shape and colour. Four differences are meant: the app has Configure Board, it has Add column beside the grid in place of the footer, its labels are in capitals, and it has no Move button.
 
-### H2. The keyboard and a screen reader (7, 34, 37, 38)
+### H2. The keyboard and the names for screen readers (7, 34, 37, 38)
 
-1. Turn VoiceOver on. Open the panel with Control and comma, and press Edit boards.
-2. With the keyboard only, add a tile, edit it and remove it. Press Done.
-3. Expected: VoiceOver says the name of each button with its cell, says each change, and the focus is never lost. Tab stops on no Move button, and no key moves a cell.
+Claude cannot hear VoiceOver. It reads the names of the controls and the text of the status line from the page, which is what VoiceOver says.
 
-### H3. Dragging with a mouse and with a finger (12, 35)
+1. In the Symple tab, open Needs, press Control and comma to open the settings panel, and press Edit boards with the keyboard.
+2. With the keyboard only, press Add Tile, type the label "Test juice", and press Add. Tab to "Edit Test juice", press Enter, change the phrase to "Test", and press Save. Tab to "Remove Test juice" and press Enter. Press Done.
+3. After each press, read the element that has the focus and the text of the status line.
+4. Expected: each edit button has a name that holds the label of its cell, such as "Edit Help". The status line tells each change, such as "Test juice removed". The focus is always on a control and never on the page body. Tab stops on no Move button, and the arrow keys move no cell.
+5. The user, if they wish: repeat step 2 with VoiceOver on, and confirm that it says the same names and changes.
 
-1. Drag a cell to another column with the mouse, and then on a touch screen or in the device mode of Chrome.
-2. Expected: the cell follows the pointer, the other cells slide out of the way, and the cell lands where it was dropped.
+### H3. Dragging with a mouse (12, 35)
+
+1. In edit mode over Needs, drag Help from the first column to the top of the third column with the mouse.
+2. Expected: the cell follows the pointer, the other cells make room, and Help is the first cell of the third column.
+3. Drag Help back to its place under Back, and check the order of the cells against the order written down at the start.
 
 ### H4. The sync (4, 19)
 
-1. Sign in on two browsers with the same account. Add a tile on the first.
-2. In the Firebase console, open the document `users/{uid}/data/boards`.
-3. Expected: the second browser shows the new tile with no reload, and the document holds the fields `tiles` and `boards` as text.
+1. Open the app in a second tab, at `http://localhost:4200/board/needs`. It uses the same account.
+2. In the first Symple tab, add the tile "Test juice" to Needs and press Done.
+3. Expected: the second tab shows "Test juice" on Needs with no reload.
+4. In the Firestore tab, open the document `users/{uid}/data/boards`. Expected: it holds the two fields `tiles` and `boards` as text, and the text of `tiles` holds "Test juice".
+5. In the first Symple tab, remove "Test juice" and press Done. Expected: the second tab loses the tile with no reload. Close the second tab.
 
 ### H5. The Firestore rules (17)
 
-1. Deploy the rules with the command in `README.md`. Open the Rules Playground in the Firebase console.
-2. Try a write to the settings document of the signed in account with a thirteenth field, and one with a `theme` of 600 characters. Try a write to the boards document with a third field. Try a read of another account's boards document.
-3. Expected: each of the four is refused. A write of the twelve known fields and a write of `tiles` and `boards` are allowed.
+1. The user: deploy the rules with the command in `README.md`, and say when it is done. Claude does not deploy.
+2. In the Firestore tab, open Rules and then the Rules Playground. Each try below is one press on Run, with the account of the Symple tab as the signed in user.
+3. Try a write to `users/{uid}/data/settings` with a thirteenth field, and one with a `theme` of 600 characters. Try a write to `users/{uid}/data/boards` with a third field. Try a read of the boards document under another uid.
+4. Expected: each of the four is refused. A write of the twelve known fields and a write of `tiles` and `boards` are allowed.
+5. Leave the Playground without a press on Publish.
 
 ### H6. A second account (16)
 
-1. Edit a board, and sign out. Sign in with a second account.
-2. Expected: the second account sees the built-in boards or its own, and never the first account's edit.
+Claude does not sign in or out, so the user does the two steps that need it.
+
+1. Claude adds the tile "Test juice" to Needs and presses Done.
+2. The user: sign out, and sign in with a second account.
+3. Claude opens Needs. Expected: the second account sees the built-in Needs or its own, and no "Test juice".
+4. The user: sign out, and sign in with the first account again.
+5. Claude removes "Test juice" from Needs and presses Done.
