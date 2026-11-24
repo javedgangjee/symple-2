@@ -57,9 +57,10 @@ The changes to a set, in `src/app/edit/board-edits.spec.ts`:
 | BE13 | A cell moves to the place of a cell in a group that is marked as having no room. | The two cells trade places. |
 | BE14 | A group is added to a board. | The board has one more group, which is empty and last. |
 | BE15 | An empty group is removed, and in a second run the only group of a board. | The first run removes it. The second changes nothing. |
-| BE16 | A board named "Outings" is added from home with the Stage style, the Grey colour and the `place` icon. | The set has a new board with that title, three groups and a Back cell first. Home has a new cell that opens it with that style, colour and icon. |
+| BE16 | A board named "Outings" is added from home with the Stage style, the Grey colour and the `place` icon. | The set has a new board with that title, three groups and a Back cell first. Home has a new cell that opens it with that style, colour and icon, and with the hue `c3` of the Grey swatch. |
 | BE17 | The title of Needs is set to "Care" and its layout to rows. | The board has that title and that layout, and the cell on home that opens it reads "Care". |
 | BE18 | Each set that cases BE1 to BE17 produce is given to `loadBoards`. | No fault is reported. |
+| BE19 | A cell is added in each of the four colours of the tile dialog, and the colour of Help is set to Grey and then to Dark. | The Soft tile has the hue `c2` and the Grey tile the hue `c3`, which are the red and the green of their swatches in the Colours theme. The Dark and the White tile have no hue. Help has the hue `c3` and then none. |
 
 Edit mode and the board behind it, in `edit-mode.spec.ts` of `src/app/edit/` and in `scan.spec.ts`, `switches.spec.ts`, `dwell.spec.ts` of `src/app/scan/`:
 

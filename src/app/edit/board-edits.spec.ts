@@ -298,6 +298,7 @@ describe('The changes to a set', () => {
         id: made[0].id,
         label: 'Outings',
         colour: 'grey',
+        hue: 'c3',
         style: 'stage',
         icon: 'place',
         action: { type: 'open', board: added[0].id },
@@ -324,5 +325,28 @@ describe('The changes to a set', () => {
       const loaded = loadBoards(set.tiles, set.boards);
       expect(loaded.faults, name).toEqual([]);
     }
+  });
+
+  it('BE19: a tile of the Soft or the Grey colour takes the hue of its swatch, and Dark and White take none', () => {
+    const added = (colour: SpeakFields['colour']) =>
+      newTiles(BUILT_IN, addCell(BUILT_IN, 'needs', { ...JUICE, colour }))[0];
+    expect(added('soft1').hue).toBe('c2');
+    expect(added('grey').hue).toBe('c3');
+    expect(added('dark').hue).toBeUndefined();
+    expect(added('light').hue).toBeUndefined();
+
+    const at = placeOf(BUILT_IN, 'needs', 'help');
+    const recoloured = (set: BoardSet, colour: SpeakFields['colour']) =>
+      editCell(set, 'needs', at, {
+        kind: 'speak',
+        label: 'Help',
+        phrase: 'I need help',
+        symbol: 'help.svg',
+        colour,
+      });
+    const grey = recoloured(BUILT_IN, 'grey');
+    expect(tile(grey, 'help').hue).toBe('c3');
+    expect(tile(recoloured(grey, 'dark'), 'help').hue).toBeUndefined();
+    expect(loadBoards(grey.tiles, grey.boards).faults).toEqual([]);
   });
 });

@@ -2,6 +2,7 @@ import {
   BoardRecord,
   BoardSet,
   CellColour,
+  CellHue,
   CellRecord,
   GroupRecord,
   HOME_BOARD_ID,
@@ -179,13 +180,27 @@ export function addCell(
 }
 
 /**
- * The two marks of a tile that an edit can take away. The hue is the first colour of the tile
- * in the Colours theme, so it goes when the colour changes. The name for screen readers
- * belongs to the old label, so it goes when the label changes.
+ * The hue that the Colours theme gives a colour that the caregiver picked. The Soft and the Grey
+ * swatch of the tile dialog show a red and a green there, so a tile of that colour takes the
+ * same hue. Dark and White are drawn in the Colours theme as they are named, with no hue.
+ */
+const PICKED_HUES: Partial<Record<CellColour, CellHue>> = { soft1: 'c2', grey: 'c3' };
+
+/** The hue of a new tile of a colour, for the Colours theme. */
+function pickedHue(colour: CellColour): Pick<Tile, 'hue'> {
+  const hue = PICKED_HUES[colour];
+  return hue === undefined ? {} : { hue };
+}
+
+/**
+ * The two marks of a tile that an edit can change. The hue is the colour of the tile in the
+ * Colours theme. It stays while the colour stays, and a new colour brings the hue of its swatch.
+ * The name for screen readers belongs to the old label, so it goes when the label changes.
  */
 function marks(tile: Tile, colour: CellColour, label: string): Pick<Tile, 'hue' | 'name'> {
+  const hue = colour === tile.colour ? tile.hue : PICKED_HUES[colour];
   return {
-    ...(tile.hue !== undefined && colour === tile.colour && { hue: tile.hue }),
+    ...(hue !== undefined && { hue }),
     ...(tile.name !== undefined && label === tile.label && { name: tile.name }),
   };
 }
@@ -253,13 +268,13 @@ export function tileFor(fields: CellFields, current?: Tile): Tile {
   if (fields.kind === 'speak') {
     return current
       ? editedSpeakTile(current, fields, label)
-      : speakTile(newId('tile'), fields, label);
+      : { ...speakTile(newId('tile'), fields, label), ...pickedHue(fields.colour) };
   }
   if (current) {
     return editedOpenTile(current, fields, label);
   }
   const { colour, style, icon } = fields;
-  return { id: newId('tile'), label, colour, style, icon };
+  return { id: newId('tile'), label, colour, style, icon, ...pickedHue(colour) };
 }
 
 /**
