@@ -1,14 +1,20 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { standInForDialog } from '../edit/dialog-stand-in';
+import { EditMode } from '../edit/edit-mode';
+import { Room } from '../edit/room';
 import { Message } from '../keyboard/message';
-import { Layout } from '../layout/layout';
+import { Scan } from '../scan/scan';
 import { ScanSettingValues, ScanSettings } from '../scan/scan-settings';
 import { SettingsOpen } from '../settings/settings-open';
 import { FakeVoiceSource } from '../speech/fake-voice-source';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { Back } from './back';
+import { addGroup, setBoard } from '../edit/board-edits';
+import { EditActions } from '../edit/edit-actions';
 import { Board, BoardData, Cell, CellSize, Tile } from './board-data';
+import { BoardStore } from './board-store';
 import { BoardScreen } from './board-screen';
 
 @Component({ template: '' })
@@ -75,8 +81,8 @@ describe('BoardScreen', () => {
   const names = (within: Element = element) =>
     buttons(within).map((button) => button.getAttribute('aria-label'));
   const shares = () =>
-    Array.from(element.querySelectorAll<HTMLElement>('app-cell')).map((host) =>
-      Number(host.style.flexGrow),
+    Array.from(element.querySelectorAll<HTMLElement>('.slot')).map((slot) =>
+      Number(slot.style.flexGrow),
     );
   const status = () => element.querySelector('[role="status"]')?.textContent?.trim();
   const layoutOfGrid = () => element.querySelector('.grid')?.getAttribute('data-layout');
@@ -108,12 +114,9 @@ describe('BoardScreen', () => {
     expect(names()).toEqual(['X']);
   });
 
-  it('S3: the grid carries the stored layout', async () => {
+  it('S3: a board that gives no layout is drawn in columns', async () => {
     await draw({ groups: [{ cells: [cell('X')] }] });
     expect(layoutOfGrid()).toBe('columns');
-    TestBed.inject(Layout).set('rows');
-    await fixture.whenStable();
-    expect(layoutOfGrid()).toBe('rows');
   });
 
   it('S4: a cell with no size counts as medium beside a large cell', async () => {
@@ -129,17 +132,18 @@ describe('BoardScreen', () => {
     expect(new Set(shares()).size).toBe(1);
   });
 
-  it('S6: an empty group is drawn with no control', async () => {
+  it('S6: out of edit mode an empty group is drawn with no cell and no control', async () => {
     await draw({ groups: [{ cells: [cell('A')] }, { cells: [] }] });
     expect(groups().length).toBe(2);
-    expect(buttons().length).toBe(1);
+    expect(element.querySelectorAll('app-cell').length).toBe(1);
     expect(groups()[1].querySelectorAll('button, a, input, select, textarea').length).toBe(0);
   });
 
-  it('S7: a board with no groups is drawn empty', async () => {
+  it('S7: a board with no groups is drawn with no cell, and its only control is the Add Tile button', async () => {
     await draw({ groups: [] });
     expect(groups().length).toBe(0);
-    expect(buttons().length).toBe(0);
+    expect(element.querySelectorAll('app-cell').length).toBe(0);
+    expect(buttons().map((button) => button.textContent?.trim())).toEqual(['Add Tile']);
   });
 
   it('S8: a tile that speaks writes its phrase to the status region and does not change', async () => {
@@ -210,7 +214,6 @@ describe('BoardScreen', () => {
 
   it('S12: a board that gives a layout is drawn that way', async () => {
     await draw({ layout: 'rows', groups: [{ cells: [cell('X')] }] });
-    expect(TestBed.inject(Layout).name()).toBe('columns');
     expect(layoutOfGrid()).toBe('rows');
   });
 
@@ -649,6 +652,290 @@ describe('BoardScreen', () => {
         pass(1000);
         expect(voice.texts).toEqual(['I need help']);
       });
+    });
+  });
+
+  describe('in edit mode', () => {
+    let edit: EditMode;
+    let data: BoardData;
+    let restoreDialog: () => void;
+
+    /**
+     * Draws a board of the built-in set, in edit mode unless a case says otherwise. `before`
+     * changes the set first. The screen is put on the page, so its buttons can take the focus.
+     */
+    async function drawBoard(
+      id: string,
+      { editing = true, before = () => undefined }: { editing?: boolean; before?: () => void } = {},
+    ): Promise<void> {
+      voice = new FakeVoiceSource();
+      TestBed.configureTestingModule({
+        providers: [
+          provideRouter([{ path: '**', component: Blank }]),
+          { provide: Back, useValue: back },
+          { provide: VOICE_SOURCE, useValue: voice },
+        ],
+      });
+      edit = TestBed.inject(EditMode);
+      data = TestBed.inject(BoardData);
+      before();
+      if (editing) {
+        edit.start();
+      }
+      fixture = TestBed.createComponent(BoardScreen);
+      fixture.componentRef.setInput('id', id);
+      document.body.appendChild(fixture.nativeElement);
+      await fixture.whenStable();
+      element = fixture.nativeElement;
+    }
+
+    const tools = () => Array.from(element.querySelectorAll('.tool'));
+    const toolNames = (within: Element = element) =>
+      Array.from(within.querySelectorAll('.tool'), (tool) => tool.getAttribute('aria-label'));
+    /** The names of the cells of each group, in the order of the page. */
+    const cellOrder = () =>
+      groups().map((group) =>
+        Array.from(group.querySelectorAll('app-cell button'), (button) =>
+          button.getAttribute('aria-label'),
+        ),
+      );
+    const texts = (within: Element) =>
+      Array.from(within.querySelectorAll('button'), (button) => button.textContent?.trim());
+    const focused = () => document.activeElement?.getAttribute('aria-label');
+
+    function named(name: string): HTMLElement {
+      const found = buttons().find((button) => button.getAttribute('aria-label') === name);
+      if (!found) {
+        throw new Error(`There is no button named "${name}".`);
+      }
+      return found;
+    }
+
+    /** The slot of a cell, which takes the presses on the cell in edit mode. */
+    function slotOf(name: string): HTMLElement {
+      const slot = named(name).closest<HTMLElement>('.slot');
+      if (!slot) {
+        throw new Error(`The cell "${name}" lies in no slot.`);
+      }
+      return slot;
+    }
+
+    async function pressCell(name: string): Promise<void> {
+      slotOf(name).click();
+      await fixture.whenStable();
+    }
+
+    async function key(target: EventTarget, name: string): Promise<void> {
+      target.dispatchEvent(
+        new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }),
+      );
+      await fixture.whenStable();
+    }
+
+    beforeEach(() => {
+      restoreDialog = standInForDialog();
+    });
+
+    afterEach(() => {
+      fixture.nativeElement.remove();
+      restoreDialog();
+      localStorage.clear();
+    });
+
+    it('ES1: each cell but Back has an Edit and a Remove button with its label, and no cell can be pressed', async () => {
+      await drawBoard('needs');
+      const labels = cellOrder()
+        .flat()
+        .filter((label) => label !== 'Back');
+      expect(labels.length).toBe(12);
+      for (const label of labels) {
+        expect(toolNames(slotOf(label ?? ''))).toEqual([`Edit ${label}`, `Remove ${label}`]);
+      }
+      // A cell that is inert takes no press and no focus in a browser.
+      const hosts = Array.from(element.querySelectorAll('.grid app-cell'));
+      expect(hosts.every((host) => host.hasAttribute('inert'))).toBe(true);
+      await press('Help');
+      expect(voice.texts).toEqual([]);
+    });
+
+    it('ES2: out of edit mode the screen has no edit button', async () => {
+      await drawBoard('needs', { editing: false });
+      expect(tools()).toEqual([]);
+      expect(element.querySelector('app-cell[inert]')).toBeNull();
+    });
+
+    it('ES3: the cell My boards has an Open button, which opens that board with edit mode still on', async () => {
+      await drawBoard('home');
+      await press('Open My boards');
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/board/my-boards'));
+      expect(edit.isOn()).toBe(true);
+    });
+
+    it('ES4: the Back cell has Go back, and no Edit or Remove button', async () => {
+      await drawBoard('needs');
+      expect(toolNames(slotOf('Back'))).toEqual(['Go back']);
+    });
+
+    it('ES5: Remove Help removes the cell, tells of it and puts the focus on the Remove button of the next cell', async () => {
+      await drawBoard('needs');
+      await press('Remove Help');
+      expect(cellOrder()[0]).toEqual(['Back', 'Pain', 'Toilet', 'Drink']);
+      expect(status()).toBe('Help removed');
+      expect(focused()).toBe('Remove Pain');
+    });
+
+    it('ES6: the cell Keyboards, which opens a locked board, has Edit, Open and Remove buttons', async () => {
+      await drawBoard('home');
+      expect(toolNames(slotOf('Keyboards'))).toEqual([
+        'Edit Keyboards',
+        'Open Keyboards',
+        'Remove Keyboards',
+      ]);
+    });
+
+    it('ES17: Open Keyboards opens that locked board, and edit mode is off once it is on show', async () => {
+      await drawBoard('home');
+      await press('Open Keyboards');
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/board/keyboards'));
+      fixture.componentRef.setInput('id', 'keyboards');
+      await fixture.whenStable();
+      expect(edit.isOn()).toBe(false);
+    });
+
+    it('ES7: out of edit mode an empty group shows no button, has no tab stop and keeps its place in the grid', async () => {
+      await drawBoard('needs', {
+        editing: false,
+        before: () => data.change((set) => addGroup(set, 'needs')),
+      });
+      expect(groups().length).toBe(4);
+      expect(groups()[3].querySelector('button')).toBeNull();
+      expect(texts(groups()[3])).toEqual([]);
+      expect(groups()[3].querySelectorAll('[tabindex]:not([tabindex="-1"])').length).toBe(0);
+      expect(groups()[3].getAttribute('tabindex')).toBe('-1');
+      expect(groups()[3].hasAttribute('data-empty')).toBe(true);
+      expect(edit.isOn()).toBe(false);
+    });
+
+    it('ES8: in edit mode an empty group shows Add Tile and Remove column', async () => {
+      await drawBoard('needs', { before: () => data.change((set) => addGroup(set, 'needs')) });
+      expect(texts(groups()[3])).toEqual(['Add Tile', 'Remove column']);
+      expect(groups()[3].querySelector('button')?.tabIndex).toBe(0);
+    });
+
+    it('ES9: a press on Help and then on Pain puts Help in the place of Pain and the focus on Edit Help', async () => {
+      await drawBoard('needs');
+      await pressCell('Help');
+      expect(slotOf('Help').hasAttribute('data-picked')).toBe(true);
+      expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
+      await pressCell('Pain');
+      expect(cellOrder()[0]).toEqual(['Back', 'Pain', 'Help', 'Toilet', 'Drink']);
+      expect(element.querySelector('[data-picked]')).toBeNull();
+      expect(status()).toBe('Help moved to column 1, place 3');
+      expect(focused()).toBe('Edit Help');
+    });
+
+    it('ES10: a press on Help and then Escape leaves Help where it was, with nothing picked up', async () => {
+      await drawBoard('needs');
+      await pressCell('Help');
+      await key(document.body, 'Escape');
+      expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
+      expect(element.querySelector('[data-picked]')).toBeNull();
+      // The next press picks a cell up again, so nothing was held.
+      await pressCell('Pain');
+      expect(slotOf('Pain').hasAttribute('data-picked')).toBe(true);
+      expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
+    });
+
+    it('ES13: in the rows layout the button beside the grid is named Add row, and an empty group reads Remove row', async () => {
+      await drawBoard('needs', {
+        before: () =>
+          data.change((set) =>
+            addGroup(setBoard(set, 'needs', { title: 'Needs', layout: 'rows' }), 'needs'),
+          ),
+      });
+      expect(texts(groups()[3])).toEqual(['Add Tile', 'Remove row']);
+      expect(element.querySelector('.add-group')?.getAttribute('aria-label')).toBe('Add row');
+    });
+
+    it('EA4: Add column beside the grid gives the board one more group, and the footer has no such button', async () => {
+      await drawBoard('needs');
+      expect(element.querySelector('.grid .add-group')).toBeNull();
+      await press('Add column');
+      expect(data.board('needs')?.groups.map((group) => group.cells.length)).toEqual([5, 4, 4, 0]);
+      expect(status()).toBe('Column 4 added');
+      const footer = TestBed.createComponent(EditActions);
+      await footer.whenStable();
+      expect(texts(footer.nativeElement)).toEqual([
+        'Add Board',
+        'Add Tile',
+        'Configure Board',
+        'Done',
+      ]);
+    });
+
+    it('EA6: with no room for a group, Add column says it is disabled and why, and does nothing', async () => {
+      await drawBoard('needs');
+      TestBed.inject(Room).set({ cells: [true, true, true], group: false });
+      await fixture.whenStable();
+      const add = named('Add column');
+      expect(add.getAttribute('aria-disabled')).toBe('true');
+      const line = element.querySelector(`#${add.getAttribute('aria-describedby')}`);
+      expect(line?.textContent).toContain('no room for another column');
+      await press('Add column');
+      expect(data.board('needs')?.groups.length).toBe(3);
+    });
+
+    it('EA7: out of edit mode the screen has no Add column button', async () => {
+      await drawBoard('needs', { editing: false });
+      expect(element.querySelector('.add-group')).toBeNull();
+    });
+
+    it('ES18: Remove on the cell that opens Needs removes the cell at once, and the board Needs stays in the set', async () => {
+      await drawBoard('home');
+      await press('Remove Needs');
+      expect(edit.dialog()).toBeNull();
+      expect(cellOrder().flat()).not.toContain('Needs');
+      expect(status()).toBe('Needs removed');
+      expect(data.board('needs')?.groups.length).toBe(3);
+    });
+
+    it('ES14: a set change that removes the board on show opens home', async () => {
+      await drawBoard('needs', { editing: false });
+      const router = TestBed.inject(Router);
+      await router.navigateByUrl('/board/needs');
+      // Another device, or a newer version, can save a set that lacks the board.
+      const { tiles, boards } = data.set();
+      TestBed.inject(BoardStore).save({
+        tiles,
+        boards: boards.filter((record) => record.id !== 'needs'),
+      });
+      await fixture.whenStable();
+      expect(data.board('needs')).toBeUndefined();
+      await vi.waitFor(() => expect(router.url).toBe('/'));
+    });
+
+    it('ES15: a change to a board that is not on show leaves the scan where it is', async () => {
+      await drawBoard('needs', {
+        editing: false,
+        before: () => TestBed.inject(ScanSettings).set({ selectionMode: 'step' }),
+      });
+      const scan = TestBed.inject(Scan);
+      await key(document.body, 'Enter');
+      expect(scan.state()).toEqual({ phase: 'groups', group: 0, cell: null });
+      data.change((set) => setBoard(set, 'food', { title: 'Meals', layout: 'columns' }));
+      await fixture.whenStable();
+      expect(data.board('food')?.title).toBe('Meals');
+      expect(scan.state()).toEqual({ phase: 'groups', group: 0, cell: null });
+    });
+
+    it('ES16: Add Tile of an empty group, pressed while Help is picked up, leaves Help where it was', async () => {
+      await drawBoard('needs', { before: () => data.change((set) => addGroup(set, 'needs')) });
+      await pressCell('Help');
+      groups()[3].querySelector<HTMLElement>('.add-tile')?.click();
+      await fixture.whenStable();
+      expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
+      expect(cellOrder()[3]).toEqual([]);
+      expect(edit.dialog()).toEqual({ kind: 'add-tile', group: 3 });
     });
   });
 });

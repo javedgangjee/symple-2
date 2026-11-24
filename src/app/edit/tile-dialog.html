@@ -1,0 +1,176 @@
+<!-- The markup follows the tile dialog of context/design/home.html. The mockup's Type boxes are not built, -->
+<!-- because a new cell has its type from the button that opened the dialog and an edit cannot change it. -->
+<!-- The dialog hears a press on the dimmed page and the Tab key from its controls. It is not a control itself, -->
+<!-- and Escape and Cancel close it from the keyboard, so it takes no focus of its own. -->
+<!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+<dialog
+  #dialog
+  class="sheet"
+  aria-labelledby="tile-title"
+  data-caregiver-control
+  (close)="events.closed()"
+  (pointerdown)="events.pointerDown($event)"
+  (click)="events.click($event)"
+  (keydown)="events.key($event)"
+>
+  <form class="split" (submit)="submit($event)">
+    <h2 id="tile-title">{{ title() }}</h2>
+
+    <!-- The preview is a picture of the cell. It is inert, so it cannot be pressed or focused and screen readers skip it. -->
+    <div class="preview" inert>
+      <app-cell [tile]="preview()" />
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <label for="tile-label">{{ kind() === 'open' ? 'Name' : 'Label' }}</label>
+        <input
+          #labelInput
+          id="tile-label"
+          type="text"
+          autocomplete="off"
+          [attr.maxlength]="labelLength"
+          [placeholder]="placeholder()"
+          [value]="label()"
+          [attr.aria-invalid]="invalid() ? 'true' : null"
+          [attr.aria-describedby]="invalid() ? 'tile-label-needed' : null"
+          (input)="setLabel(labelInput)"
+        />
+        @if (invalid()) {
+          <p class="needed" id="tile-label-needed">{{ needed() }}</p>
+        }
+      </div>
+
+      @if (kind() === 'speak') {
+        <div class="field">
+          <label for="tile-phrase">Phrase</label>
+          <input
+            #phraseInput
+            id="tile-phrase"
+            type="text"
+            autocomplete="off"
+            placeholder="Leave empty to speak the label"
+            [attr.maxlength]="phraseLength"
+            [value]="phrase()"
+            (input)="setPhrase(phraseInput)"
+          />
+        </div>
+
+        <fieldset class="grow">
+          <legend>Symbol</legend>
+          <!-- Enter in the box that filters does not add the tile, because the caregiver is still choosing. -->
+          <label class="small" for="tile-find">Find a symbol</label>
+          <input
+            #find
+            id="tile-find"
+            type="text"
+            autocomplete="off"
+            aria-controls="tile-symbols"
+            [value]="query()"
+            (input)="query.set(find.value)"
+            (keydown.enter)="$event.preventDefault()"
+          />
+          <div class="symbols" id="tile-symbols">
+            <!-- No symbol is always in the list, so the caregiver can take a symbol away whatever the filter holds. -->
+            <label>
+              <input
+                type="radio"
+                name="tile-symbol"
+                value=""
+                [checked]="symbol() === ''"
+                (change)="symbol.set('')"
+              />
+              <span class="plate"></span>
+              No symbol
+            </label>
+            @for (item of symbols(); track item.file) {
+              <label>
+                <input
+                  type="radio"
+                  name="tile-symbol"
+                  [value]="item.file"
+                  [checked]="symbol() === item.file"
+                  (change)="symbol.set(item.file)"
+                />
+                <span class="plate"
+                  ><img [src]="'symbols/' + item.file" alt="" loading="lazy" draggable="false"
+                /></span>
+                {{ item.name }}
+              </label>
+            } @empty {
+              <p class="hint">No symbol has that name.</p>
+            }
+          </div>
+        </fieldset>
+      } @else {
+        <fieldset>
+          <legend>Style</legend>
+          <div class="kinds three">
+            @for (name of styles; track name) {
+              <label>
+                <input
+                  type="radio"
+                  name="tile-style"
+                  [value]="name"
+                  [checked]="style() === name"
+                  (change)="style.set(name)"
+                />
+                {{ styleLabels[name].name }}
+                <small>{{ styleLabels[name].about }}</small>
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
+
+      <fieldset>
+        <legend>Colour</legend>
+        <!-- A tile of another colour, such as the green Yes, shows no swatch as chosen and keeps its colour. -->
+        <div class="swatches">
+          @for (item of colours; track item.value) {
+            <label [class]="'sw-' + item.value">
+              <input
+                type="radio"
+                name="tile-colour"
+                [value]="item.value"
+                [checked]="colour() === item.value"
+                (change)="colour.set(item.value)"
+              />
+              <span class="sr-only">{{ item.label }}</span>
+              <!-- Lucide check. -->
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      @if (kind() === 'open') {
+        <fieldset class="grow">
+          <legend>Icon</legend>
+          <div class="icons">
+            @for (item of icons; track item.name) {
+              <label>
+                <input
+                  type="radio"
+                  name="tile-icon"
+                  [value]="item.name"
+                  [checked]="icon() === item.name"
+                  (change)="icon.set(item.name)"
+                />
+                <span class="sr-only">{{ item.label }}</span>
+                <app-icon [name]="item.name" />
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
+
+      <div class="actions">
+        <button type="button" (click)="cancel()">Cancel</button>
+        <button type="submit" class="primary">
+          {{ asked()?.kind === 'edit-tile' ? 'Save' : 'Add' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</dialog>

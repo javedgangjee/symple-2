@@ -1,0 +1,398 @@
+[
+  {
+    "file": "all.svg",
+    "name": "all"
+  },
+  {
+    "file": "angry.svg",
+    "name": "angry"
+  },
+  {
+    "file": "bathroom.svg",
+    "name": "bathroom"
+  },
+  {
+    "file": "bed.svg",
+    "name": "bed"
+  },
+  {
+    "file": "bedroom.svg",
+    "name": "bedroom"
+  },
+  {
+    "file": "blanket.svg",
+    "name": "blanket"
+  },
+  {
+    "file": "bread.svg",
+    "name": "bread"
+  },
+  {
+    "file": "breakfast.svg",
+    "name": "breakfast"
+  },
+  {
+    "file": "can.svg",
+    "name": "can"
+  },
+  {
+    "file": "carer.svg",
+    "name": "carer"
+  },
+  {
+    "file": "coffee.svg",
+    "name": "coffee"
+  },
+  {
+    "file": "cold-drink.svg",
+    "name": "cold drink"
+  },
+  {
+    "file": "different.svg",
+    "name": "different"
+  },
+  {
+    "file": "dinner.svg",
+    "name": "dinner"
+  },
+  {
+    "file": "do.svg",
+    "name": "do"
+  },
+  {
+    "file": "doctor.svg",
+    "name": "doctor"
+  },
+  {
+    "file": "dont-know.svg",
+    "name": "dont know"
+  },
+  {
+    "file": "drink.svg",
+    "name": "drink"
+  },
+  {
+    "file": "eat.svg",
+    "name": "eat"
+  },
+  {
+    "file": "family.svg",
+    "name": "family"
+  },
+  {
+    "file": "fine.svg",
+    "name": "fine"
+  },
+  {
+    "file": "finished.svg",
+    "name": "finished"
+  },
+  {
+    "file": "fruit.svg",
+    "name": "fruit"
+  },
+  {
+    "file": "game.svg",
+    "name": "game"
+  },
+  {
+    "file": "garden.svg",
+    "name": "garden"
+  },
+  {
+    "file": "get.svg",
+    "name": "get"
+  },
+  {
+    "file": "glasses.svg",
+    "name": "glasses"
+  },
+  {
+    "file": "go.svg",
+    "name": "go"
+  },
+  {
+    "file": "go-out.svg",
+    "name": "go out"
+  },
+  {
+    "file": "good.svg",
+    "name": "good"
+  },
+  {
+    "file": "grandparents.svg",
+    "name": "grandparents"
+  },
+  {
+    "file": "happy.svg",
+    "name": "happy"
+  },
+  {
+    "file": "he.svg",
+    "name": "he"
+  },
+  {
+    "file": "hello.svg",
+    "name": "hello"
+  },
+  {
+    "file": "help.svg",
+    "name": "help"
+  },
+  {
+    "file": "here.svg",
+    "name": "here"
+  },
+  {
+    "file": "hospital.svg",
+    "name": "hospital"
+  },
+  {
+    "file": "hot.svg",
+    "name": "hot"
+  },
+  {
+    "file": "hot-drink.svg",
+    "name": "hot drink"
+  },
+  {
+    "file": "house.svg",
+    "name": "house"
+  },
+  {
+    "file": "hungry.svg",
+    "name": "hungry"
+  },
+  {
+    "file": "i.svg",
+    "name": "i"
+  },
+  {
+    "file": "in.svg",
+    "name": "in"
+  },
+  {
+    "file": "it.svg",
+    "name": "it"
+  },
+  {
+    "file": "itch.svg",
+    "name": "itch"
+  },
+  {
+    "file": "juice.svg",
+    "name": "juice"
+  },
+  {
+    "file": "kitchen.svg",
+    "name": "kitchen"
+  },
+  {
+    "file": "like.svg",
+    "name": "like"
+  },
+  {
+    "file": "look.svg",
+    "name": "look"
+  },
+  {
+    "file": "lunch.svg",
+    "name": "lunch"
+  },
+  {
+    "file": "make.svg",
+    "name": "make"
+  },
+  {
+    "file": "medicine.svg",
+    "name": "medicine"
+  },
+  {
+    "file": "milk.svg",
+    "name": "milk"
+  },
+  {
+    "file": "more.svg",
+    "name": "more"
+  },
+  {
+    "file": "move.svg",
+    "name": "move"
+  },
+  {
+    "file": "music.svg",
+    "name": "music"
+  },
+  {
+    "file": "no.svg",
+    "name": "no"
+  },
+  {
+    "file": "nurse.svg",
+    "name": "nurse"
+  },
+  {
+    "file": "on.svg",
+    "name": "on"
+  },
+  {
+    "file": "open.svg",
+    "name": "open"
+  },
+  {
+    "file": "outside.svg",
+    "name": "outside"
+  },
+  {
+    "file": "pain.svg",
+    "name": "pain"
+  },
+  {
+    "file": "parents.svg",
+    "name": "parents"
+  },
+  {
+    "file": "partner.svg",
+    "name": "partner"
+  },
+  {
+    "file": "phone-call.svg",
+    "name": "phone call"
+  },
+  {
+    "file": "put.svg",
+    "name": "put"
+  },
+  {
+    "file": "read.svg",
+    "name": "read"
+  },
+  {
+    "file": "rest.svg",
+    "name": "rest"
+  },
+  {
+    "file": "sad.svg",
+    "name": "sad"
+  },
+  {
+    "file": "same.svg",
+    "name": "same"
+  },
+  {
+    "file": "scared.svg",
+    "name": "scared"
+  },
+  {
+    "file": "she.svg",
+    "name": "she"
+  },
+  {
+    "file": "shop.svg",
+    "name": "shop"
+  },
+  {
+    "file": "shower.svg",
+    "name": "shower"
+  },
+  {
+    "file": "snack.svg",
+    "name": "snack"
+  },
+  {
+    "file": "some.svg",
+    "name": "some"
+  },
+  {
+    "file": "soup.svg",
+    "name": "soup"
+  },
+  {
+    "file": "stop.svg",
+    "name": "stop"
+  },
+  {
+    "file": "straw.svg",
+    "name": "straw"
+  },
+  {
+    "file": "sweet.svg",
+    "name": "sweet"
+  },
+  {
+    "file": "tea.svg",
+    "name": "tea"
+  },
+  {
+    "file": "that.svg",
+    "name": "that"
+  },
+  {
+    "file": "tired.svg",
+    "name": "tired"
+  },
+  {
+    "file": "toilet.svg",
+    "name": "toilet"
+  },
+  {
+    "file": "turn.svg",
+    "name": "turn"
+  },
+  {
+    "file": "tv.svg",
+    "name": "tv"
+  },
+  {
+    "file": "up.svg",
+    "name": "up"
+  },
+  {
+    "file": "visitor.svg",
+    "name": "visitor"
+  },
+  {
+    "file": "wait.svg",
+    "name": "wait"
+  },
+  {
+    "file": "want.svg",
+    "name": "want"
+  },
+  {
+    "file": "water.svg",
+    "name": "water"
+  },
+  {
+    "file": "what.svg",
+    "name": "what"
+  },
+  {
+    "file": "when.svg",
+    "name": "when"
+  },
+  {
+    "file": "where.svg",
+    "name": "where"
+  },
+  {
+    "file": "who.svg",
+    "name": "who"
+  },
+  {
+    "file": "why.svg",
+    "name": "why"
+  },
+  {
+    "file": "worried.svg",
+    "name": "worried"
+  },
+  {
+    "file": "yes.svg",
+    "name": "yes"
+  },
+  {
+    "file": "you.svg",
+    "name": "you"
+  }
+]

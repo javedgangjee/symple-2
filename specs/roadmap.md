@@ -12,7 +12,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 4. **Scanning.** The app highlights groups and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. The feature also built the five selection modes, the dwell press and the scan time bar. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: done.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the confirmed look of feature 4, as any picked cell does, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: done.
 8. **Settings.** The caregiver sets the scan time, the post click delay, the selection mode, the dwell time, the dwell style, whether the progress bar is shown, the theme, and the voice with its rate, pitch and volume. The layout of columns or rows is not set here. The user decided on 2026-11-23 that it is a setting of each board, which feature 9 adds. The settings panel shows the credit for the Mulberry symbols and for the Lucide icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: done.
-9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and sets the layout of each board to columns or rows, and the changes are saved and join the sync of feature 3. An empty board and an empty group show an Add button, which is a caregiver control that scanning skips. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: planned.
+9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and sets the layout of each board to columns or rows, and the changes are saved and join the sync of feature 3. An empty board shows an Add button, which is a caregiver control that scanning skips. An empty group shows nothing out of edit mode and keeps its place in the grid. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: in progress.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
 
 ## Release
@@ -44,7 +44,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 Each question must be answered in the plan of the feature it names.
 
-- Feature 10: whether Chrome cuts a voice that runs on a server off after about 15 seconds, which would cut a long message short. Check M7 of the validation.md of feature 5 passed, but nobody wrote down whether the long text was spoken to its end. Check H5 of the validation.md of feature 8, which speaks a long text with a Google voice and with a voice of the Mac, was not run.
+- Feature 10: whether Chrome cuts a voice that runs on a server off after about 15 seconds, which would cut a long message short. Check M7 of the validation.md of feature 5 passed, but nobody wrote down whether the long text was spoken to its end. Check H5 of the validation.md of feature 8, which speaks a long text with a Google voice and with a voice of the Mac, passed on 2026-11-23, but again nobody wrote down whether the text was cut off.
 - Feature 10: how Electron loads the build. `src/index.html` uses a base href of `/`, so the app may not load from disk as it is. The plan must also test that the font loads in the packaged Mac app.
 - Feature 10: whether the symbol images load in the packaged Mac app. Their addresses are relative, such as `symbols/help.svg`.
 - Feature 10: whether Firebase Auth keeps the sign in inside Electron.
@@ -59,7 +59,6 @@ Each question must be answered in the plan of the feature it names.
 - Feature 13: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 7.
 - Feature 13: what the release holds now that it comes before the Mac app and the iPad app. Its goal still names a download link for the Mac app and an App Store submission for the iPad app, and neither app exists until features 10 and 11.
 - Feature 9: how a board stores its layout of columns or rows, and what happens to the stored setting `symple.layout` and its sync. Feature 8 took the layout control out of the settings panel, so today nothing in the app changes the layout.
-- Feature 9: whether step 12 of the plan.md of feature 8 is still done. It fixes finding 2 of the review of feature 8, a drag that starts inside the settings panel and ends on the dimmed page and closes the panel, and finding 4, the markup of the minus and plus buttons that is written out four times. Its test cases PA21, PA22, ST20 and ST21 do not exist.
 - Feature 9: whether the Firestore cache on the device is cleared at sign out. Today it keeps the theme and the layout of the account, and feature 9 adds the edited boards, which hold the user's own phrases. This was finding 5 of the review of feature 3.
 - Feature 9: whether `firestore.rules` checks the type and the size of what an account writes. Today the rules accept any field of any size in the account's own documents. This was finding 6 of the review of feature 3.
 - Feature 14: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
@@ -83,7 +82,7 @@ Each question must be answered in the plan of the feature it names.
 - Feature 2: `cells.json` holds a list of tiles and `boards.json` holds a list of boards. A board has groups, a group has cells, and a cell names a tile and can give a size.
 - Feature 2: the grid flexes with the tiles. The groups fill the main area equally, and the cells of a group fill it by their sizes. Large is 5 parts, medium is 4 and small is 3, and a number is that many parts.
 - Feature 2: a board can hold any number of groups, and a group any number of cells. Keeping the cells few and large is up to the person who writes the data.
-- Feature 2: a board with no groups and a group with no cells are allowed and are drawn empty. Feature 9 puts an Add button there.
+- Feature 2: a board with no groups and a group with no cells are allowed and are drawn empty. Feature 9 puts an Add button on an empty board, and an empty group shows its Add button in edit mode only.
 - Feature 2: communication boards are part of feature 2, and feature 6 was removed.
 - Feature 2: picking a cell that holds a phrase makes no sound until feature 5. Screen readers get the phrase.
 - Feature 2: Back is a tile in the data. It goes to the previous screen, and it is the first cell of every board except home.
@@ -145,6 +144,7 @@ Each question must be answered in the plan of the feature it names.
 - Feature 8: the panel is 80 parts in 100 of the width of the window and 95 of its height, and each row is at least 4.2rem high.
 - Features 9 and 7: board editing is built before word suggestions. The user swapped the two on 2026-11-23.
 - Feature 8: the feature was merged on 2026-11-23 although its validate run did not pass. Step 12 of its plan.md, which fixes findings 2 and 4 of its review, was not implemented.
+- Feature 8: findings 2 and 4 of its review were fixed after the merge, on 2026-11-23, on the branch of feature 9. Finding 2 was a drag out of the settings panel that closed it, and finding 4 was the markup of the minus and plus buttons that was written out four times. Their cases PA21, PA22, ST20 and ST21 pass.
 
 ## Skipped checks
 
@@ -153,8 +153,7 @@ Each line is a check that was skipped during validation, with the requirement th
 - Feature 3, skipped on 2026-11-17: check H8 of its validation.md, which listens with VoiceOver for the wrong password message on the sign in screen. Requirement 23, which says that the message is announced to screen readers, has only automated checks of the alert and status roles until then.
 - Feature 3, skipped on 2026-11-19: check H6 of its validation.md, which tests the Firestore access rules in the Rules Playground. Requirement 29, which says that an account can reach only its own document `users/{uid}`, has no passing check until then. No automated test covers the rules, because the tests do not use the Firebase emulator.
 - Feature 4, merged on 2026-11-21 with no validate run: its validation.md has no Results section, so no check of it is recorded as passed. The manual checks H1 to H8, which try the scan, the look, a real switch, the modes and the dwell press by hand, were not recorded. Until validate is run, none of its requirements has a recorded passing check.
-- Feature 8, merged on 2026-11-23: the manual checks H1 to H7 of its validation.md were not run. They compare the panel with the mockup, use the keyboard and VoiceOver, check that changes apply at once, try the voice, speak a long text with a server voice, check the sync in the Firebase console and check Sign out. Requirement 11, that the panel looks like the mockup, and requirement 15, the answer on a cut of a server voice, have no passing check until then. The panel now differs from the mockup on purpose, as the decisions of 2026-11-23 say.
-- Feature 8, merged on 2026-11-23: the part of requirement 18 that says a press on the dimmed page closes the panel has no passing check, because cases PA21, ST20 and ST21 were never written.
+- Feature 8, skipped on 2026-11-23: check H2 of its validation.md, which uses the settings panel with the keyboard only and listens with VoiceOver. It is the only manual check of feature 8 that was not run. Requirements 9, 10 and 14, on the keyboard and screen readers in the panel, have only automated checks until then.
 
 ## Not on the roadmap
 

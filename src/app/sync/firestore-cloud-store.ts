@@ -1,10 +1,16 @@
 import { Injectable, InjectionToken, inject } from '@angular/core';
 import type { FirebaseApp } from 'firebase/app';
 import { FIREBASE_APP } from '../firebase/firebase-app';
-import { CloudDocument, CloudStore } from './cloud-store';
+import { CloudDocument, CloudDocumentName, CloudStore } from './cloud-store';
 
-/** The Firestore collection that holds one settings document for each account. */
-const USERS = 'users';
+/**
+ * The path of each document of an account, as its segments. The settings are the document
+ * `users/{uid}`, and the boards are the document `users/{uid}/data/boards`.
+ */
+const PATHS: Readonly<Record<CloudDocumentName, (accountId: string) => readonly string[]>> = {
+  settings: (accountId) => ['users', accountId],
+  boards: (accountId) => ['users', accountId, 'data', 'boards'],
+};
 
 /** One report of a document, with the parts of a Firestore snapshot that the store reads. */
 export interface DocumentSnapshot {
@@ -17,14 +23,13 @@ export interface DocumentSnapshot {
 export interface FirestoreDocuments {
   /** Reports a document now and after each change, with the reports from the cache told apart. */
   watch(
-    collection: string,
-    id: string,
+    path: readonly string[],
     onSnapshot: (snapshot: DocumentSnapshot) => void,
     onError: (error: unknown) => void,
   ): () => void;
 
   /** Saves fields to a document and keeps its other fields. */
-  merge(collection: string, id: string, fields: Readonly<Record<string, string>>): Promise<void>;
+  merge(path: readonly string[], fields: Readonly<Record<string, string>>): Promise<void>;
 
   /**
    * Reads a document from the server and saves the fields that `choose` returns, as one step.
@@ -32,8 +37,7 @@ export interface FirestoreDocuments {
    * Nothing is saved when it returns no fields. The step fails with no network.
    */
   mergeAfterRead(
-    collection: string,
-    id: string,
+    path: readonly string[],
     choose: (held: Readonly<Record<string, unknown>> | null) => Readonly<Record<string, string>>,
   ): Promise<void>;
 }
@@ -47,23 +51,19 @@ async function loadFirestore(app: FirebaseApp): Promise<FirestoreDocuments> {
   const db = api.initializeFirestore(app, {
     localCache: api.persistentLocalCache({ tabManager: api.persistentMultipleTabManager() }),
   });
+  // Firestore takes a path as one text with its segments joined by slashes.
+  const reference = (path: readonly string[]) => api.doc(db, path.join('/'));
   return {
-    watch: (collection, id, onSnapshot, onError) =>
-      api.onSnapshot(
-        api.doc(db, collection, id),
-        { includeMetadataChanges: true },
-        onSnapshot,
-        onError,
-      ),
-    merge: (collection, id, fields) =>
-      api.setDoc(api.doc(db, collection, id), fields, { merge: true }),
-    mergeAfterRead: (collection, id, choose) =>
+    watch: (path, onSnapshot, onError) =>
+      api.onSnapshot(reference(path), { includeMetadataChanges: true }, onSnapshot, onError),
+    merge: (path, fields) => api.setDoc(reference(path), fields, { merge: true }),
+    mergeAfterRead: (path, choose) =>
       api.runTransaction(db, async (transaction) => {
-        const reference = api.doc(db, collection, id);
-        const snapshot = await transaction.get(reference);
+        const document = reference(path);
+        const snapshot = await transaction.get(document);
         const fields = choose(snapshot.exists() ? snapshot.data() : null);
         if (Object.keys(fields).length > 0) {
-          transaction.set(reference, fields, { merge: true });
+          transaction.set(document, fields, { merge: true });
         }
       }),
   };
@@ -92,8 +92,8 @@ function errorCode(error: unknown): string {
 }
 
 /**
- * The cloud store that uses Firestore. The settings of an account are the document `users/{uid}`.
- * The access rules in `firestore.rules` let an account reach only its own document.
+ * The cloud store that uses Firestore. `PATHS` names the document of each name.
+ * The access rules in `firestore.rules` let an account reach only its own documents.
  */
 @Injectable()
 export class FirestoreCloudStore implements CloudStore {
@@ -105,13 +105,17 @@ export class FirestoreCloudStore implements CloudStore {
   private firestore(): Promise<FirestoreDocuments> {
     this.loading ??= this.load(this.app).catch((error: unknown) => {
       this.loading = undefined;
-      this.warn('Symple could not load the sync of the settings', error);
+      this.warn('Symple could not load the sync', error);
       throw error;
     });
     return this.loading;
   }
 
-  watch(accountId: string, listener: (document: CloudDocument) => void): () => void {
+  watch(
+    accountId: string,
+    name: CloudDocumentName,
+    listener: (document: CloudDocument) => void,
+  ): () => void {
     let stopped = false;
     let stop: (() => void) | undefined;
     this.firestore().then(
@@ -120,19 +124,18 @@ export class FirestoreCloudStore implements CloudStore {
           return;
         }
         stop = documents.watch(
-          USERS,
-          accountId,
+          PATHS[name](accountId),
           // A report from the cache is told apart, because the cache can lack what the cloud holds.
           (snapshot) => {
             const fields = snapshot.exists() ? (snapshot.data() ?? null) : null;
             listener({ fields, fromCloud: !snapshot.metadata.fromCache });
           },
           // Firestore ends the watch when the account loses access, as it does at sign out.
-          // The settings on the device stay in use.
-          (error) => this.warn('Symple stopped the sync of the settings', error),
+          // What the device holds stays in use.
+          (error) => this.warn(`Symple stopped the sync of the ${name}`, error),
         );
       },
-      // Firestore could not be loaded, and `firestore()` has said so. The settings on the device stay in use.
+      // Firestore could not be loaded, and `firestore()` has said so. What the device holds stays in use.
       () => undefined,
     );
     return () => {
@@ -141,14 +144,22 @@ export class FirestoreCloudStore implements CloudStore {
     };
   }
 
-  async save(accountId: string, fields: Readonly<Record<string, string>>): Promise<void> {
+  async save(
+    accountId: string,
+    name: CloudDocumentName,
+    fields: Readonly<Record<string, string>>,
+  ): Promise<void> {
     const documents = await this.firestore();
-    await documents.merge(USERS, accountId, fields);
+    await documents.merge(PATHS[name](accountId), fields);
   }
 
-  async saveIfMissing(accountId: string, fields: Readonly<Record<string, string>>): Promise<void> {
+  async saveIfMissing(
+    accountId: string,
+    name: CloudDocumentName,
+    fields: Readonly<Record<string, string>>,
+  ): Promise<void> {
     const documents = await this.firestore();
-    await documents.mergeAfterRead(USERS, accountId, (held) =>
+    await documents.mergeAfterRead(PATHS[name](accountId), (held) =>
       Object.fromEntries(
         Object.entries(fields).filter(
           ([field]) => held?.[field] === undefined || held[field] === null,

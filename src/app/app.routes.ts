@@ -14,6 +14,13 @@ function boardId(route: ActivatedRouteSnapshot): string {
 const boardTitle: ResolveFn<string> = (route) =>
   inject(BoardData).board(boardId(route))?.title ?? '';
 
+/**
+ * The title of a board is read again each time its route is asked for, also when the route is
+ * already on show. The board screen asks for it again when the caregiver renames the board,
+ * so the header follows the rename.
+ */
+const READ_TITLE_AGAIN = 'always';
+
 /** An unknown board id opens the home screen. */
 const boardExists: CanActivateFn = (route) =>
   inject(BoardData).board(boardId(route)) ? true : inject(Router).createUrlTree(['/']);
@@ -29,12 +36,14 @@ export const routes: Routes = [
     canActivate: [signedInGuard],
     data: { id: HOME_BOARD_ID },
     title: boardTitle,
+    runGuardsAndResolvers: READ_TITLE_AGAIN,
   },
   {
     path: 'board/:id',
     component: BoardScreen,
     canActivate: [signedInGuard, boardExists],
     title: boardTitle,
+    runGuardsAndResolvers: READ_TITLE_AGAIN,
   },
   {
     path: 'sign-in',

@@ -12,7 +12,10 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Auth } from '../auth/auth';
+import { BoardData } from '../boards/board-data';
+import { EditMode } from '../edit/edit-mode';
 import {
   DWELL_STYLES,
   DwellStyle,
@@ -22,16 +25,19 @@ import {
   TIME_LIMITS,
 } from '../scan/scan-settings';
 import { Speech } from '../speech/speech';
+import { BoardSyncState } from '../sync/board-sync-state';
 import { VOICE_RANGES, VoiceSettings } from '../speech/voice-settings';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { THEME_NAMES, Theme, ThemeName } from '../theme/theme';
 import { SettingsOpen } from './settings-open';
+import { Stepper } from './stepper';
 
 /**
- * The five categories of the panel, in the order of the list.
+ * The six categories of the panel, in the order of the list.
  * The template draws the icon of each one by its id, because a Lucide icon can have several parts.
  */
 const TABS = [
+  { id: 'boards', label: 'Boards' },
   { id: 'selection', label: 'Selection' },
   { id: 'speech', label: 'Speech' },
   { id: 'appearance', label: 'Appearance' },
@@ -42,7 +48,7 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id'];
 
 /** The category that the panel shows each time it opens. */
-const FIRST_TAB: TabId = 'selection';
+const FIRST_TAB: TabId = 'boards';
 
 /** The name of each selection mode in the list. */
 const MODE_LABELS: Readonly<Record<SelectionMode, string>> = {
@@ -126,6 +132,7 @@ const TAB_KEYS: Readonly<Record<string, (at: number) => number>> = {
  */
 @Component({
   selector: 'app-settings-panel',
+  imports: [Stepper],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './settings-panel.html',
   styleUrl: './settings-panel.css',
@@ -136,6 +143,10 @@ export class SettingsPanel {
   private readonly speech = inject(Speech);
   private readonly source = inject(VOICE_SOURCE);
   private readonly themeService = inject(Theme);
+  private readonly router = inject(Router);
+  private readonly boards = inject(BoardData);
+  private readonly edit = inject(EditMode);
+  protected readonly boardSync = inject(BoardSyncState);
   protected readonly scan = inject(ScanSettings);
   protected readonly voice = inject(VoiceSettings);
 
@@ -204,11 +215,24 @@ export class SettingsPanel {
     this.state.close();
   }
 
-  /** A press on the dimmed page closes the panel. Only the backdrop gives the dialog itself as the target. */
+  /** Whether the press that is under way started on the dimmed page. */
+  private pressStartedOnPage = false;
+
+  /** Notes where a press starts. Only the backdrop gives the dialog itself as the target. */
+  protected onDialogPointerDown(event: PointerEvent): void {
+    this.pressStartedOnPage = event.target === this.dialog().nativeElement;
+  }
+
+  /**
+   * A press on the dimmed page closes the panel. A press that starts inside the panel and ends
+   * on the dimmed page, as when text is selected with the mouse, also reports its click on the
+   * dialog, and that press must leave the panel open.
+   */
   protected onDialogClick(event: MouseEvent): void {
-    if (event.target === this.dialog().nativeElement) {
+    if (event.target === this.dialog().nativeElement && this.pressStartedOnPage) {
       this.close();
     }
+    this.pressStartedOnPage = false;
   }
 
   /**
@@ -249,6 +273,18 @@ export class SettingsPanel {
     const { id } = TABS[(to + TABS.length) % TABS.length];
     this.tab.set(id);
     this.focusTab(id);
+  }
+
+  /**
+   * Closes the panel and turns edit mode on for the board on show. A locked board, such as a
+   * keyboard, cannot be edited, so home is opened first.
+   */
+  protected async editBoards(): Promise<void> {
+    this.close();
+    if (this.boards.board(this.edit.boardId())?.locked) {
+      await this.router.navigateByUrl('/');
+    }
+    this.edit.start();
   }
 
   protected setMode(value: string): void {

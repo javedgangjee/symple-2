@@ -1,0 +1,101 @@
+/* Copied from the edit buttons of the footer in context/design/home.html. */
+/* The buttons are as tall as the footer, so the cells keep their size when edit mode turns on. */
+/* The three Add buttons share one width, that of the widest, and Done keeps its own. */
+:host {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.add,
+.done {
+  /* The corner radius is a fifth of the height, so every corner is the same round shape. */
+  --h: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: var(--h);
+  min-width: 48px;
+  padding: 0 1.125rem;
+  border: 1px solid var(--ink);
+  border-radius: calc(var(--h) * 0.2);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 680;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.add {
+  background: var(--glass-button);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  color: var(--ink);
+}
+
+.add:hover {
+  background: var(--glass-button-hover);
+}
+
+/* An Add button with no room stays in the tab order. It is dimmed and says why. */
+/* Its label keeps 4.5 to 1 against the page, so it is dimmed by its border and its fill only. */
+.add[aria-disabled='true'] {
+  border-style: dashed;
+  background: transparent;
+  cursor: not-allowed;
+}
+
+/* Done is the loudest of the five. */
+.done {
+  border-color: transparent;
+  background: var(--ink);
+  color: var(--light);
+  box-shadow: 0 6px 14px -6px oklch(0.25 var(--shc) var(--shade) / 0.45);
+}
+
+.done:hover {
+  background: var(--dark);
+}
+
+.add:focus-visible,
+.done:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* On a narrow window the buttons lose some padding, so the row still fits. */
+@media (width < 60rem) {
+  :host {
+    gap: 8px;
+  }
+
+  .add,
+  .done {
+    padding: 0 0.75rem;
+    font-size: 1rem;
+  }
+}
+
+/* This text is for screen readers only. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

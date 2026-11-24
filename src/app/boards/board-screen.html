@@ -2,61 +2,232 @@
   @let scanned = scan.state();
   @let dwelt = dwell.running();
   @let pressed = dwell.confirmed();
+  @let editing = edit.isOn();
+  @let held = picked();
+  @let dragged = gap();
   <!-- The grid carries the scan state and the two times, and the styles draw the rest from them. -->
   <div
     #grid
     class="grid"
-    [attr.data-layout]="board.layout ?? layout.name()"
+    [attr.data-layout]="layout()"
     [attr.data-state]="scanState()"
+    [attr.data-editing]="mark(editing)"
     [attr.data-bar-room]="mark(showsBar())"
     [attr.data-dwell-style]="settings.dwellStyle()"
     [style.--scan-time]="settings.scanTime() + 'ms'"
     [style.--dwell-time]="settings.dwellTime() + 'ms'"
   >
-    <!-- Each group and each cell is tracked as itself, so a new board gets new cells. A reused cell -->
-    <!-- would fade from the old tile's colours to the new ones and keep focus from the old board. -->
-    <!-- A key built from the board id does not do this, because it reads the new id for the old groups too. -->
-    @for (group of board.groups; track group; let g = $index) {
+    <!-- Each group and each cell carries a key that holds the id of its board, so a new board gets new cells. -->
+    <!-- A reused cell would fade from the old tile's colours to the new ones and keep focus from the old board. -->
+    <!-- On one board a cell keeps its key when it moves, so the page can let it slide to its new place. -->
+    @for (group of groups(); track group.key; let g = $index) {
       <!-- A group takes the focus when the scan highlights it, but Tab does not stop on it. -->
+      <!-- In edit mode a press on an empty group puts the picked cell there. Only a pointer moves a cell, -->
+      <!-- so the group needs no key of its own. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
       <div
         class="group"
         role="group"
         tabindex="-1"
         [attr.aria-label]="groupName(g)"
+        [attr.data-empty]="mark(group.slots.length === 0)"
         [attr.data-scan]="mark(scanned.group === g)"
         [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'groups' && scanned.group === g)"
+        (click)="onGroupClick($event, g)"
       >
-        @for (cell of group.cells; track cell; let c = $index) {
+        @for (slot of group.slots; track slot.key; let c = $index) {
           @let place = { group: g, cell: c };
           @let highlighted = sameCell(scanned, place);
-          <app-cell
-            [tile]="cell.tile"
-            [style.flex-grow]="share(group, cell)"
-            [attr.data-scan]="mark(highlighted)"
-            [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'cells' && highlighted)"
-            [attr.data-confirmed]="
-              mark((scanned.phase === 'confirmed' && highlighted) || sameCell(pressed, place))
-            "
-            [attr.data-dwell]="sameCell(dwelt, place) ? settings.dwellStyle() : null"
-            (press)="onCellPress($event)"
-            (pointerenter)="onPointer($event, g, c)"
-            (pointermove)="onPointer($event, g, c)"
-            (pointerleave)="dwell.leave(place)"
-          />
+          <!-- A slot holds a cell and its edit buttons side by side, because a button cannot lie inside a button. -->
+          <!-- In edit mode a press on the slot picks the cell up or puts it down, and the slot can be dragged. -->
+          <!-- Only a pointer moves a cell, so the slot takes no focus. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <div
+            class="slot"
+            [style.flex-grow]="slot.share"
+            [attr.data-key]="slot.key"
+            [attr.data-picked]="mark(sameCell(held, place))"
+            [attr.data-dragged]="mark(sameCell(dragged, place))"
+            (pointerdown)="onSlotPointerDown($event, place, slot)"
+            (click)="onSlotClick($event, place)"
+          >
+            <app-cell
+              [tile]="slot.cell.tile"
+              [attr.inert]="mark(editing)"
+              [attr.data-scan]="mark(highlighted)"
+              [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'cells' && highlighted)"
+              [attr.data-confirmed]="
+                mark((scanned.phase === 'confirmed' && highlighted) || sameCell(pressed, place))
+              "
+              [attr.data-dwell]="sameCell(dwelt, place) ? settings.dwellStyle() : null"
+              (press)="onCellPress($event)"
+              (pointerenter)="onPointer($event, g, c)"
+              (pointermove)="onPointer($event, g, c)"
+              (pointerleave)="dwell.leave(place)"
+            />
+            @if (editing) {
+              <!-- The edit buttons, in the order that Tab takes them. Each icon is copied from the Lucide icon set. -->
+              @if (slot.canEdit) {
+                <button
+                  class="tool edit"
+                  type="button"
+                  aria-haspopup="dialog"
+                  [attr.aria-label]="'Edit ' + slot.name"
+                  (click)="edit.open({ kind: 'edit-tile', at: place })"
+                >
+                  <!-- Lucide pencil. -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+                    />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+              }
+              @if (slot.opens; as opened) {
+                <button
+                  class="tool open"
+                  type="button"
+                  [attr.aria-label]="'Open ' + slot.name"
+                  (click)="open(opened)"
+                >
+                  <!-- Lucide arrow-right. -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </button>
+              }
+              @if (slot.isBack) {
+                <button class="tool open" type="button" aria-label="Go back" (click)="goBack()">
+                  <!-- Lucide arrow-left. -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m12 19-7-7 7-7" />
+                    <path d="M19 12H5" />
+                  </svg>
+                </button>
+              }
+              @if (slot.canRemove) {
+                <button
+                  class="tool remove"
+                  type="button"
+                  [attr.aria-label]="'Remove ' + slot.name"
+                  (click)="remove(place)"
+                >
+                  <!-- Lucide x. -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </svg>
+                </button>
+              }
+            }
+          </div>
+        }
+        @if (group.slots.length === 0 && editing) {
+          <!-- An empty group shows nothing out of edit mode. It keeps its place and its size in the grid. -->
+          <div class="empty">
+            <button class="add-tile" type="button" aria-haspopup="dialog" (click)="addTileTo(g)">
+              <!-- Lucide plus. -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
+              Add Tile
+            </button>
+            @if (canRemoveGroup()) {
+              <button class="remove-group" type="button" (click)="removeGroupAt(g)">
+                <!-- Lucide x. -->
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+                Remove {{ groupKind().toLowerCase() }}
+              </button>
+            }
+          </div>
         }
       </div>
     }
+    @if (board.groups.length === 0) {
+      <!-- A board with no groups shows the same Add Tile button. The new cell comes with its first group. -->
+      <div class="empty">
+        <button
+          class="add-tile"
+          type="button"
+          aria-haspopup="dialog"
+          data-caregiver-control
+          [tabindex]="editing ? 0 : -1"
+          (click)="addTileTo()"
+        >
+          <!-- Lucide plus. -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+          Add Tile
+        </button>
+      </div>
+    }
   </div>
+  <!-- Add column lies in the margin beside the grid, so the grid keeps its place and its size. -->
+  <!-- In the rows layout it is Add row and lies under the grid, where the new row goes. -->
+  <!-- With no room for a group it stays in the tab order, says that it is disabled and why, and does nothing. -->
+  @if (editing) {
+    @let groupsFull = !room.forGroup();
+    @let addGroupName = 'Add ' + groupKind().toLowerCase();
+    <button
+      class="add-group"
+      type="button"
+      [attr.data-layout]="layout()"
+      [attr.aria-label]="addGroupName"
+      [attr.aria-disabled]="groupsFull"
+      [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"
+      [title]="groupsFull ? groupsFullText() : addGroupName"
+      (click)="addGroup()"
+    >
+      <!-- Lucide plus. -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12h14" />
+        <path d="M12 5v14" />
+      </svg>
+    </button>
+    @if (groupsFull) {
+      <p class="sr-only" id="edit-groups-full">{{ groupsFullText() }}</p>
+    }
+  }
+  <!-- The cell that is dragged follows the pointer. It is a picture of the cell, which lies in the grid as a gap. -->
+  @if (lifted(); as cell) {
+    <div
+      class="lifted"
+      inert
+      [style.left.px]="cell.left"
+      [style.top.px]="cell.top"
+      [style.width.px]="cell.width"
+      [style.height.px]="cell.height"
+    >
+      <app-cell [tile]="cell.tile" />
+    </div>
+  }
+  <!-- The dialogs of edit mode. Each one opens itself when edit mode asks for it. -->
+  <!-- Out of edit mode they are not on the page, so the board holds nothing but its cells. -->
+  <!-- Their code is loaded when edit mode first turns on, so the primary user never waits for it. -->
+  @if (editing) {
+    @defer (on immediate) {
+      <app-tile-dialog (saved)="onTileSaved($event)" />
+      <app-board-dialog (saved)="onBoardSaved($event)" />
+    }
+  }
 }
 <!-- The round cursor of `cursor` mode lies over the whole page, at the place of the pointer. -->
 <!-- It is a drawing only: the pointer under it does the pressing. -->
 @if (cursor(); as at) {
   <div class="cursor" aria-hidden="true" [style.left.px]="at.x" [style.top.px]="at.y"></div>
 }
-<!-- A screen reader hears the phrase or the message here after a press. -->
-<!-- The text is drawn again for each press, so the same phrase twice is told twice. -->
+<!-- A screen reader hears the phrase or the message here after a press, and each change in edit mode. -->
+<!-- The text is drawn again each time, so the same phrase twice is told twice. -->
 <p class="sr-only" role="status">
-  @for (said of [status()]; track said.press) {
+  @for (said of [status()]; track said.count) {
     <span>{{ said.text }}</span>
   }
 </p>

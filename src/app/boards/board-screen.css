@@ -1,5 +1,6 @@
-/* The screen fills the main area. */
+/* The screen fills the main area. Add column is placed from its right edge. */
 :host {
+  position: relative;
   display: grid;
   min-width: 0;
   min-height: 0;
@@ -19,9 +20,14 @@
   flex: 1 1 0;
 }
 
-/* The share of each cell is set as flex-grow by the screen. */
-app-cell {
+/* A slot holds one cell, and in edit mode its edit buttons. The share of each cell is set as */
+/* flex-grow on its slot by the screen, and the cell fills its slot. */
+.slot {
+  position: relative;
+  display: grid;
   flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
 }
 
 /* In the columns layout each group is a column, read top to bottom. */
@@ -32,6 +38,240 @@ app-cell {
 /* In the rows layout each group is a row, read left to right. */
 .grid[data-layout='rows'] {
   flex-direction: column;
+}
+
+/* Edit mode. The rules follow context/design/home.html. A slot can be pressed and dragged. */
+.grid[data-editing] .slot {
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The cell that has been picked up carries a ring. */
+.slot[data-picked] {
+  border-radius: var(--radius);
+  outline: var(--ring) solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* The cell that is dragged leaves a faint copy where it would land. */
+.slot[data-dragged] {
+  opacity: 0.3;
+}
+
+/* The picture of the dragged cell follows the pointer, lifted off the page. */
+.lifted {
+  position: fixed;
+  z-index: 5;
+  display: grid;
+  scale: 1.03;
+  filter: drop-shadow(0 18px 24px oklch(0.2 0.04 var(--shade) / 0.45));
+  pointer-events: none;
+}
+
+/* Each edit button is a round glass button of 48px. Edit sits at the top left corner of its cell. */
+.tool {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--light) 72%, transparent);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  color: var(--ink);
+  /* A light ring lies round the ink border, so the border keeps its contrast on a dark cell too. */
+  /* The mockup has no ring, and there the border of a button on the Back cell cannot be seen. */
+  box-shadow:
+    0 0 0 3px var(--light),
+    0 2px 6px 3px oklch(0.2 var(--shc) var(--shade) / 0.35);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    color 160ms var(--ease);
+}
+
+.tool svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tool:hover {
+  background: var(--ink);
+  color: var(--light);
+}
+
+.tool:focus-visible,
+.add-group:focus-visible,
+.add-tile:focus-visible,
+.remove-group:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Open and Go back sit beside Edit, or in its place on a cell that has no Edit button. */
+.edit + .open {
+  left: 46px;
+}
+
+/* Remove sits at the other top corner. It stays inside the edge of the cell, so it clears the */
+/* Edit button of the next column. */
+.remove {
+  left: auto;
+  right: 0;
+}
+
+/* An empty group holds its Add Tile button in its middle and Remove column under it, in edit mode only. */
+/* The two lie in one grid column, which is as wide as the wider of them, so they have one width. */
+.empty {
+  display: grid;
+  flex: 1 1 0;
+  grid-template-columns: minmax(0, max-content);
+  align-content: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* In edit mode an empty group shows a dashed outline, so there is somewhere to put a cell. */
+.grid[data-editing] .group[data-empty] {
+  outline: 3px dashed color-mix(in oklab, var(--ink) 75%, var(--canvas));
+  outline-offset: -3px;
+  background: color-mix(in oklab, var(--light) 30%, transparent);
+}
+
+.add-tile,
+.remove-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border: 2px solid var(--ink);
+  /* The corner radius of the footer buttons: a fifth of their height of 48px. */
+  border-radius: 9.6px;
+  background: color-mix(in oklab, var(--light) 60%, transparent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 660;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+/* Add column is a dashed box with a plus in its middle. It lies in the right margin of the */
+/* page, as high as the grid, and takes no room from the grid. The margin is 4 parts in 100 of */
+/* the page beside the 92 of the screen, and the padding of the page lies beyond it. The box */
+/* sits in the middle of the two. */
+:host {
+  --margin: calc(100% * 4 / 92 + var(--pad));
+}
+
+.add-group {
+  position: absolute;
+  top: 0;
+  right: calc(max(4px, (var(--margin) - 48px) / 2) - var(--margin));
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  padding: 0;
+  border: 3px dashed color-mix(in oklab, var(--ink) 75%, var(--canvas));
+  border-radius: 9.6px;
+  background: color-mix(in oklab, var(--light) 30%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+/* On a narrow window the margin is too small for the box. The grid then gives up the room that */
+/* is missing, in edit mode only, so the box and its focus ring stay inside the window. */
+:host:has(.add-group[data-layout='columns']) {
+  padding-right: max(0px, 56px - var(--margin));
+}
+
+/* The box has 4px on each side of it at the least, so its focus ring lies closer than that of the other buttons. */
+.add-group:focus-visible {
+  outline-offset: 1px;
+}
+
+/* In the rows layout the new group is a row at the bottom, so the box is Add row and lies */
+/* under the grid, as wide as the grid. The page has no margin there, so the grid gives up the */
+/* height of the box in edit mode. */
+.add-group[data-layout='rows'] {
+  top: auto;
+  right: 0;
+  left: 0;
+  width: auto;
+  height: 48px;
+}
+
+.grid[data-layout='rows'][data-editing] {
+  margin-bottom: calc(48px + var(--gap));
+}
+
+.add-group:hover {
+  background: color-mix(in oklab, var(--light) 90%, transparent);
+}
+
+/* With no room for a group the box is dimmed by its fill only, so the plus keeps its contrast. */
+.add-group[aria-disabled='true'] {
+  background: transparent;
+  cursor: not-allowed;
+}
+
+/* The icon is drawn as the icons of the footer buttons are. */
+.add-group svg,
+.add-tile svg,
+.remove-group svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The plus of Add column stands alone, so it is drawn a little larger than an icon beside a label. */
+.add-group svg {
+  width: 28px;
+  height: 28px;
+}
+
+.add-tile:hover,
+.remove-group:hover {
+  background: color-mix(in oklab, var(--light) 90%, transparent);
+}
+
+/* People who ask for less transparency get solid buttons. */
+@media (prefers-reduced-transparency: reduce) {
+  .tool,
+  .add-group,
+  .add-tile,
+  .remove-group {
+    background: var(--light);
+  }
+
+  .tool:hover {
+    background: var(--ink);
+  }
 }
 
 /* This text is for screen readers only. */

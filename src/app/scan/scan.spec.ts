@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subscription } from 'rxjs';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { CellPosition, Scan, ScanState } from './scan';
 import { ScanSettings, SelectionMode } from './scan-settings';
@@ -376,6 +377,18 @@ describe('Scan', () => {
       scan.press();
       expect(scan.state()).toEqual(group(1));
       expect(picks).toEqual([]);
+    });
+
+    it('EM1: the scan goes to rest when edit mode turns on, and stays at rest', () => {
+      scan.press();
+      pass(1000);
+      expect(scan.state()).toEqual(group(2));
+      TestBed.inject(EditMode).start();
+      TestBed.tick();
+      expect(scan.state()).toEqual(REST);
+      // Ten scan times pass.
+      pass(10_000);
+      expect(scan.state()).toEqual(REST);
     });
 
     it('PB7: a scan time set while the scan runs times the next step', () => {

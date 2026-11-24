@@ -1,5 +1,6 @@
-import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
+import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Subject } from 'rxjs';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { CellPosition, sameCell } from './scan';
 import { ScanSettings } from './scan-settings';
@@ -15,6 +16,10 @@ type Timer = ReturnType<typeof setTimeout> | undefined;
 export class Dwell {
   private readonly settings = inject(ScanSettings);
   private readonly panel = inject(SettingsOpen);
+  private readonly edit = inject(EditMode);
+
+  /** Whether the caregiver is at work, in the settings panel or in edit mode. No dwell runs then. */
+  private readonly quiet = computed(() => this.panel.isOpen() || this.edit.isOn());
 
   private readonly runningOn = signal<CellPosition | null>(null);
   private readonly confirmedOn = signal<CellPosition | null>(null);
@@ -57,9 +62,10 @@ export class Dwell {
       }
     });
 
-    // A dwell that runs when the settings panel opens is dropped, so it presses nothing behind the panel.
+    // A dwell that runs when the settings panel opens or edit mode turns on is dropped, so it
+    // presses nothing behind the panel and nothing that the caregiver is editing.
     effect(() => {
-      if (this.panel.isOpen()) {
+      if (this.quiet()) {
         untracked(() => this.stop());
       }
     });
@@ -119,7 +125,7 @@ export class Dwell {
 
   private begin(position: CellPosition): void {
     if (
-      this.panel.isOpen() ||
+      this.quiet() ||
       this.settings.selectionMode() !== 'dwell' ||
       this.delayTimer !== undefined ||
       this.mustMove ||

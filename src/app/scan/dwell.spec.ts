@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subscription } from 'rxjs';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { Dwell } from './dwell';
 import { CellPosition } from './scan';
@@ -183,6 +184,18 @@ describe('Dwell', () => {
     dwell.move(B);
     pass(5000);
     expect(dwell.running()).toBeNull();
+    expect(presses).toEqual([]);
+  });
+
+  it('EM3: a dwell that runs is dropped when edit mode turns on', () => {
+    setUp();
+    dwell.enter(A);
+    pass(400);
+    expect(dwell.running()).toEqual(A);
+    TestBed.inject(EditMode).start();
+    TestBed.tick();
+    expect(dwell.running()).toBeNull();
+    pass(1000);
     expect(presses).toEqual([]);
   });
 });

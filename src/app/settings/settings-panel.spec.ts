@@ -1,57 +1,22 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { AUTH_SOURCE } from '../auth/auth';
 import { FakeAuthSource } from '../auth/fake-auth-source';
+import { EditMode } from '../edit/edit-mode';
 import { SCAN_STORAGE_KEYS, ScanSettingValues, ScanSettings } from '../scan/scan-settings';
 import { FakeVoiceSource } from '../speech/fake-voice-source';
 import { VOICE_STORAGE_KEYS, VoiceSettings } from '../speech/voice-settings';
 import { VOICE_SOURCE, VoiceValues } from '../speech/voice-source';
 import { SettingsOpen } from './settings-open';
 import { SettingsPanel } from './settings-panel';
+import { standInForDialog } from '../edit/dialog-stand-in';
 
 @Component({ template: '' })
 class Blank {}
 
 const VOICE_A = { id: 'voice-a', name: 'Voice A' };
 const VOICE_B = { id: 'voice-b', name: 'Voice B' };
-
-type DialogMethod = 'showModal' | 'close';
-
-/**
- * The test page has no modal dialogs, so the two calls that the panel makes are stood in for.
- * `showModal` marks the dialog open, and `close` marks it closed and tells of it, as a browser does.
- */
-function standInForDialog(): () => void {
-  const prototype = HTMLDialogElement.prototype;
-  const before: Record<DialogMethod, PropertyDescriptor | undefined> = {
-    showModal: Object.getOwnPropertyDescriptor(prototype, 'showModal'),
-    close: Object.getOwnPropertyDescriptor(prototype, 'close'),
-  };
-  Object.defineProperty(prototype, 'showModal', {
-    configurable: true,
-    value(this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    },
-  });
-  Object.defineProperty(prototype, 'close', {
-    configurable: true,
-    value(this: HTMLDialogElement) {
-      this.removeAttribute('open');
-      this.dispatchEvent(new Event('close'));
-    },
-  });
-  return () => {
-    for (const name of ['showModal', 'close'] as const) {
-      const descriptor = before[name];
-      if (descriptor) {
-        Object.defineProperty(prototype, name, descriptor);
-      } else {
-        Reflect.deleteProperty(prototype, name);
-      }
-    }
-  };
-}
 
 describe('SettingsPanel', () => {
   let fixture: ComponentFixture<SettingsPanel>;
@@ -180,22 +145,23 @@ describe('SettingsPanel', () => {
     document.documentElement.removeAttribute('data-theme');
   });
 
-  it('PA1: the panel opens as a dialog named Settings with five tabs, on Selection', async () => {
+  it('PA1 and PA23: the panel opens as a dialog named Settings with six tabs, on Boards, which is the first', async () => {
     await open();
     expect(dialog().open).toBe(true);
     const title = dialog().getAttribute('aria-labelledby');
     expect(title && one(`#${title}`).textContent?.trim()).toBe('Settings');
-    expect(tabNames()).toEqual(['Selection', 'Speech', 'Appearance', 'Account', 'About']);
-    expect(chosenTab().textContent?.trim()).toBe('Selection');
+    expect(tabNames()).toEqual(['Boards', 'Selection', 'Speech', 'Appearance', 'Account', 'About']);
+    expect(chosenTab().textContent?.trim()).toBe('Boards');
+    expect(shownPanes()).toEqual(['Boards']);
     expect(document.activeElement).toBe(chosenTab());
   });
 
   it('PA2: the Down arrow, End and Home choose a tab and give it the focus', async () => {
     await open();
     for (const [name, chosen] of [
-      ['ArrowDown', 'Speech'],
+      ['ArrowDown', 'Selection'],
       ['End', 'About'],
-      ['Home', 'Selection'],
+      ['Home', 'Boards'],
     ]) {
       await key(chosenTab(), name);
       expect(chosenTab().textContent?.trim(), name).toBe(chosen);
@@ -265,6 +231,30 @@ describe('SettingsPanel', () => {
     await open({ selectionMode: 'dwell' });
     await pick('settings-dwell-style', 'bar');
     expect(localStorage.getItem(SCAN_STORAGE_KEYS.dwellStyle)).toBe('bar');
+  });
+
+  it('PA22: Longer dwell time adds half a second', async () => {
+    await open({ selectionMode: 'dwell', dwellTime: 1000 });
+    await press('Longer dwell time');
+    expect(TestBed.inject(ScanSettings).dwellTime()).toBe(1500);
+    expect(timeOf('Dwell time')).toBe('1.5 s');
+  });
+
+  it('PA21: a press on the dimmed page closes the panel, and a drag out of the panel does not', async () => {
+    await open();
+    // Only the dimmed page gives the dialog itself as the target of a press.
+    dialog().dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(state.isOpen()).toBe(false);
+
+    state.open();
+    await fixture.whenStable();
+    // A drag that starts on a control and ends on the dimmed page reports its click on the dialog.
+    one('#settings-mode').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await fixture.whenStable();
+    expect(state.isOpen()).toBe(true);
   });
 
   it('PA10: with no stored voice the list shows the default voice and stores nothing', async () => {
@@ -391,9 +381,30 @@ describe('SettingsPanel', () => {
     expect(state.isOpen()).toBe(false);
   });
 
-  it('PA20: the panel has no Boards tab and no Keyboard tab', async () => {
+  it('PA20: the panel has no Keyboard tab', async () => {
     await open();
-    expect(tabNames()).not.toContain('Boards');
     expect(tabNames()).not.toContain('Keyboard');
+  });
+
+  it('PA24: Edit boards over Needs closes the panel and turns edit mode on', async () => {
+    await open();
+    const edit = TestBed.inject(EditMode);
+    edit.show('needs');
+    await press('Edit boards');
+    expect(state.isOpen()).toBe(false);
+    expect(dialog().open).toBe(false);
+    expect(edit.isOn()).toBe(true);
+  });
+
+  it('PA25: Edit boards over the QWERTY keyboard, a locked board, opens home in edit mode', async () => {
+    await open();
+    const router = TestBed.inject(Router);
+    const edit = TestBed.inject(EditMode);
+    await router.navigateByUrl('/board/keyboard');
+    edit.show('keyboard');
+    await press('Edit boards');
+    expect(state.isOpen()).toBe(false);
+    expect(router.url).toBe('/');
+    expect(edit.isOn()).toBe(true);
   });
 });

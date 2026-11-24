@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { EditMode } from '../edit/edit-mode';
 import { SettingsOpen } from '../settings/settings-open';
 import { Scan } from './scan';
 import { ScanSettings, SelectionMode } from './scan-settings';
@@ -170,6 +171,17 @@ describe('Switches', () => {
   it('PB2: Tab and Enter are left to the browser while the settings panel is open', () => {
     setUp('scan');
     TestBed.inject(SettingsOpen).open();
+    const tab = key('Tab');
+    const enter = key('Enter');
+    expect(scan.move).not.toHaveBeenCalled();
+    expect(scan.press).not.toHaveBeenCalled();
+    expect(tab.defaultPrevented).toBe(false);
+    expect(enter.defaultPrevented).toBe(false);
+  });
+
+  it('EM2: Tab and Enter are left to the browser while edit mode is on', () => {
+    setUp('scan');
+    TestBed.inject(EditMode).start();
     const tab = key('Tab');
     const enter = key('Enter');
     expect(scan.move).not.toHaveBeenCalled();

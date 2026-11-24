@@ -1,0 +1,28 @@
+<button
+  type="button"
+  [attr.aria-label]="less()"
+  [attr.aria-disabled]="atLowest()"
+  (click)="step.emit(-1)"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+</button>
+<output>
+  @if (spoken(); as heard) {
+    <!-- A unit can show as a letter. A screen reader hears the whole word. -->
+    <span aria-hidden="true">{{ text() }}</span>
+    <span class="sr-only">{{ heard }}</span>
+  } @else {
+    {{ text() }}
+  }
+</output>
+<button
+  type="button"
+  [attr.aria-label]="more()"
+  [attr.aria-disabled]="atHighest()"
+  (click)="step.emit(1)"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+</button>

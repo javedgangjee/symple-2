@@ -13,8 +13,8 @@
   --quiet: color-mix(in oklab, var(--ink) 78%, var(--light));
   --control: oklch(1 0 0 / 0.5);
   --control-hover: oklch(1 0 0 / 0.85);
-  width: 80vw;
-  height: 95dvh;
+  width: var(--panel-width);
+  height: var(--panel-height);
   max-width: none;
   max-height: none;
   margin: auto;
@@ -184,6 +184,11 @@ h3 {
   font-weight: 600;
 }
 
+/* The line that says why the boards are not synced. It is a row of the card with no control. */
+.sync-notice {
+  margin: 0;
+}
+
 .val {
   color: var(--quiet);
   text-align: right;
@@ -225,14 +230,7 @@ button.row svg {
 }
 
 /* Every control is at least 48px in both directions. */
-/* A time is set with two buttons. There is nothing to drag. */
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.stepper button,
+/* The button that plays a sample looks like the buttons of a stepper, in stepper.css. */
 .play {
   display: grid;
   place-items: center;
@@ -248,31 +246,14 @@ button.row svg {
     border-color 160ms var(--ease);
 }
 
-.stepper button:hover,
 .play:hover {
   border-color: var(--ink);
   background: var(--control-hover);
 }
 
-.stepper button:focus-visible,
 .play:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 3px;
-}
-
-/* A button at the end of its range keeps its place in the tab order and does nothing. */
-.stepper button[aria-disabled='true'] {
-  opacity: 0.4;
-  cursor: default;
-  border-color: var(--line);
-  background: var(--control);
-}
-
-.stepper output {
-  min-width: 3.5rem;
-  text-align: center;
-  font-weight: 640;
-  font-variant-numeric: tabular-nums;
 }
 
 /* A choice from a list is a native drop-down, so the browser handles the keyboard and screen readers. */
@@ -494,16 +475,6 @@ label.row {
 .primary:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 3px;
-}
-
-/* This text is for screen readers only. */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 /* On a narrow window the categories lie in a row above the settings, and the row scrolls sideways. */

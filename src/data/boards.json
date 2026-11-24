@@ -618,6 +618,7 @@
   {
     "id": "keyboards",
     "title": "Keyboards",
+    "locked": true,
     "groups": [
       {
         "cells": [
@@ -645,6 +646,7 @@
     "id": "keyboard",
     "title": "QWERTY keyboard",
     "layout": "rows",
+    "locked": true,
     "groups": [
       {
         "cells": [
@@ -782,6 +784,7 @@
     "id": "keyboard-abc",
     "title": "ABC keyboard",
     "layout": "rows",
+    "locked": true,
     "groups": [
       {
         "cells": [
@@ -919,6 +922,7 @@
     "id": "keyboard-vowels",
     "title": "Vowel keyboard",
     "layout": "rows",
+    "locked": true,
     "groups": [
       {
         "cells": [
@@ -1064,6 +1068,7 @@
     "id": "keyboard-numbers",
     "title": "Numbers and symbols",
     "layout": "rows",
+    "locked": true,
     "groups": [
       {
         "cells": [
