@@ -20,9 +20,11 @@ import {
   BOARD_CELL_STYLES,
   BoardCellStyle,
   CellFields,
+  IconPicture,
   LABEL_LENGTH,
   OpenFields,
   PHRASE_LENGTH,
+  Picture,
   SpeakFields,
   fieldsOf,
   tileAt,
@@ -155,13 +157,16 @@ function isTileDialog(dialog: EditDialog | null): dialog is TileDialogAsk {
 /** The fields of a new cell that speaks. */
 const NEW_TILE: SpeakFields = { kind: 'speak', label: '', phrase: '', colour: 'light' };
 
+/** The icon of a new board. */
+const NEW_BOARD_ICON: IconName = 'board';
+
 /** The fields of a new board. */
 const NEW_BOARD: OpenFields = {
   kind: 'open',
   label: '',
   style: 'bleed',
   colour: 'dark',
-  icon: 'board',
+  picture: { kind: 'icon', icon: NEW_BOARD_ICON },
 };
 
 /** The four colours that the caregiver can pick, with their names. */
@@ -265,7 +270,13 @@ export class TileDialog {
   protected readonly symbol = signal('');
   protected readonly colour = signal<CellColour>(NEW_TILE.colour);
   protected readonly style = signal<BoardCellStyle>(NEW_BOARD.style);
-  protected readonly icon = signal<IconName>(NEW_BOARD.icon);
+  protected readonly icon = signal<IconName>(NEW_BOARD_ICON);
+
+  /**
+   * The icon of a cell that speaks, which the Symbol field cannot show. The cell keeps it while
+   * the Symbol field holds no symbol.
+   */
+  private readonly speakIcon = signal<IconPicture | undefined>(undefined);
 
   /** The text in the box that filters the symbols. */
   protected readonly query = signal('');
@@ -299,10 +310,12 @@ export class TileDialog {
     const label = this.label();
     const colour = this.colour();
     if (this.kind() === 'open') {
-      return { kind: 'open', label, colour, style: this.style(), icon: this.icon() };
+      const picture: Picture = { kind: 'icon', icon: this.icon() };
+      return { kind: 'open', label, colour, style: this.style(), picture };
     }
     const symbol = this.symbol();
-    return { kind: 'speak', label, colour, phrase: this.phrase(), ...(symbol && { symbol }) };
+    const picture: Picture | undefined = symbol ? { kind: 'symbol', symbol } : this.speakIcon();
+    return { kind: 'speak', label, colour, phrase: this.phrase(), ...(picture && { picture }) };
   });
 
   /**
@@ -367,9 +380,13 @@ export class TileDialog {
     this.label.set(start.label);
     this.colour.set(start.colour);
     this.phrase.set(start.kind === 'speak' ? start.phrase : NEW_TILE.phrase);
-    this.symbol.set(start.kind === 'speak' ? (start.symbol ?? '') : '');
+    const picture = start.picture;
+    this.symbol.set(start.kind === 'speak' && picture?.kind === 'symbol' ? picture.symbol : '');
+    this.speakIcon.set(start.kind === 'speak' && picture?.kind === 'icon' ? picture : undefined);
     this.style.set(start.kind === 'open' ? start.style : NEW_BOARD.style);
-    this.icon.set(start.kind === 'open' ? start.icon : NEW_BOARD.icon);
+    this.icon.set(
+      start.kind === 'open' && picture?.kind === 'icon' ? picture.icon : NEW_BOARD_ICON,
+    );
     this.query.set('');
     this.invalid.set(false);
   }
