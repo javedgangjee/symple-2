@@ -150,11 +150,12 @@
 }
 
 /* An empty group holds its Add tile button in its middle, and in edit mode Remove column under it. */
+/* The two lie in one grid column, which is as wide as the wider of them, so they have one width. */
 .empty {
-  display: flex;
+  display: grid;
   flex: 1 1 0;
-  flex-direction: column;
-  align-items: center;
+  grid-template-columns: minmax(0, max-content);
+  align-content: center;
   justify-content: center;
   gap: 12px;
   min-width: 0;
@@ -170,11 +171,16 @@
 
 .add-tile,
 .remove-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   min-width: 48px;
   min-height: 48px;
   padding: 0 1.25rem;
   border: 2px solid var(--ink);
-  border-radius: 99px;
+  /* The corner radius of the footer buttons: a fifth of their height of 48px. */
+  border-radius: 9.6px;
   background: color-mix(in oklab, var(--light) 60%, transparent);
   color: var(--ink);
   font: inherit;
@@ -182,6 +188,19 @@
   font-weight: 660;
   cursor: pointer;
   transition: background-color 160ms var(--ease);
+}
+
+/* The icon is drawn as the icons of the footer buttons are. */
+.add-tile svg,
+.remove-group svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .add-tile:hover,

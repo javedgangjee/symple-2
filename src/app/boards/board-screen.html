@@ -157,10 +157,20 @@
               [tabindex]="editing ? 0 : -1"
               (click)="addTileTo(g)"
             >
+              <!-- Lucide plus. -->
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
               Add tile
             </button>
             @if (editing && canRemoveGroup()) {
               <button class="remove-group" type="button" (click)="removeGroupAt(g)">
+                <!-- Lucide x. -->
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
                 Remove {{ groupKind().toLowerCase() }}
               </button>
             }
@@ -179,6 +189,11 @@
           [tabindex]="editing ? 0 : -1"
           (click)="addTileTo()"
         >
+          <!-- Lucide plus. -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
           Add tile
         </button>
       </div>
