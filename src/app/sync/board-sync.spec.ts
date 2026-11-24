@@ -8,6 +8,7 @@ import { FakeAuthSource } from '../auth/fake-auth-source';
 import { BoardData } from '../boards/board-data';
 import { BOARDS_STORAGE_KEY, BoardFiles, BoardStore, BoardTexts } from '../boards/board-store';
 import { BoardSync } from './board-sync';
+import { BoardSyncState } from './board-sync-state';
 import { CLOUD_STORE, CloudDocument, CloudDocumentName, CloudStore } from './cloud-store';
 
 @Component({ template: '' })
@@ -24,6 +25,12 @@ function textsOf(set: BoardFiles): BoardTexts {
 const CARE_SET: BoardFiles = {
   tiles: cellsFile,
   boards: boardsFile.map((board) => (board.id === 'needs' ? { ...board, title: 'Care' } : board)),
+};
+
+/** The built-in set as a newer version could save it, with a board field that this version does not know. */
+const NEWER_SET: BoardFiles = {
+  tiles: cellsFile,
+  boards: boardsFile.map((board) => ({ ...board, future: true })),
 };
 
 /** The built-in set with the first tile put once more, or more times, at the end of the first group of home. */
@@ -193,5 +200,37 @@ describe('BoardSync', () => {
     TestBed.tick();
     expect(boards.stored()).toEqual(textsOf(CARE_SET));
     expect(cloud.saves.length).toBe(2);
+  });
+
+  it('BY8: while the cloud holds a set this version cannot read, a change on the device is not saved', () => {
+    const state = TestBed.inject(BoardSyncState);
+    signIn(ANNA, { ...textsOf(NEWER_SET) });
+    expect(boards.stored()).toBeNull();
+    expect(state.unreadable()).toBe(true);
+    change(withMoreCells(1));
+    expect(cloud.saves).toEqual([]);
+    expect(cloud.fills).toEqual([]);
+
+    // Once the cloud reports a set this version can read, the device takes it and saves changes again.
+    cloud.report(ANNA.id, { ...textsOf(CARE_SET) });
+    TestBed.tick();
+    expect(boards.stored()).toEqual(textsOf(CARE_SET));
+    expect(state.unreadable()).toBe(false);
+    change(withMoreCells(2));
+    expect(cloud.saves).toEqual([{ accountId: ANNA.id, fields: { ...textsOf(withMoreCells(2)) } }]);
+  });
+
+  it('BY9: a change made before the first report of the cloud is not saved over the set of the account', () => {
+    source.report(ANNA);
+    TestBed.tick();
+    const added = withMoreCells(1);
+    change(added);
+    expect(cloud.saves).toEqual([]);
+
+    // The cloud then says that the account has no set, so the set of the device fills it.
+    cloud.report(ANNA.id, null);
+    TestBed.tick();
+    expect(cloud.fills).toEqual([{ accountId: ANNA.id, fields: { ...textsOf(added) } }]);
+    expect(cloud.saves).toEqual([]);
   });
 });

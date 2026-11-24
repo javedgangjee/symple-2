@@ -184,6 +184,11 @@ h3 {
   font-weight: 600;
 }
 
+/* The line that says why the boards are not synced. It is a row of the card with no control. */
+.sync-notice {
+  margin: 0;
+}
+
 .val {
   color: var(--quiet);
   text-align: right;

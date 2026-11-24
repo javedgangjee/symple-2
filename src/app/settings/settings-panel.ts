@@ -25,6 +25,7 @@ import {
   TIME_LIMITS,
 } from '../scan/scan-settings';
 import { Speech } from '../speech/speech';
+import { BoardSyncState } from '../sync/board-sync-state';
 import { VOICE_RANGES, VoiceSettings } from '../speech/voice-settings';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { THEME_NAMES, Theme, ThemeName } from '../theme/theme';
@@ -145,6 +146,7 @@ export class SettingsPanel {
   private readonly router = inject(Router);
   private readonly boards = inject(BoardData);
   private readonly edit = inject(EditMode);
+  protected readonly boardSync = inject(BoardSyncState);
   protected readonly scan = inject(ScanSettings);
   protected readonly voice = inject(VoiceSettings);
 

@@ -150,6 +150,8 @@ The sync and the sign out, in `src/app/sync/board-sync.spec.ts` and `src/app/aut
 | BY4 | A cell is added on the device. | One save holds the fields `tiles` and `boards` with the whole set. |
 | BY5 | The cloud reports a document whose `boards` field is not JSON. | The device keeps its set, and nothing is saved back. |
 | BY6 | Two changes are made on the device, and the cloud reports the set from before them while the saves are unanswered. | The device keeps its newest set. |
+| BY8 | The cloud reports a set in which each board has a field this version does not know, and a cell is then added on the device. The cloud then reports a set this version can read, and a second cell is added. This covers the first case of finding 2 of review.md, the save over a newer version's set. | The first change is not saved, and the sync says that the set of the cloud cannot be read. The device takes the readable set, and the second change is one save. |
+| BY9 | The caregiver is signed in, the cloud has not reported yet, and a cell is added. The cloud then reports no boards document. This covers the second case of finding 2 of review.md, the save before the first report. | Nothing is saved before the report. After it, the set of the device is saved only if the cloud still lacks one. |
 | BY7 | The settings sync is given a document with a `layout` field. | The field is not used and not saved. |
 | AU1 | A set is stored, and the caregiver signs out. | `symple.tiles` and `symple.boards` are removed. |
 

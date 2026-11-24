@@ -98,6 +98,13 @@
                 <!-- Lucide chevron-right. -->
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
               </button>
+              <!-- The board sync saves nothing while the account holds a set from a newer version. -->
+              @if (boardSync.unreadable()) {
+                <p class="row sync-notice">
+                  A newer version of Symple saved the boards of this account. Changes made here stay
+                  on this device. Update the app to sync them.
+                </p>
+              }
             </div>
           </div>
         </section>

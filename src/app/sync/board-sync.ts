@@ -2,6 +2,7 @@ import { Injectable, effect, inject, untracked } from '@angular/core';
 import { Auth } from '../auth/auth';
 import { HOME_BOARD_ID, loadBoards } from '../boards/board-data';
 import { BoardStore, BoardTexts } from '../boards/board-store';
+import { BoardSyncState } from './board-sync-state';
 import { CLOUD_STORE, CloudDocument } from './cloud-store';
 
 /** Reads one text of the cloud as a list. It gives nothing for a text that is not a JSON list. */
@@ -57,6 +58,8 @@ function sameTexts(a: BoardTexts | null, b: BoardTexts | null): boolean {
  * Keeps the stored set of boards in step with the boards document of the account,
  * `users/{uid}/data/boards`. The document holds the set as the two texts `tiles` and `boards`.
  * A set in the cloud replaces the set of the device, and a change on the device saves the whole set.
+ * A change is saved only once the document of the account has been handled, so the set of the
+ * device never goes over a set that the device did not take.
  * When two devices change their boards with no network, the last save wins.
  * The service starts when it is made and runs until the app ends.
  */
@@ -65,6 +68,14 @@ export class BoardSync {
   private readonly auth = inject(Auth);
   private readonly cloud = inject(CLOUD_STORE);
   private readonly boards = inject(BoardStore);
+  private readonly state = inject(BoardSyncState);
+
+  /**
+   * The account whose boards document has been handled: the device took its set, or the cloud
+   * itself said that it holds none. Until then, and while the document holds a set that this
+   * version cannot read, a change on the device is not saved.
+   */
+  private handled: string | null = null;
 
   /**
    * The stored set when the sync last looked. A stored set that differs from it was changed
@@ -86,6 +97,8 @@ export class BoardSync {
     // The boards document of the account is watched from sign in to sign out.
     effect((onCleanup) => {
       const account = this.auth.account();
+      this.handled = null;
+      untracked(() => this.state.unreadable.set(false));
       if (!account) {
         return;
       }
@@ -102,7 +115,7 @@ export class BoardSync {
       const changed = stored !== null && !sameTexts(stored, this.seen);
       this.seen = stored;
       const account = untracked(this.auth.account);
-      if (changed && account) {
+      if (changed && account && this.handled === account.id) {
         this.save(account.id, stored);
       }
     });
@@ -125,11 +138,22 @@ export class BoardSync {
       return;
     }
     // A set this version cannot read is left alone, so a newer version's set is not lost.
+    // The device then saves nothing until the cloud reports a set that it can read.
     const texts = document.fields && readableSet(document.fields);
     if (texts && this.boards.saveTexts(texts)) {
       // The set came from the cloud, so it is not saved back.
       this.seen = this.boards.stored();
+      this.handle(accountId);
+    } else {
+      this.handled = null;
+      this.state.unreadable.set(true);
     }
+  }
+
+  /** The document of an account was handled, so the changes of the device are saved from now on. */
+  private handle(accountId: string): void {
+    this.handled = accountId;
+    this.state.unreadable.set(false);
   }
 
   /**
@@ -138,8 +162,12 @@ export class BoardSync {
    * store asks the cloud once more before it writes. A device with nothing stored saves nothing.
    */
   private fill(accountId: string, fromCloud: boolean): void {
+    if (!fromCloud) {
+      return;
+    }
+    this.handle(accountId);
     const stored = this.boards.stored();
-    if (fromCloud && stored) {
+    if (stored) {
       this.cloud.saveIfMissing(accountId, 'boards', fieldsOf(stored)).catch(() => undefined);
     }
   }
