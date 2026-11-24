@@ -378,23 +378,16 @@ function reachable(set: BoardSet): Set<string> {
   return seen;
 }
 
-/**
- * Whether the caregiver can remove the cell that shows this tile. The Back cell stays, and so
- * does a cell that opens a locked board. `isLocked` says whether the board with an id is locked.
- */
-export function canRemove(tile: Tile, isLocked: (boardId: string) => boolean): boolean {
-  if (tile.action?.type === 'back') {
-    return false;
-  }
-  return tile.action?.type !== 'open' || !isLocked(tile.action.board);
+/** Whether the caregiver can remove the cell that shows this tile. The Back cell stays. */
+export function canRemove(tile: Tile): boolean {
+  return tile.action?.type !== 'back';
 }
 
 /** The set with one cell taken out, before the boards and the tiles that go with it are dropped. */
 function withoutCell(set: BoardSet, boardId: string, at: CellPosition): BoardSet | undefined {
   const board = editable(set, boardId);
   const tile = tileAt(set, boardId, at);
-  const isLocked = (id: string) => boardOf(set, id)?.locked === true;
-  if (!board || !tile || !canRemove(tile, isLocked)) {
+  if (!board || !tile || !canRemove(tile)) {
     return undefined;
   }
   const groups = board.groups.map((group, g) =>
@@ -417,7 +410,7 @@ export function removedWith(set: BoardSet, boardId: string, at: CellPosition): R
 
 /**
  * Removes the cell at a place. A cell that opens a board takes that board with it, and every
- * board that can only be reached through it. The Back cell and a cell that opens a locked board stay.
+ * board that can only be reached through it, locked or not. The Back cell stays.
  */
 export function removeCell(set: BoardSet, boardId: string, at: CellPosition): BoardSet {
   const without = withoutCell(set, boardId, at);

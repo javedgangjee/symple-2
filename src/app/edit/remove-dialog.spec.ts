@@ -97,4 +97,21 @@ describe('RemoveDialog', () => {
     expect(data.board('home')?.groups.map((group) => group.cells.length)).toEqual([1, 2]);
     expect(data.board('needs')).toBeDefined();
   });
+
+  it('RD3: Remove Keyboards on home names Keyboards, a locked board, and says that 5 boards and their cells go', async () => {
+    edit = TestBed.inject(EditMode);
+    edit.start();
+    edit.show('home');
+    fixture = TestBed.createComponent(RemoveDialog);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    edit.open({ kind: 'remove', at: { group: 1, cell: 1 } });
+    await fixture.whenStable();
+    element = fixture.nativeElement;
+
+    expect(element.querySelector('#remove-title')?.textContent?.trim()).toBe('Remove Keyboards?');
+    expect(element.querySelector('#remove-text')?.textContent?.trim()).toMatch(
+      /^5 boards and their \d+ cells will be removed\.$/,
+    );
+  });
 });

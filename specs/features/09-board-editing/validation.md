@@ -51,7 +51,7 @@ The changes to a set, in `src/app/edit/board-edits.spec.ts`:
 | BE7 | A cell that opens the board Food is renamed "Meals". | The tile reads "Meals", and the board Food has the title "Meals". |
 | BE8 | A cell that speaks is removed. | The cell is gone, and so is its tile, which no cell uses. |
 | BE9 | The cell that opens My boards is removed from home. | My boards and the eight boards that only it reaches are gone, with their tiles. The Back tile stays. |
-| BE10 | The cell that opens Keyboards, a locked board, is removed. | The set does not change. |
+| BE10 | The cell that opens Keyboards, a locked board, is removed from home. | Keyboards and the four keyboards that only it reaches are gone, with their tiles. |
 | BE11 | The Back cell of Needs is removed, and in a second run edited. | The set does not change in either run. |
 | BE12 | The second cell of the first group moves to the first place of the third group. | It is there, and the cells of both groups keep their order otherwise. |
 | BE13 | A cell moves to the place of a cell in a group that is marked as having no room. | The two cells trade places. |
@@ -81,7 +81,7 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES3 | Edit mode is on over home. | The cell My boards has a button named "Open My boards", and a press on it opens that board with edit mode still on. |
 | ES4 | Edit mode is on over Needs. | The Back cell has "Go back", and no Edit or Remove button. |
 | ES5 | "Remove Help" is pressed. | Help is gone, the status line reads "Help removed", and the focus is on the Remove button of the next cell. |
-| ES6 | Edit mode is on over home. | The cell Keyboards has no Remove button. |
+| ES6 | Edit mode is on over home. | The cell Keyboards, which opens a locked board, has "Edit Keyboards", "Open Keyboards" and "Remove Keyboards". |
 | ES7 | A board has an empty group, and edit mode is off. | The group shows a button named "Add Tile" that carries `data-caregiver-control` and is not a tab stop. A press turns edit mode on and opens the tile dialog. |
 | ES8 | Edit mode is on, and a group is empty. | The group shows "Add Tile" and "Remove column". |
 | ES9 | A press on Help, and then a press on Pain. | Help takes the place of Pain, the slot of Help carried `data-picked` in between, the status line tells the new place, and the focus is on "Edit Help". |
@@ -90,6 +90,7 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES14 | Needs is on show, and the set changes so that the cell on home that opens Needs is removed. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
 | ES15 | The mode is `step`, the scan highlights the first group of Needs, and the board Food is renamed in the set. This covers finding 3 of review.md, the scan that goes to rest on any change of the set. | The scan still highlights the first group. |
 | ES16 | Needs has an empty fourth column. A press on Help, and then on Add Tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add Tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
+| ES17 | Edit mode is on over home, and "Open Keyboards" is pressed. | The Keyboards list opens, and edit mode is off once that locked board is on show. |
 
 ES11 and ES12 tested the arrow keys on the Move button of a cell. They were removed with the button on 2026-11-23.
 
@@ -128,6 +129,7 @@ The dialogs, in `tile-dialog.spec.ts`, `remove-dialog.spec.ts` and `board-dialog
 | TD8 | Cancel is pressed, and in a second run Escape. | The dialog is closed each time, the set did not change, and the focus is back on the button that opened the dialog. |
 | RD1 | "Remove My boards" is pressed on home. | A dialog names My boards and says that 9 boards and their cells will be removed. Cancel leaves the set as it was. |
 | RD2 | Remove is pressed in that dialog. | The boards are gone. |
+| RD3 | "Remove Keyboards" is pressed on home. | A dialog names Keyboards, a locked board, and says that 5 boards and their cells will be removed. |
 | BG1 | Configure Board is pressed over Needs. | A dialog shows the title "Needs" and the layout Columns as chosen. |
 | BG2 | Rows is chosen and Save is pressed. | The board has the rows layout, and the grid carries `data-layout="rows"`. |
 
@@ -180,7 +182,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED13 | Edit mode is on over home, on Needs and in the tile dialog, in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
 | ED14 | Edit mode is on, and the tile dialog is open, with the Needs board behind. | Each label keeps 4.5 to 1, and the border of each edit button and each control keeps 3 to 1. |
 | ED15 | Edit mode is on. | Every edit button, footer button and dialog control is at least 48px high and wide. |
-| ED16 | Edit boards is pressed on the QWERTY keyboard. | Home is on show in edit mode. The Keyboards cell has no Remove button and no Open button. |
+| ED16 | Edit boards is pressed on the QWERTY keyboard. | Home is on show in edit mode. The Keyboards cell has an Edit, an Open and a Remove button. |
 | ED17 | In edit mode, ten scan times pass, and Tab and Enter are pressed. | No group and no cell is highlighted. Tab moves the focus through the edit buttons in the order of the cells and then to the footer. |
 | ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The scan never lands on the Add Tile button of the empty column. |
 | ED19 | Reduced motion is asked for, and a cell is moved with two presses. | No cell is animated. |

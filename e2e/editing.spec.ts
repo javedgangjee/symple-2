@@ -388,7 +388,7 @@ test('ED15: every edit button, footer button and dialog control is at least 48px
   expect(await smallControls(sheet(page), controls)).toEqual([]);
 });
 
-test('ED16: Edit boards on the QWERTY keyboard opens home in edit mode, where Keyboards has no Remove and no Open button', async ({
+test('ED16: Edit boards on the QWERTY keyboard opens home in edit mode, where Keyboards has Edit, Open and Remove buttons', async ({
   page,
 }) => {
   await openBoard(page, 'keyboard');
@@ -397,10 +397,8 @@ test('ED16: Edit boards on the QWERTY keyboard opens home in edit mode, where Ke
   await expect(title(page)).toHaveText('Home');
   await expect(footerButtons(page)).toHaveText(ACTIONS);
   await expect(tool(page, 'Edit Keyboards')).toBeVisible();
-  await expect(tool(page, 'Remove Keyboards')).toHaveCount(0);
-  await expect(tool(page, 'Open Keyboards')).toHaveCount(0);
-  await expect(tool(page, 'Remove Needs')).toBeVisible();
-  await expect(tool(page, 'Open Needs')).toBeVisible();
+  await expect(tool(page, 'Open Keyboards')).toBeVisible();
+  await expect(tool(page, 'Remove Keyboards')).toBeVisible();
 });
 
 test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit buttons in the order of the cells and then the footer', async ({
@@ -413,7 +411,7 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
   // A press on the title puts the start of the tab order before the first edit button.
   await title(page).click();
   const visited: string[] = [];
-  for (let pressCount = 0; pressCount < 12; pressCount++) {
+  for (let pressCount = 0; pressCount < 14; pressCount++) {
     await switchKey(page, 'Tab');
     visited.push(
       await page.evaluate(() => {
@@ -433,6 +431,8 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
     'Open Quick phrases',
     'Remove Quick phrases',
     'Edit Keyboards',
+    'Open Keyboards',
+    'Remove Keyboards',
     'Add column',
     'Add Board',
   ]);

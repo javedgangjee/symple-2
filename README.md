@@ -41,7 +41,7 @@ The caregiver changes the settings in the settings panel. The settings button in
 
 ## Board editing
 
-The caregiver changes the boards in edit mode. Open the settings panel and press Edit boards in the Boards category. Each cell then shows an Edit and a Remove button, and the footer shows Add Board, Add Tile, Configure Board and Done. Add column is the dashed box with a plus beside the grid. A cell moves with a pointer only, by a drag or by a press on it and then on a second cell. The keyboard cannot move a cell. Board settings holds the title of the board and its layout of columns or rows. Each change applies at once, and Done ends edit mode. The keyboards cannot be edited.
+The caregiver changes the boards in edit mode. Open the settings panel and press Edit boards in the Boards category. Each cell then shows an Edit and a Remove button, and the footer shows Add Board, Add Tile, Configure Board and Done. Add column is the dashed box with a plus beside the grid. A cell moves with a pointer only, by a drag or by a press on it and then on a second cell. The keyboard cannot move a cell. Board settings holds the title of the board and its layout of columns or rows. Each change applies at once, and Done ends edit mode. The keyboards cannot be edited, so edit mode ends when one comes on show. The Keyboards cell on home can still be edited, opened and removed like any cell that opens a board.
 
 Once a board has changed, the whole set of boards is kept in the local storage of the browser under `symple.boards` and `symple.tiles`, and it syncs to the account. A sign out removes it from the device.
 

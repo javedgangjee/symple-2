@@ -370,7 +370,6 @@ export class BoardScreen {
 
   private slotOf({ key, cell }: KeyedCell, cells: readonly KeyedCell[]): Slot {
     const { tile } = cell;
-    const isLocked = (id: string) => this.data.board(id)?.locked === true;
     const opened = tile.action?.type === 'open' ? tile.action.board : null;
     return {
       key,
@@ -381,8 +380,8 @@ export class BoardScreen {
       ),
       name: tile.name ?? tile.label,
       canEdit: fieldsOf(tile) !== undefined,
-      canRemove: canRemove(tile, isLocked),
-      opens: opened !== null && !isLocked(opened) ? opened : null,
+      canRemove: canRemove(tile),
+      opens: opened,
       isBack: tile.action?.type === 'back',
     };
   }

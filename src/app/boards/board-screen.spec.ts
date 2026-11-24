@@ -784,10 +784,22 @@ describe('BoardScreen', () => {
       expect(focused()).toBe('Remove Pain');
     });
 
-    it('ES6: the cell Keyboards, which opens a locked board, has no Remove button', async () => {
+    it('ES6: the cell Keyboards, which opens a locked board, has Edit, Open and Remove buttons', async () => {
       await drawBoard('home');
-      expect(toolNames(slotOf('Keyboards'))).toEqual(['Edit Keyboards']);
-      expect(toolNames(slotOf('Needs'))).toContain('Remove Needs');
+      expect(toolNames(slotOf('Keyboards'))).toEqual([
+        'Edit Keyboards',
+        'Open Keyboards',
+        'Remove Keyboards',
+      ]);
+    });
+
+    it('ES17: Open Keyboards opens that locked board, and edit mode is off once it is on show', async () => {
+      await drawBoard('home');
+      await press('Open Keyboards');
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/board/keyboards'));
+      fixture.componentRef.setInput('id', 'keyboards');
+      await fixture.whenStable();
+      expect(edit.isOn()).toBe(false);
     });
 
     it('ES7: out of edit mode an empty group shows an Add Tile button, which turns edit mode on and opens the tile dialog', async () => {

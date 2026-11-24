@@ -235,9 +235,14 @@ describe('The changes to a set', () => {
     expect(set.tiles.some((item) => item.id === 'back')).toBe(true);
   });
 
-  it('BE10: the cell that opens Keyboards, a locked board, is not removed', () => {
+  it('BE10: the cell that opens Keyboards, a locked board, is removed with the five boards that only it reaches', () => {
     expect(board(BUILT_IN, 'keyboards').locked).toBe(true);
-    expect(PRODUCED['BE10']()).toBe(BUILT_IN);
+    const set = PRODUCED['BE10']();
+    const gone = ['keyboards', 'keyboard', 'keyboard-abc', 'keyboard-vowels', 'keyboard-numbers'];
+    const ids = (from: BoardSet) => from.boards.map((item) => item.id);
+    expect(ids(set)).toEqual(ids(BUILT_IN).filter((id) => !gone.includes(id)));
+    expect(layout(set, 'home')).toEqual([['my-boards', 'needs'], ['quick-phrases']]);
+    expect(set.tiles.some((item) => item.id === 'keyboards' || item.id === 'key-q')).toBe(false);
   });
 
   it('BE11: the Back cell of Needs is not removed and not edited', () => {
