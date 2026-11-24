@@ -179,6 +179,7 @@
     }
   </div>
   <!-- Add column lies in the margin beside the grid, so the grid keeps its place and its size. -->
+  <!-- In the rows layout it is Add row and lies under the grid, where the new row goes. -->
   <!-- With no room for a group it stays in the tab order, says that it is disabled and why, and does nothing. -->
   @if (editing) {
     @let groupsFull = !room.forGroup();
@@ -186,6 +187,7 @@
     <button
       class="add-group"
       type="button"
+      [attr.data-layout]="layout()"
       [attr.aria-label]="addGroupName"
       [attr.aria-disabled]="groupsFull"
       [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"

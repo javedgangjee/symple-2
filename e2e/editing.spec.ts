@@ -64,6 +64,17 @@ async function edit(page: Page, id: string, stored = {}): Promise<void> {
   await startEditing(page);
 }
 
+/** The box of an element on the page. */
+async function boxOf(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error('The element is not on the page.');
+  }
+  return box;
+}
+
 /** The middle of a cell. A cell is inert in edit mode, so a test presses and drags it by its place. */
 async function middleOf(page: Page, name: string): Promise<{ x: number; y: number }> {
   const box = await page.locator(`main app-cell button[aria-label="${name}"]`).boundingBox();
@@ -277,6 +288,12 @@ test('ED10: the rows layout of Needs holds after a reload, and home is still dra
   await sheet(page).getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('main .grid')).toHaveAttribute('data-layout', 'rows');
   await expect(addGroup(page, 'Add row')).toBeVisible();
+  // Add row lies under the grid, where the new row goes, and inside the window.
+  const gridBox = await boxOf(page.locator('main .grid'));
+  const rowBox = await boxOf(addGroup(page, 'Add row'));
+  expect(rowBox.y).toBeGreaterThanOrEqual(gridBox.y + gridBox.height);
+  expect(rowBox.width).toBeCloseTo(gridBox.width, 0);
+  expect(rowBox.y + rowBox.height).toBeLessThanOrEqual(page.viewportSize()?.height ?? 0);
   await editAction(page, 'Done').click();
   await expect(page.locator('main .tool')).toHaveCount(0);
   expectDirection(await measure(page), 'rows');
@@ -296,6 +313,20 @@ test('ED11: Add column gives the board four columns, and Remove column on the ne
   await expect(page.locator('main .group')).toHaveCount(4);
   await page.locator('main .group').nth(3).getByRole('button', { name: 'Remove column' }).click();
   await expect(page.locator('main .group')).toHaveCount(3);
+});
+
+test('ED20: on a window 768px wide, Add column lies beside the grid and inside the window', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await edit(page, 'needs');
+  const gridBox = await boxOf(page.locator('main .grid'));
+  const addBox = await boxOf(addGroup(page));
+  expect(addBox.x).toBeGreaterThanOrEqual(gridBox.x + gridBox.width);
+  // The focus ring is 3px wide and lies 1px outside the box. The places are not whole pixels,
+  // so half a pixel is allowed.
+  expect(addBox.x + addBox.width + 4).toBeLessThanOrEqual(768.5);
+  expect(addBox.width).toBeGreaterThanOrEqual(48);
 });
 
 test('ED12: when Add column says it is disabled, no cell of the board is under 48px', async ({

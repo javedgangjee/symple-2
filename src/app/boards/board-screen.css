@@ -178,11 +178,15 @@
 /* page, as high as the grid, and takes no room from the grid. The margin is 4 parts in 100 of */
 /* the page beside the 92 of the screen, and the padding of the page lies beyond it. The box */
 /* sits in the middle of the two. */
+:host {
+  --margin: calc(100% * 4 / 92 + var(--pad));
+}
+
 .add-group {
   position: absolute;
   top: 0;
+  right: calc(max(4px, (var(--margin) - 48px) / 2) - var(--margin));
   bottom: 0;
-  left: calc(100% + max(4px, (100% * 4 / 92 + var(--pad) - 48px) / 2));
   display: grid;
   place-items: center;
   width: 48px;
@@ -193,6 +197,32 @@
   color: var(--ink);
   cursor: pointer;
   transition: background-color 160ms var(--ease);
+}
+
+/* On a narrow window the margin is too small for the box. The grid then gives up the room that */
+/* is missing, in edit mode only, so the box and its focus ring stay inside the window. */
+:host:has(.add-group[data-layout='columns']) {
+  padding-right: max(0px, 56px - var(--margin));
+}
+
+/* The box has 4px on each side of it at the least, so its focus ring lies closer than that of the other buttons. */
+.add-group:focus-visible {
+  outline-offset: 1px;
+}
+
+/* In the rows layout the new group is a row at the bottom, so the box is Add row and lies */
+/* under the grid, as wide as the grid. The page has no margin there, so the grid gives up the */
+/* height of the box in edit mode. */
+.add-group[data-layout='rows'] {
+  top: auto;
+  right: 0;
+  left: 0;
+  width: auto;
+  height: 48px;
+}
+
+.grid[data-layout='rows'][data-editing] {
+  margin-bottom: calc(48px + var(--gap));
 }
 
 .add-group:hover {

@@ -176,7 +176,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED6 | Remove Pain is pressed. | Pain is gone, and it is still gone after a reload. |
 | ED7 | Help is dragged from the first column to the top of the third. | Help is the first cell of the third column, and the order holds after a reload. |
 | ED8 | Help is pressed, and then Pain. | Help is in the place of Pain, and the focus is on "Edit Help". |
-| ED10 | Configure Board is pressed, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Home is still drawn in columns. |
+| ED10 | Configure Board is pressed, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Add row lies under the grid, as wide as the grid and inside the window. Home is still drawn in columns. |
 | ED11 | Add column is pressed, and then Remove column on the new group. | The board has four columns, and then three. |
 | ED12 | Add column is pressed until it says it is disabled. | No cell of the board is under 48px wide or high. |
 | ED13 | Edit mode is on over home, on Needs and in the tile dialog, in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
@@ -185,6 +185,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED16 | Edit boards is pressed on the QWERTY keyboard. | Home is on show in edit mode. The Keyboards cell has an Edit, an Open and a Remove button. |
 | ED17 | In edit mode, ten scan times pass, and Tab and Enter are pressed. | No group and no cell is highlighted. Tab moves the focus through the edit buttons in the order of the cells and then to the footer. |
 | ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The scan never lands on the Add Tile button of the empty column. |
+| ED20 | The window is 768px wide and 1024px high, and edit mode is on over Needs. | Add column lies to the right of the grid, is at least 48px wide, and lies inside the window with its focus ring. |
 | ED19 | Reduced motion is asked for, and a cell is moved with two presses. | No cell is animated. |
 
 ED9 tested the arrow keys on the Move button of a cell. It was removed with the button on 2026-11-23.
