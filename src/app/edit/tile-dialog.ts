@@ -427,9 +427,17 @@ export class TileDialog {
     ];
   });
 
-  /** The picture of the cell as an entry of the list, with its name from the lists when they have it. */
+  /**
+   * The picture that leads the list. It is the picture of the cell when the dialog opens, and the
+   * chosen picture when the text or the kind changes. A pick does not change it, so a picture
+   * that is picked keeps its place. If it moved to the top, an arrow key would move the focus
+   * out of the list and could not go past the second picture.
+   */
+  private readonly lead = signal<Picture | undefined>(undefined);
+
+  /** The picture that leads the list as an entry of the list, with its name from the lists when they have it. */
   private readonly chosen = computed((): PictureOption | undefined => {
-    const picture = this.picture();
+    const picture = this.lead();
     if (!picture) {
       return undefined;
     }
@@ -441,7 +449,7 @@ export class TileDialog {
   protected readonly chosenKey = computed(() => keyOf(this.picture()));
 
   /**
-   * What the list draws. The picture of the cell comes first when it is of the kind on show,
+   * What the list draws. The picture that leads the list comes first when it is of the kind on show,
    * whatever the box holds. When it matches it is one of the matches that are drawn and counted;
    * when it does not, it is drawn in addition and not counted. Then come the matches, up to the limit.
    */
@@ -538,6 +546,7 @@ export class TileDialog {
   protected setQuery(text: string): void {
     this.query.set(text);
     this.limit.set(PAGE);
+    this.lead.set(this.picture());
   }
 
   /**
@@ -551,6 +560,7 @@ export class TileDialog {
     if (this.kind() === 'open' && last) {
       this.picture.set(last);
     }
+    this.lead.set(this.picture());
   }
 
   protected pick(picture: Picture | undefined): void {
@@ -640,6 +650,7 @@ export class TileDialog {
     this.style.set(start.kind === 'open' ? start.style : NEW_BOARD.style);
     const picture = start.picture;
     this.picture.set(picture);
+    this.lead.set(picture);
     this.lastOfKind = picture ? { [picture.kind]: picture } : {};
     // A cell that speaks starts on Symbols and a cell that opens a board on Icons, unless it has a picture.
     this.view.set(picture?.kind ?? (start.kind === 'open' ? 'icon' : 'symbol'));
