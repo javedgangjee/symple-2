@@ -119,7 +119,7 @@
     <fieldset class="grow">
       <legend>Picture</legend>
       <div class="kinds" role="radiogroup" aria-label="Kind of picture">
-        @for (item of kinds(); track item.value) {
+        @for (item of kinds; track item.value) {
           <label>
             <input
               type="radio"

@@ -415,17 +415,11 @@ export class TileDialog {
     },
   );
 
-  /** The two choices of kind, each with the number of its pictures that match, once known. */
-  protected readonly kinds = computed(() => {
-    const loaded = this.lists() !== null;
-    const matches = this.matches();
-    const name = (word: string, kind: PictureKind) =>
-      loaded ? `${word} (${COUNT.format(matches[kind].length)})` : word;
-    return [
-      { value: 'symbol' as const, label: name('Symbols', 'symbol') },
-      { value: 'icon' as const, label: name('Icons', 'icon') },
-    ];
-  });
+  /** The two choices of kind. */
+  protected readonly kinds: readonly { value: PictureKind; label: string }[] = [
+    { value: 'symbol', label: 'Symbols' },
+    { value: 'icon', label: 'Icons' },
+  ];
 
   /**
    * The picture that leads the list. It is the picture of the cell when the dialog opens, and the

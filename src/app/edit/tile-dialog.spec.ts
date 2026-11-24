@@ -244,7 +244,7 @@ describe('TileDialog', () => {
     expect(element.querySelector('button.more')).toBeNull();
   });
 
-  it('TD12: apple is typed and Icons is chosen, and the box keeps apple and each choice shows its matches', async () => {
+  it('TD12: apple is typed and Icons is chosen, and the box keeps apple and the choices show no number', async () => {
     await open({ kind: 'add-tile' });
     await type('#tile-find', 'apple');
     await pickKind('Icons');
@@ -252,8 +252,8 @@ describe('TileDialog', () => {
     expect(one<HTMLInputElement>('#tile-find').value).toBe('apple');
     expect(listed()).toContain('apple');
     const [symbols, icons] = kindLabels();
-    expect(symbols).toMatch(/^Symbols \(\d+\)$/);
-    expect(icons).toMatch(/^Icons \(\d+\)$/);
+    expect(symbols).toBe('Symbols');
+    expect(icons).toBe('Icons');
   });
 
   it('TD13: the icon apple is picked in Add Tile, and the preview draws it and Add emits lucide:apple', async () => {

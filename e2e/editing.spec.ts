@@ -113,7 +113,7 @@ const countLine = (page: Page) => sheet(page).locator('#tile-picture-count');
 /** The list of pictures of the tile dialog, which scrolls. */
 const pictureList = (page: Page) => sheet(page).locator('#tile-pictures');
 
-/** The choice of Symbols or Icons, which reads "Symbols (3,437)" once the lists have loaded. */
+/** The choice of Symbols or Icons. */
 const pictureKind = (page: Page, kind: 'Symbols' | 'Icons') =>
   sheet(page)
     .locator('.kinds label')

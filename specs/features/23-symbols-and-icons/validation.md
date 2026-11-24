@@ -108,7 +108,7 @@ The tile dialog, in `src/app/edit/tile-dialog.spec.ts`:
 | TD9 | Add Tile is pressed with an empty box. | The list holds "No picture" and 60 symbols, a line reads "Showing 60 of 3,437", and Show more is on show. |
 | TD10 | After case TD9, Show more is pressed. | The list holds 120 symbols, and the line reads "Showing 120 of 3,437". |
 | TD11 | "advent" is typed. | The line gives the number of matches, and Show more is not on show. |
-| TD12 | "apple" is typed, and Icons is chosen. | The box still holds "apple", the list holds the icon "apple", and each of the two choices shows its number of matches. |
+| TD12 | "apple" is typed, and Icons is chosen. | The box still holds "apple", the list holds the icon "apple", and the two choices read "Symbols" and "Icons" with no number. The user removed the numbers on 2026-11-24. |
 | TD13 | The icon "apple" is picked in Add Tile. | The preview draws the icon on the plate, and Add emits the icon `lucide:apple`. |
 | TD14 | In Add Board, Symbols is chosen and "dog" is picked. | The Style field is gone, the preview draws the symbol, and Add emits the symbol `dog.svg`. |
 | TD15 | In Add Board, Icons is chosen again after case TD14. | The Style field is back. |
