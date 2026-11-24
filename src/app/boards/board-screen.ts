@@ -96,22 +96,14 @@ interface Grip {
   readonly dy: number;
 }
 
-/** The edit button that takes the focus after a change, at the place of a cell. */
+/**
+ * The edit button that takes the focus after a change, at the place of a cell. With no tool
+ * named, the first edit button of the cell takes it.
+ */
 interface FocusAsk {
   readonly at: CellPosition;
-  readonly tool: 'edit' | 'move' | 'remove';
+  readonly tool?: 'edit' | 'remove';
 }
-
-/**
- * The arrow keys that move a cell while its Move button has the focus. Each gives the step
- * across the groups and the step along the cells of a group, as the columns layout has them.
- */
-const ARROWS: Readonly<Record<string, readonly [across: number, along: number]>> = {
-  ArrowLeft: [-1, 0],
-  ArrowRight: [1, 0],
-  ArrowUp: [0, -1],
-  ArrowDown: [0, 1],
-};
 
 /** The share of a cell with no size in a group of these cells. A new cell takes it too. */
 function shareWithNoSize(cells: readonly Cell[]): number {
@@ -591,7 +583,7 @@ export class BoardScreen {
   protected removeGroupAt(group: number): void {
     this.data.change((set) => removeGroup(set, this.id(), group));
     this.edit.tell(`${this.groupKind()} ${group + 1} removed`);
-    this.focusAsk.set({ at: { group: Math.max(0, group - 1), cell: 0 }, tool: 'move' });
+    this.focusAsk.set({ at: { group: Math.max(0, group - 1), cell: 0 } });
   }
 
   /**
@@ -698,10 +690,10 @@ export class BoardScreen {
   }
 
   /**
-   * A press on a cell in edit mode, or on its Move button. The first press picks the cell up.
+   * A press on a cell in edit mode. The first press picks the cell up.
    * A press on a second cell puts the first in its place, and a press on the same cell puts it back.
    */
-  protected pressSlot(at: CellPosition): void {
+  private pressSlot(at: CellPosition): void {
     const held = this.picked();
     if (!held) {
       this.picked.set(at);
@@ -712,7 +704,7 @@ export class BoardScreen {
     const noRoom = held.group !== at.group && !this.room.forCell(at.group);
     const landed = this.move(held, at, noRoom);
     if (landed) {
-      this.focusAsk.set({ at: landed, tool: 'move' });
+      this.focusAsk.set({ at: landed });
     }
   }
 
@@ -738,34 +730,6 @@ export class BoardScreen {
     if (held && !this.edit.dialog()) {
       this.picked.set(null);
       this.edit.tell(`${this.nameAt(held)} put back`);
-    }
-  }
-
-  /**
-   * An arrow key on a Move button moves its cell. In the columns layout Up and Down move it in
-   * its group, and Left and Right move it to the next group. In the rows layout the pairs swap.
-   */
-  protected onMoveKey(event: KeyboardEvent, at: CellPosition): void {
-    const step = ARROWS[event.key];
-    if (!step || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
-      return;
-    }
-    event.preventDefault();
-    const [across, along] = this.layout() === 'rows' ? [step[1], step[0]] : step;
-    const sizes = this.groupSizes();
-    const group = at.group + across;
-    const cell = at.cell + along;
-    if (group < 0 || group >= sizes.length || cell < 0 || cell >= sizes[at.group]) {
-      return;
-    }
-    if (group !== at.group && !this.room.forCell(group)) {
-      this.edit.tell(`${this.groupKind()} ${group + 1} is full`);
-      return;
-    }
-    this.picked.set(null);
-    const landed = this.move(at, { group, cell: Math.min(cell, sizes[group]) });
-    if (landed) {
-      this.focusAsk.set({ at: landed, tool: 'move' });
     }
   }
 
@@ -860,19 +824,19 @@ export class BoardScreen {
   }
 
   /**
-   * Puts the focus on an edit button of the cell at a place. A cell without that button gives
-   * its first one, and a group with no cell there gives its Add Tile button.
+   * Puts the focus on an edit button of the cell at a place. A cell without that button, or an
+   * ask that names no button, gives its first one, and a group with no cell there gives its Add
+   * Tile button.
    */
   private focusTool(grid: HTMLElement, { at, tool }: FocusAsk): void {
     const group = grid.querySelectorAll(':scope > .group')[at.group];
     const slot = group?.querySelectorAll(':scope > .slot')[at.cell];
     const target =
-      slot?.querySelector(`.tool.${tool}`) ??
+      (tool && slot?.querySelector(`.tool.${tool}`)) ??
       slot?.querySelector('.tool') ??
       group?.querySelector('.add-tile');
     if (target instanceof HTMLElement) {
-      // The Move button shows only while the keyboard has put the focus on it.
-      target.focus({ preventScroll: true, focusVisible: tool === 'move' });
+      target.focus({ preventScroll: true });
     }
   }
 

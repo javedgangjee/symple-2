@@ -108,8 +108,7 @@
   stroke-linejoin: round;
 }
 
-.tool:hover,
-.move[aria-pressed='true'] {
+.tool:hover {
   background: var(--ink);
   color: var(--light);
 }
@@ -132,23 +131,6 @@
 .remove {
   left: auto;
   right: 0;
-}
-
-/* Move sits beside Remove, or in its place on a cell that has no Remove button. */
-.move {
-  left: auto;
-  right: 0;
-  cursor: grab;
-}
-
-.move:has(+ .remove) {
-  right: 56px;
-}
-
-/* The Move button shows only while the keyboard has the focus on it. A pointer drags the cell or presses it. */
-.move:not(:focus-visible) {
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* An empty group holds its Add Tile button in its middle, and in edit mode Remove column under it. */
@@ -257,8 +239,7 @@
     background: var(--light);
   }
 
-  .tool:hover,
-  .move[aria-pressed='true'] {
+  .tool:hover {
     background: var(--ink);
   }
 }

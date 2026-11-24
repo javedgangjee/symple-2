@@ -245,7 +245,7 @@ test('ED7: a tile that is dragged to the top of the third column is its first ce
   ];
   await expect.poll(() => cellsByGroup(page)).toEqual(dragged);
   // The click that ends the drag picks nothing up.
-  await expect(page.locator('main [aria-pressed="true"]')).toHaveCount(0);
+  await expect(page.locator('main [data-picked]')).toHaveCount(0);
   await page.reload();
   await expect(title(page)).toHaveText('Needs');
   expect(await cellsByGroup(page)).toEqual(dragged);
@@ -254,27 +254,17 @@ test('ED7: a tile that is dragged to the top of the third column is its first ce
 test('ED8: a press on Help and then on Pain puts Help in the place of Pain', async ({ page }) => {
   await edit(page, 'needs');
   await pressCell(page, 'Help');
-  await expect(tool(page, 'Move Help')).toHaveAttribute('aria-pressed', 'true');
+  const help = page.locator('main .slot', {
+    has: page.locator('app-cell button[aria-label="Help"]'),
+  });
+  await expect(help).toHaveAttribute('data-picked', '');
   await pressCell(page, 'Pain');
   await expect
     .poll(async () => (await cellsByGroup(page))[0])
     .toEqual(['Back', 'Pain', 'Help', 'Toilet', 'Drink']);
   await expect(page.locator('main [role="status"]')).toHaveText('Help moved to column 1, place 3');
-});
-
-test('ED9: Tab reaches Move Help, and the Right arrow moves Help to the second column', async ({
-  page,
-}) => {
-  await edit(page, 'needs');
-  await tool(page, 'Edit Help').focus();
-  await page.keyboard.press('Tab');
-  await expect(tool(page, 'Move Help')).toBeFocused();
-  await expect(tool(page, 'Move Help')).toBeVisible();
-  await page.keyboard.press('ArrowRight');
-  await expect
-    .poll(async () => (await cellsByGroup(page))[1])
-    .toEqual(['Eat', 'Help', 'Medicine', 'Hot', 'Blanket']);
-  await expect(tool(page, 'Move Help')).toBeFocused();
+  await expect(page.locator('main [data-picked]')).toHaveCount(0);
+  await expect(tool(page, 'Edit Help')).toBeFocused();
 });
 
 test('ED10: the rows layout of Needs holds after a reload, and home is still drawn in columns', async ({
@@ -372,7 +362,7 @@ test('ED14: the labels and the borders of the edit controls keep their contrast 
     await edit(page, 'needs', { theme });
     // The focus is taken off Done, so its focus ring is not read as its edge.
     await blur(page);
-    await expectContrast('app-footer, main .tool:not(.move)', `${theme} edit mode`);
+    await expectContrast('app-footer, main .tool', `${theme} edit mode`);
     await tool(page, 'Edit Help').click();
     await expect(sheet(page)).toBeVisible();
     await expectContrast('dialog.sheet[open]', `${theme} tile dialog`);
@@ -423,7 +413,7 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
   // A press on the title puts the start of the tab order before the first edit button.
   await title(page).click();
   const visited: string[] = [];
-  for (let pressCount = 0; pressCount < 16; pressCount++) {
+  for (let pressCount = 0; pressCount < 12; pressCount++) {
     await switchKey(page, 'Tab');
     visited.push(
       await page.evaluate(() => {
@@ -435,18 +425,14 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
   expect(visited).toEqual([
     'Edit My boards',
     'Open My boards',
-    'Move My boards',
     'Remove My boards',
     'Edit Needs',
     'Open Needs',
-    'Move Needs',
     'Remove Needs',
     'Edit Quick phrases',
     'Open Quick phrases',
-    'Move Quick phrases',
     'Remove Quick phrases',
     'Edit Keyboards',
-    'Move Keyboards',
     'Add column',
     'Add Board',
   ]);

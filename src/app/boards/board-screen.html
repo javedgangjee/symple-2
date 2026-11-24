@@ -22,8 +22,8 @@
     <!-- On one board a cell keeps its key when it moves, so the page can let it slide to its new place. -->
     @for (group of groups(); track group.key; let g = $index) {
       <!-- A group takes the focus when the scan highlights it, but Tab does not stop on it. -->
-      <!-- In edit mode a press on an empty group puts the picked cell there. That is the pointer's way. -->
-      <!-- With the keyboard, the arrow keys on a Move button do the same, so the group needs no key of its own. -->
+      <!-- In edit mode a press on an empty group puts the picked cell there. Only a pointer moves a cell, -->
+      <!-- so the group needs no key of its own. -->
       <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
       <div
         class="group"
@@ -40,7 +40,7 @@
           @let highlighted = sameCell(scanned, place);
           <!-- A slot holds a cell and its edit buttons side by side, because a button cannot lie inside a button. -->
           <!-- In edit mode a press on the slot picks the cell up or puts it down, and the slot can be dragged. -->
-          <!-- Those are the pointer's ways. The Move button does both for the keyboard, so the slot takes no focus. -->
+          <!-- Only a pointer moves a cell, so the slot takes no focus. -->
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <div
             class="slot"
@@ -107,27 +107,6 @@
                   </svg>
                 </button>
               }
-              <!-- The Move button is the keyboard's way to move a cell. A press picks the cell up or puts -->
-              <!-- it down, and the arrow keys move it. It shows only while the keyboard has the focus on it. -->
-              <button
-                class="tool move"
-                type="button"
-                aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-                [attr.aria-label]="'Move ' + slot.name"
-                [attr.aria-pressed]="sameCell(held, place)"
-                (click)="pressSlot(place)"
-                (keydown)="onMoveKey($event, place)"
-              >
-                <!-- Lucide move. -->
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 2v20" />
-                  <path d="m15 19-3 3-3-3" />
-                  <path d="m19 9 3 3-3 3" />
-                  <path d="M2 12h20" />
-                  <path d="m5 9-3 3 3 3" />
-                  <path d="m9 5 3-3 3 3" />
-                </svg>
-              </button>
               @if (slot.canRemove) {
                 <button
                   class="tool remove"

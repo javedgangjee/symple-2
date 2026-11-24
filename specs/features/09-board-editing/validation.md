@@ -79,19 +79,19 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES1 | Edit mode turns on over Needs. | Each cell but Back has buttons named "Edit" and "Remove" with its label, such as "Edit Help". No cell can be pressed or takes the focus. |
 | ES2 | Edit mode is off. | The screen has no edit button. |
 | ES3 | Edit mode is on over home. | The cell My boards has a button named "Open My boards", and a press on it opens that board with edit mode still on. |
-| ES4 | Edit mode is on over Needs. | The Back cell has "Go back" and "Move Back", and no Edit or Remove button. |
+| ES4 | Edit mode is on over Needs. | The Back cell has "Go back", and no Edit or Remove button. |
 | ES5 | "Remove Help" is pressed. | Help is gone, the status line reads "Help removed", and the focus is on the Remove button of the next cell. |
 | ES6 | Edit mode is on over home. | The cell Keyboards has no Remove button. |
 | ES7 | A board has an empty group, and edit mode is off. | The group shows a button named "Add Tile" that carries `data-caregiver-control` and is not a tab stop. A press turns edit mode on and opens the tile dialog. |
 | ES8 | Edit mode is on, and a group is empty. | The group shows "Add Tile" and "Remove column". |
-| ES9 | A press on Help, and then a press on Pain. | Help takes the place of Pain, "Move Help" carried `aria-pressed="true"` in between, and the status line tells the new place. |
+| ES9 | A press on Help, and then a press on Pain. | Help takes the place of Pain, the slot of Help carried `data-picked` in between, the status line tells the new place, and the focus is on "Edit Help". |
 | ES10 | A press on Help, and then Escape. | Help stays where it was, and nothing is picked up. |
-| ES11 | "Move Help" has the focus, and Right is pressed, then Down. | Help is in the next column, then one place lower, and the focus stays on "Move Help". |
-| ES12 | The board has the rows layout, "Move Help" has the focus, and Down is pressed. | Help is in the next row. |
 | ES13 | The board has the rows layout and edit mode is on. | The button beside the grid is named "Add row", and an empty group reads "Remove row". |
 | ES14 | Needs is on show, and the set changes so that the cell on home that opens Needs is removed. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
 | ES15 | The mode is `step`, the scan highlights the first group of Needs, and the board Food is renamed in the set. This covers finding 3 of review.md, the scan that goes to rest on any change of the set. | The scan still highlights the first group. |
 | ES16 | Needs has an empty fourth column. A press on Help, and then on Add Tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add Tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
+
+ES11 and ES12 tested the arrow keys on the Move button of a cell. They were removed with the button on 2026-11-23.
 
 The footer, in `src/app/edit/edit-actions.spec.ts` and `src/app/shell/footer.spec.ts`:
 
@@ -173,8 +173,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED5 | Help is edited to "Help me" with the phrase "Please help me". Done is pressed, and Help me is picked by scan. | The stand-in for speech records "Please help me". |
 | ED6 | Remove Pain is pressed. | Pain is gone, and it is still gone after a reload. |
 | ED7 | Help is dragged from the first column to the top of the third. | Help is the first cell of the third column, and the order holds after a reload. |
-| ED8 | Help is pressed, and then Pain. | Help is in the place of Pain. |
-| ED9 | Tab reaches "Move Help", and Right is pressed. | Help is in the second column. |
+| ED8 | Help is pressed, and then Pain. | Help is in the place of Pain, and the focus is on "Edit Help". |
 | ED10 | Configure Board is pressed, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Home is still drawn in columns. |
 | ED11 | Add column is pressed, and then Remove column on the new group. | The board has four columns, and then three. |
 | ED12 | Add column is pressed until it says it is disabled. | No cell of the board is under 48px wide or high. |
@@ -185,6 +184,8 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED17 | In edit mode, ten scan times pass, and Tab and Enter are pressed. | No group and no cell is highlighted. Tab moves the focus through the edit buttons in the order of the cells and then to the footer. |
 | ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The scan never lands on the Add Tile button of the empty column. |
 | ED19 | Reduced motion is asked for, and a cell is moved with two presses. | No cell is animated. |
+
+ED9 tested the arrow keys on the Move button of a cell. It was removed with the button on 2026-11-23.
 
 Changed cases in other files:
 
@@ -207,8 +208,8 @@ Run `npm start`, open the app in Chrome on the Mac and sign in.
 ### H2. The keyboard and a screen reader (7, 34, 37, 38)
 
 1. Turn VoiceOver on. Open the panel with Control and comma, and press Edit boards.
-2. With the keyboard only, add a tile, edit it, move it with the arrow keys and remove it. Press Done.
-3. Expected: VoiceOver says the name of each button with its cell, says each change, and the focus is never lost.
+2. With the keyboard only, add a tile, edit it and remove it. Press Done.
+3. Expected: VoiceOver says the name of each button with its cell, says each change, and the focus is never lost. Tab stops on no Move button, and no key moves a cell.
 
 ### H3. Dragging with a mouse and with a finger (12, 35)
 

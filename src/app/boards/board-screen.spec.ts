@@ -749,11 +749,7 @@ describe('BoardScreen', () => {
         .filter((label) => label !== 'Back');
       expect(labels.length).toBe(12);
       for (const label of labels) {
-        expect(toolNames(slotOf(label ?? ''))).toEqual([
-          `Edit ${label}`,
-          `Move ${label}`,
-          `Remove ${label}`,
-        ]);
+        expect(toolNames(slotOf(label ?? ''))).toEqual([`Edit ${label}`, `Remove ${label}`]);
       }
       // A cell that is inert takes no press and no focus in a browser.
       const hosts = Array.from(element.querySelectorAll('.grid app-cell'));
@@ -775,9 +771,9 @@ describe('BoardScreen', () => {
       expect(edit.isOn()).toBe(true);
     });
 
-    it('ES4: the Back cell has Go back and Move Back, and no Edit or Remove button', async () => {
+    it('ES4: the Back cell has Go back, and no Edit or Remove button', async () => {
       await drawBoard('needs');
-      expect(toolNames(slotOf('Back'))).toEqual(['Go back', 'Move Back']);
+      expect(toolNames(slotOf('Back'))).toEqual(['Go back']);
     });
 
     it('ES5: Remove Help removes the cell, tells of it and puts the focus on the Remove button of the next cell', async () => {
@@ -790,7 +786,7 @@ describe('BoardScreen', () => {
 
     it('ES6: the cell Keyboards, which opens a locked board, has no Remove button', async () => {
       await drawBoard('home');
-      expect(toolNames(slotOf('Keyboards'))).toEqual(['Edit Keyboards', 'Move Keyboards']);
+      expect(toolNames(slotOf('Keyboards'))).toEqual(['Edit Keyboards']);
       expect(toolNames(slotOf('Needs'))).toContain('Remove Needs');
     });
 
@@ -816,15 +812,16 @@ describe('BoardScreen', () => {
       expect(groups()[3].querySelector('button')?.tabIndex).toBe(0);
     });
 
-    it('ES9: a press on Help and then on Pain puts Help in the place of Pain', async () => {
+    it('ES9: a press on Help and then on Pain puts Help in the place of Pain and the focus on Edit Help', async () => {
       await drawBoard('needs');
       await pressCell('Help');
-      expect(named('Move Help').getAttribute('aria-pressed')).toBe('true');
+      expect(slotOf('Help').hasAttribute('data-picked')).toBe(true);
       expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
       await pressCell('Pain');
       expect(cellOrder()[0]).toEqual(['Back', 'Pain', 'Help', 'Toilet', 'Drink']);
-      expect(named('Move Help').getAttribute('aria-pressed')).toBe('false');
+      expect(element.querySelector('[data-picked]')).toBeNull();
       expect(status()).toBe('Help moved to column 1, place 3');
+      expect(focused()).toBe('Edit Help');
     });
 
     it('ES10: a press on Help and then Escape leaves Help where it was, with nothing picked up', async () => {
@@ -832,35 +829,11 @@ describe('BoardScreen', () => {
       await pressCell('Help');
       await key(document.body, 'Escape');
       expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
-      expect(element.querySelector('[aria-pressed="true"]')).toBeNull();
+      expect(element.querySelector('[data-picked]')).toBeNull();
       // The next press picks a cell up again, so nothing was held.
       await pressCell('Pain');
-      expect(named('Move Pain').getAttribute('aria-pressed')).toBe('true');
+      expect(slotOf('Pain').hasAttribute('data-picked')).toBe(true);
       expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
-    });
-
-    it('ES11: Right and then Down on Move Help move Help to the next column and one place lower', async () => {
-      await drawBoard('needs');
-      named('Move Help').focus();
-      await key(named('Move Help'), 'ArrowRight');
-      expect(cellOrder()[0]).toEqual(['Back', 'Pain', 'Toilet', 'Drink']);
-      expect(cellOrder()[1]).toEqual(['Eat', 'Help', 'Medicine', 'Hot', 'Blanket']);
-      expect(focused()).toBe('Move Help');
-      await key(named('Move Help'), 'ArrowDown');
-      expect(cellOrder()[1]).toEqual(['Eat', 'Medicine', 'Help', 'Hot', 'Blanket']);
-      expect(focused()).toBe('Move Help');
-    });
-
-    it('ES12: in the rows layout Down on Move Help moves Help to the next row', async () => {
-      await drawBoard('needs', {
-        before: () =>
-          data.change((set) => setBoard(set, 'needs', { title: 'Needs', layout: 'rows' })),
-      });
-      named('Move Help').focus();
-      await key(named('Move Help'), 'ArrowDown');
-      expect(cellOrder()[0]).toEqual(['Back', 'Pain', 'Toilet', 'Drink']);
-      expect(cellOrder()[1]).toEqual(['Eat', 'Help', 'Medicine', 'Hot', 'Blanket']);
-      expect(status()).toBe('Help moved to row 2, place 2');
     });
 
     it('ES13: in the rows layout the button beside the grid is named Add row, and an empty group reads Remove row', async () => {
