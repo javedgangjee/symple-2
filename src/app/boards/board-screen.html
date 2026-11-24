@@ -223,7 +223,6 @@
   @if (editing) {
     @defer (on immediate) {
       <app-tile-dialog (saved)="onTileSaved($event)" />
-      <app-remove-dialog (confirmed)="onRemoveConfirmed()" />
       <app-board-dialog (saved)="onBoardSaved($event)" />
     }
   }

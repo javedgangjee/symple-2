@@ -11,9 +11,10 @@ import { SettingsOpen } from '../settings/settings-open';
 import { FakeVoiceSource } from '../speech/fake-voice-source';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { Back } from './back';
-import { addGroup, removeCell, setBoard } from '../edit/board-edits';
+import { addGroup, setBoard } from '../edit/board-edits';
 import { EditActions } from '../edit/edit-actions';
 import { Board, BoardData, Cell, CellSize, Tile } from './board-data';
+import { BoardStore } from './board-store';
 import { BoardScreen } from './board-screen';
 
 @Component({ template: '' })
@@ -892,16 +893,25 @@ describe('BoardScreen', () => {
       expect(element.querySelector('.add-group')).toBeNull();
     });
 
+    it('ES18: Remove on the cell that opens Needs removes the cell at once, and the board Needs stays in the set', async () => {
+      await drawBoard('home');
+      await press('Remove Needs');
+      expect(edit.dialog()).toBeNull();
+      expect(cellOrder().flat()).not.toContain('Needs');
+      expect(status()).toBe('Needs removed');
+      expect(data.board('needs')?.groups.length).toBe(3);
+    });
+
     it('ES14: a set change that removes the board on show opens home', async () => {
       await drawBoard('needs', { editing: false });
       const router = TestBed.inject(Router);
       await router.navigateByUrl('/board/needs');
-      const groupsOfHome = data.board('home')?.groups ?? [];
-      const opensNeeds = (one: Cell) =>
-        one.tile.action?.type === 'open' && one.tile.action.board === 'needs';
-      const group = groupsOfHome.findIndex((candidate) => candidate.cells.some(opensNeeds));
-      const at = { group, cell: groupsOfHome[group].cells.findIndex(opensNeeds) };
-      data.change((set) => removeCell(set, 'home', at));
+      // Another device, or a newer version, can save a set that lacks the board.
+      const { tiles, boards } = data.set();
+      TestBed.inject(BoardStore).save({
+        tiles,
+        boards: boards.filter((record) => record.id !== 'needs'),
+      });
       await fixture.whenStable();
       expect(data.board('needs')).toBeUndefined();
       await vi.waitFor(() => expect(router.url).toBe('/'));

@@ -30,12 +30,10 @@ import {
   moveInGroups,
   removeCell,
   removeGroup,
-  removedWith,
   setBoard,
 } from '../edit/board-edits';
 import { Drag, GroupBox, Places, placeUnder, readPlaces, slide } from '../edit/drag';
 import { EditMode } from '../edit/edit-mode';
-import { RemoveDialog } from '../edit/remove-dialog';
 import { Room, measureRoom } from '../edit/room';
 import { TileDialog } from '../edit/tile-dialog';
 import { Message } from '../keyboard/message';
@@ -142,7 +140,7 @@ function onTool(event: Event): boolean {
  */
 @Component({
   selector: 'app-board-screen',
-  imports: [CellButton, TileDialog, RemoveDialog, BoardDialog],
+  imports: [CellButton, TileDialog, BoardDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './board-screen.html',
   styleUrl: './board-screen.css',
@@ -585,26 +583,10 @@ export class BoardScreen {
     this.focusAsk.set({ at: { group: Math.max(0, group - 1), cell: 0 } });
   }
 
-  /**
-   * The Remove button of a cell was pressed. A cell that takes boards with it asks first, in
-   * the remove dialog. Any other cell is removed at once.
-   */
+  /** The Remove button of a cell was pressed. The cell is removed at once. */
   protected remove(at: CellPosition): void {
     this.picked.set(null);
-    if (removedWith(this.data.set(), this.id(), at).boards.length > 0) {
-      this.edit.open({ kind: 'remove', at });
-    } else {
-      this.removeAt(at);
-    }
-  }
-
-  /** The caregiver said yes in the remove dialog. */
-  protected onRemoveConfirmed(): void {
-    const dialog = this.edit.dialog();
-    this.edit.close();
-    if (dialog?.kind === 'remove') {
-      this.removeAt(dialog.at);
-    }
+    this.removeAt(at);
   }
 
   /**

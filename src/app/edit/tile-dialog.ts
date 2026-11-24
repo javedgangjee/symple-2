@@ -41,7 +41,7 @@ export interface SheetEvents {
 
 /**
  * The way the three dialogs of edit mode open and close. It is shared by the tile dialog, the
- * remove dialog and the board dialog, and it must be called where `inject` works.
+ * board dialog, and it must be called where `inject` works.
  *
  * The `<dialog>` is shown with `showModal` while `isOpen` is true, so the browser makes the page
  * behind it inert and closes it on Escape. When it opens it remembers the element that had the

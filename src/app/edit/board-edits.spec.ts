@@ -212,37 +212,27 @@ describe('The changes to a set', () => {
     expect(set.tiles.some((item) => item.id === 'help')).toBe(false);
   });
 
-  it('BE9: the cell that opens My boards is removed with the nine boards that only it reaches', () => {
+  it('BE9: the cell that opens My boards is removed, and every board stays in the set', () => {
     const set = PRODUCED['BE9']();
-    const gone = [
-      'my-boards',
-      'food',
-      'drinks',
-      'feelings',
-      'people',
-      'places',
-      'activities',
-      'yes-no',
-      'core-words',
-    ];
-    const ids = (from: BoardSet) => from.boards.map((item) => item.id);
-    expect(ids(set)).toEqual(ids(BUILT_IN).filter((id) => !gone.includes(id)));
     expect(layout(set, 'home')).toEqual([['needs'], ['quick-phrases', 'keyboards']]);
-    // Every tile that is left is shown by a cell, and the tiles of the removed boards are gone.
-    const shown = new Set(set.boards.flatMap((item) => layout(set, item.id).flat()));
-    expect(set.tiles.every((item) => shown.has(item.id))).toBe(true);
-    expect(set.tiles.some((item) => item.id === 'my-boards' || item.id === 'food')).toBe(false);
-    expect(set.tiles.some((item) => item.id === 'back')).toBe(true);
+    expect(set.boards).toEqual(
+      BUILT_IN.boards.map((item) => (item.id === 'home' ? board(set, 'home') : item)),
+    );
+    // Only the tile of the removed cell is gone. The tiles of My boards and of the boards it opens stay.
+    const gone = BUILT_IN.tiles.filter((old) => !set.tiles.some((item) => item.id === old.id));
+    expect(gone.map((item) => item.id)).toEqual(['my-boards']);
   });
 
-  it('BE10: the cell that opens Keyboards, a locked board, is removed with the five boards that only it reaches', () => {
+  it('BE10: the cell that opens Keyboards, a locked board, is removed, and the keyboards stay in the set', () => {
     expect(board(BUILT_IN, 'keyboards').locked).toBe(true);
     const set = PRODUCED['BE10']();
-    const gone = ['keyboards', 'keyboard', 'keyboard-abc', 'keyboard-vowels', 'keyboard-numbers'];
-    const ids = (from: BoardSet) => from.boards.map((item) => item.id);
-    expect(ids(set)).toEqual(ids(BUILT_IN).filter((id) => !gone.includes(id)));
     expect(layout(set, 'home')).toEqual([['my-boards', 'needs'], ['quick-phrases']]);
-    expect(set.tiles.some((item) => item.id === 'keyboards' || item.id === 'key-q')).toBe(false);
+    const kept = ['keyboards', 'keyboard', 'keyboard-abc', 'keyboard-vowels', 'keyboard-numbers'];
+    for (const id of kept) {
+      expect(board(set, id), id).toEqual(board(BUILT_IN, id));
+    }
+    expect(set.tiles.some((item) => item.id === 'keyboards')).toBe(false);
+    expect(set.tiles.some((item) => item.id === 'key-q')).toBe(true);
   });
 
   it('BE11: the Back cell of Needs is not removed and not edited', () => {

@@ -13,8 +13,6 @@ export type EditDialog =
   | { readonly kind: 'add-board' }
   /** Edits the cell at a place. */
   | { readonly kind: 'edit-tile'; readonly at: CellPosition }
-  /** Asks before the cell at a place is removed with the boards that go with it. */
-  | { readonly kind: 'remove'; readonly at: CellPosition }
   /** Sets the title and the layout of the board on show. */
   | { readonly kind: 'board' };
 

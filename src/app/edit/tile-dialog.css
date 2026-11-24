@@ -1,5 +1,5 @@
 /* The sheet of edit mode, copied from the tile dialog of context/design/home.html. */
-/* The remove dialog and the board dialog list this file first, so the three dialogs share one look. */
+/* The board dialog lists this file first, so the two dialogs share one look. */
 /* The glass is the one of the settings panel, so labels keep 4.5:1 and outlines 3:1 against it. */
 :host {
   display: contents;

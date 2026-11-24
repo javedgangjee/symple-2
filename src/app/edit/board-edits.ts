@@ -5,7 +5,6 @@ import {
   CellHue,
   CellRecord,
   GroupRecord,
-  HOME_BOARD_ID,
   IconName,
   Tile,
 } from '../boards/board-data';
@@ -52,12 +51,6 @@ export interface OpenFields {
 }
 
 export type CellFields = SpeakFields | OpenFields;
-
-/** What goes when a cell is removed: the boards that nothing else reaches, and the number of their cells. */
-export interface Removal {
-  readonly boards: readonly BoardRecord[];
-  readonly cells: number;
-}
 
 function newId(kind: 'tile' | 'board'): string {
   return `${kind}-${crypto.randomUUID()}`;
@@ -352,76 +345,26 @@ export function editCell(
   return edited.action?.type === 'open' ? withTitle(next, edited.action.board, label) : next;
 }
 
-/** The ids of the boards that can be reached from home through the cells that open a board. */
-function reachable(set: BoardSet): Set<string> {
-  const opens = new Map<string, string>();
-  for (const tile of set.tiles) {
-    if (tile.action?.type === 'open') {
-      opens.set(tile.id, tile.action.board);
-    }
-  }
-  const seen = new Set<string>();
-  const queue = [HOME_BOARD_ID];
-  for (let id = queue.pop(); id !== undefined; id = queue.pop()) {
-    const board = seen.has(id) ? undefined : boardOf(set, id);
-    if (!board) {
-      continue;
-    }
-    seen.add(id);
-    for (const cell of everyCell([board])) {
-      const opened = opens.get(cell.tile);
-      if (opened !== undefined) {
-        queue.push(opened);
-      }
-    }
-  }
-  return seen;
-}
-
 /** Whether the caregiver can remove the cell that shows this tile. The Back cell stays. */
 export function canRemove(tile: Tile): boolean {
   return tile.action?.type !== 'back';
 }
 
-/** The set with one cell taken out, before the boards and the tiles that go with it are dropped. */
-function withoutCell(set: BoardSet, boardId: string, at: CellPosition): BoardSet | undefined {
+/**
+ * Removes the cell at a place, and its tile when no other cell uses it. A cell that opens a
+ * board is only the way to that board: the board stays in the set, with every board it opens,
+ * so nothing but the cell is lost. The Back cell stays.
+ */
+export function removeCell(set: BoardSet, boardId: string, at: CellPosition): BoardSet {
   const board = editable(set, boardId);
   const tile = tileAt(set, boardId, at);
   if (!board || !tile || !canRemove(tile)) {
-    return undefined;
+    return set;
   }
   const groups = board.groups.map((group, g) =>
     g === at.group ? { cells: group.cells.filter((_, c) => c !== at.cell) } : group,
   );
-  return withBoard(set, withGroups(board, groups));
-}
-
-/** The boards that only the cell at a place reaches, which go when the cell is removed. */
-export function removedWith(set: BoardSet, boardId: string, at: CellPosition): Removal {
-  const without = withoutCell(set, boardId, at);
-  if (!without) {
-    return { boards: [], cells: 0 };
-  }
-  const before = reachable(set);
-  const after = reachable(without);
-  const boards = set.boards.filter((board) => before.has(board.id) && !after.has(board.id));
-  return { boards, cells: everyCell(boards).length };
-}
-
-/**
- * Removes the cell at a place. A cell that opens a board takes that board with it, and every
- * board that can only be reached through it, locked or not. The Back cell stays.
- */
-export function removeCell(set: BoardSet, boardId: string, at: CellPosition): BoardSet {
-  const without = withoutCell(set, boardId, at);
-  if (!without) {
-    return set;
-  }
-  const gone = new Set(removedWith(set, boardId, at).boards.map((board) => board.id));
-  return prune({
-    tiles: without.tiles,
-    boards: without.boards.filter((board) => !gone.has(board.id)),
-  });
+  return prune(withBoard(set, withGroups(board, groups)));
 }
 
 /**

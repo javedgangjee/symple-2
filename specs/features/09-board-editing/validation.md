@@ -50,8 +50,8 @@ The changes to a set, in `src/app/edit/board-edits.spec.ts`:
 | BE6 | The label of a cell is edited, and a second cell uses the same tile. | The edited cell has a new tile with the new label, and the second cell is unchanged. |
 | BE7 | A cell that opens the board Food is renamed "Meals". | The tile reads "Meals", and the board Food has the title "Meals". |
 | BE8 | A cell that speaks is removed. | The cell is gone, and so is its tile, which no cell uses. |
-| BE9 | The cell that opens My boards is removed from home. | My boards and the eight boards that only it reaches are gone, with their tiles. The Back tile stays. |
-| BE10 | The cell that opens Keyboards, a locked board, is removed from home. | Keyboards and the four keyboards that only it reaches are gone, with their tiles. |
+| BE9 | The cell that opens My boards is removed from home. | The cell and its tile are gone. My boards and the eight boards it opens stay in the set, with their tiles. |
+| BE10 | The cell that opens Keyboards, a locked board, is removed from home. | The cell and its tile are gone. Keyboards and the four keyboards stay in the set, with their tiles. |
 | BE11 | The Back cell of Needs is removed, and in a second run edited. | The set does not change in either run. |
 | BE12 | The second cell of the first group moves to the first place of the third group. | It is there, and the cells of both groups keep their order otherwise. |
 | BE13 | A cell moves to the place of a cell in a group that is marked as having no room. | The two cells trade places. |
@@ -87,7 +87,8 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES9 | A press on Help, and then a press on Pain. | Help takes the place of Pain, the slot of Help carried `data-picked` in between, the status line tells the new place, and the focus is on "Edit Help". |
 | ES10 | A press on Help, and then Escape. | Help stays where it was, and nothing is picked up. |
 | ES13 | The board has the rows layout and edit mode is on. | The button beside the grid is named "Add row", and an empty group reads "Remove row". |
-| ES14 | Needs is on show, and the set changes so that the cell on home that opens Needs is removed. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
+| ES14 | Needs is on show, and a set that lacks the board Needs is saved, as a sync from another device can do. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
+| ES18 | "Remove Needs" is pressed on home. | No dialog opens. The cell Needs is gone, the status line reads "Needs removed", and the board Needs is still in the set. |
 | ES15 | The mode is `step`, the scan highlights the first group of Needs, and the board Food is renamed in the set. This covers finding 3 of review.md, the scan that goes to rest on any change of the set. | The scan still highlights the first group. |
 | ES16 | Needs has an empty fourth column. A press on Help, and then on Add Tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add Tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
 | ES17 | Edit mode is on over home, and "Open Keyboards" is pressed. | The Keyboards list opens, and edit mode is off once that locked board is on show. |
@@ -115,7 +116,7 @@ The settings panel and the header, in `settings-panel.spec.ts` and `header.spec.
 | PA25 | Edit boards is pressed over the QWERTY keyboard, a locked board. | The panel is closed, home is on show, and edit mode is on. |
 | H5 | Edit mode is on. | The header shows no settings button. |
 
-The dialogs, in `tile-dialog.spec.ts`, `remove-dialog.spec.ts` and `board-dialog.spec.ts` of `src/app/edit/`:
+The dialogs, in `tile-dialog.spec.ts` and `board-dialog.spec.ts` of `src/app/edit/`:
 
 | Case | Input | Expected result |
 | --- | --- | --- |
@@ -127,11 +128,10 @@ The dialogs, in `tile-dialog.spec.ts`, `remove-dialog.spec.ts` and `board-dialog
 | TD6 | Add Board is pressed. | A dialog named "Add Board" shows Name, Style, Colour and Icon. The icons do not include back, backspace, caps, trash, check or cross. |
 | TD7 | "Edit Help" is pressed. | The dialog is named "Edit Help" and is filled in with the label, the phrase, the symbol and the colour of Help. It has no choice of type. |
 | TD8 | Cancel is pressed, and in a second run Escape. | The dialog is closed each time, the set did not change, and the focus is back on the button that opened the dialog. |
-| RD1 | "Remove My boards" is pressed on home. | A dialog names My boards and says that 9 boards and their cells will be removed. Cancel leaves the set as it was. |
-| RD2 | Remove is pressed in that dialog. | The boards are gone. |
-| RD3 | "Remove Keyboards" is pressed on home. | A dialog names Keyboards, a locked board, and says that 5 boards and their cells will be removed. |
 | BG1 | Configure Board is pressed over Needs. | A dialog shows the title "Needs" and the layout Columns as chosen. |
 | BG2 | Rows is chosen and Save is pressed. | The board has the rows layout, and the grid carries `data-layout="rows"`. |
+
+RD1, RD2 and RD3 tested the dialog that asked before a cell took boards with it. They were removed with the dialog on 2026-11-23, when Remove was changed to take away only the cell.
 
 Dragging and room, in `drag.spec.ts` and `room.spec.ts` of `src/app/edit/`:
 
