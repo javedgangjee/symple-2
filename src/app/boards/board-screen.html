@@ -124,18 +124,10 @@
             }
           </div>
         }
-        @if (group.slots.length === 0) {
-          <!-- An empty group shows its Add Tile button out of edit mode too. It is a caregiver control, -->
-          <!-- so the scan and the dwell press skip it, and Tab stops on it only in edit mode. -->
+        @if (group.slots.length === 0 && editing) {
+          <!-- An empty group shows nothing out of edit mode. It keeps its place and its size in the grid. -->
           <div class="empty">
-            <button
-              class="add-tile"
-              type="button"
-              aria-haspopup="dialog"
-              data-caregiver-control
-              [tabindex]="editing ? 0 : -1"
-              (click)="addTileTo(g)"
-            >
+            <button class="add-tile" type="button" aria-haspopup="dialog" (click)="addTileTo(g)">
               <!-- Lucide plus. -->
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 12h14" />
@@ -143,7 +135,7 @@
               </svg>
               Add Tile
             </button>
-            @if (editing && canRemoveGroup()) {
+            @if (canRemoveGroup()) {
               <button class="remove-group" type="button" (click)="removeGroupAt(g)">
                 <!-- Lucide x. -->
                 <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -108,7 +108,7 @@ function shareWithNoSize(cells: readonly Cell[]): number {
   return cells.some((cell) => cell.size !== undefined) ? NAMED_SIZES.medium : 1;
 }
 
-/** Whether an event came from a button, such as Add Tile of an empty group, which does its own work. */
+/** Whether an event came from a button, such as Add Tile of an empty board, which does its own work. */
 function onButton(event: Event): boolean {
   return event.target instanceof Element && event.target.closest('button') !== null;
 }
@@ -543,8 +543,8 @@ export class BoardScreen {
   }
 
   /**
-   * The Add Tile button of an empty group or of an empty board was pressed. It turns edit mode
-   * on, because the button also shows out of edit mode, and opens the tile dialog for that group.
+   * The Add Tile button of an empty group or of an empty board was pressed. The button of an empty
+   * board also shows out of edit mode, so this turns edit mode on, and it opens the tile dialog.
    */
   protected addTileTo(group?: number): void {
     this.edit.start();

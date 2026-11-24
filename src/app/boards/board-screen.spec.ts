@@ -132,12 +132,11 @@ describe('BoardScreen', () => {
     expect(new Set(shares()).size).toBe(1);
   });
 
-  it('S6: an empty group is drawn with no cell, and its only control is the Add Tile button', async () => {
+  it('S6: out of edit mode an empty group is drawn with no cell and no control', async () => {
     await draw({ groups: [{ cells: [cell('A')] }, { cells: [] }] });
     expect(groups().length).toBe(2);
     expect(element.querySelectorAll('app-cell').length).toBe(1);
-    const controls = groups()[1].querySelectorAll('button, a, input, select, textarea');
-    expect(Array.from(controls, (control) => control.textContent?.trim())).toEqual(['Add Tile']);
+    expect(groups()[1].querySelectorAll('button, a, input, select, textarea').length).toBe(0);
   });
 
   it('S7: a board with no groups is drawn with no cell, and its only control is the Add Tile button', async () => {
@@ -803,20 +802,18 @@ describe('BoardScreen', () => {
       expect(edit.isOn()).toBe(false);
     });
 
-    it('ES7: out of edit mode an empty group shows an Add Tile button, which turns edit mode on and opens the tile dialog', async () => {
+    it('ES7: out of edit mode an empty group shows no button, has no tab stop and keeps its place in the grid', async () => {
       await drawBoard('needs', {
         editing: false,
         before: () => data.change((set) => addGroup(set, 'needs')),
       });
-      const add = groups()[3].querySelector('button');
-      expect(texts(groups()[3])).toEqual(['Add Tile']);
-      expect(add?.hasAttribute('data-caregiver-control')).toBe(true);
-      expect(add?.tabIndex).toBe(-1);
-      add?.click();
-      await fixture.whenStable();
-      expect(edit.isOn()).toBe(true);
-      expect(edit.dialog()).toEqual({ kind: 'add-tile', group: 3 });
-      expect(element.querySelector('app-tile-dialog dialog')?.hasAttribute('open')).toBe(true);
+      expect(groups().length).toBe(4);
+      expect(groups()[3].querySelector('button')).toBeNull();
+      expect(texts(groups()[3])).toEqual([]);
+      expect(groups()[3].querySelectorAll('[tabindex]:not([tabindex="-1"])').length).toBe(0);
+      expect(groups()[3].getAttribute('tabindex')).toBe('-1');
+      expect(groups()[3].hasAttribute('data-empty')).toBe(true);
+      expect(edit.isOn()).toBe(false);
     });
 
     it('ES8: in edit mode an empty group shows Add Tile and Remove column', async () => {

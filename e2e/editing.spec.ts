@@ -472,21 +472,20 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
   expect(await marked(page, 'data-confirmed')).toEqual({ groups: [], cells: [] });
 });
 
-test('ED18: out of edit mode the scan never lands on the Add Tile button of an empty column', async ({
+test('ED18: out of edit mode an empty column shows no Add Tile button and the scan goes round the board', async ({
   page,
 }) => {
   await openBoard(page, 'needs', { ...SCAN, set: needsWithEmptyColumn() });
   await expect(page.locator('main .group')).toHaveCount(4);
-  const add = page.locator('main .group').nth(3).getByRole('button', { name: 'Add Tile' });
-  await expect(add).toBeVisible();
-  await expect(add).toHaveAttribute('data-caregiver-control', '');
+  const empty = page.locator('main .group').nth(3);
+  await expect(empty.getByRole('button')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Add Tile' })).toHaveCount(0);
   await stopClock(page);
   await switchKey(page, 'Enter');
   // Two rounds over the three groups that hold cells. The scan then goes to rest.
   const highlighted: string[] = [];
   for (let step = 0; step < 6; step++) {
     highlighted.push(...(await marked(page, 'data-scan')).groups);
-    await expect(add).not.toBeFocused();
     await pass(page, SCAN_TIME);
   }
   expect(highlighted).toEqual([

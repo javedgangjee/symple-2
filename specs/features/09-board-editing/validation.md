@@ -82,7 +82,7 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES4 | Edit mode is on over Needs. | The Back cell has "Go back", and no Edit or Remove button. |
 | ES5 | "Remove Help" is pressed. | Help is gone, the status line reads "Help removed", and the focus is on the Remove button of the next cell. |
 | ES6 | Edit mode is on over home. | The cell Keyboards, which opens a locked board, has "Edit Keyboards", "Open Keyboards" and "Remove Keyboards". |
-| ES7 | A board has an empty group, and edit mode is off. | The group shows a button named "Add Tile" that carries `data-caregiver-control` and is not a tab stop. A press turns edit mode on and opens the tile dialog. |
+| ES7 | A board has an empty group, and edit mode is off. | The group shows no button and has no tab stop. The group still takes its place in the grid. |
 | ES8 | Edit mode is on, and a group is empty. | The group shows "Add Tile" and "Remove column". |
 | ES9 | A press on Help, and then a press on Pain. | Help takes the place of Pain, the slot of Help carried `data-picked` in between, the status line tells the new place, and the focus is on "Edit Help". |
 | ES10 | A press on Help, and then Escape. | Help stays where it was, and nothing is picked up. |
@@ -184,7 +184,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED15 | Edit mode is on. | Every edit button, footer button and dialog control is at least 48px high and wide. |
 | ED16 | Edit boards is pressed on the QWERTY keyboard. | Home is on show in edit mode. The Keyboards cell has an Edit, an Open and a Remove button. |
 | ED17 | In edit mode, ten scan times pass, and Tab and Enter are pressed. | No group and no cell is highlighted. Tab moves the focus through the edit buttons in the order of the cells and then to the footer. |
-| ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The scan never lands on the Add Tile button of the empty column. |
+| ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The empty column shows no Add Tile button, and the scan goes round the three columns that hold cells. |
 | ED20 | The window is 768px wide and 1024px high, and edit mode is on over Needs. | Add column lies to the right of the grid, is at least 48px wide, and lies inside the window with its focus ring. |
 | ED19 | Reduced motion is asked for, and a cell is moved with two presses. | No cell is animated. |
 
