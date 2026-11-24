@@ -81,27 +81,6 @@
   --bleed: oklch(0.63 0.13 var(--h));
 }
 
-/* A cell recoloured by the caregiver takes the hue of the swatch that was picked. */
-[data-theme='colours'] .cell.recoloured:is(.dark, .soft1, .grey) {
-  --bg: oklch(0.42 0.115 var(--h));
-  --on: var(--light);
-  --chip: var(--light);
-  --chip-on: oklch(0.42 0.115 var(--h));
-  --bleed: oklch(0.63 0.13 var(--h));
-}
-
-[data-theme='colours'] .cell.recoloured.dark {
-  --h: 250;
-}
-
-[data-theme='colours'] .cell.recoloured.soft1 {
-  --h: 20;
-}
-
-[data-theme='colours'] .cell.recoloured.grey {
-  --h: 190;
-}
-
 [data-theme='colours'] .c5 {
   --bg: oklch(0.4 0.19 285);
   --chip-on: oklch(0.4 0.19 285);
