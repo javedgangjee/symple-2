@@ -48,7 +48,14 @@ export class EditMode {
   /** The last change, for the status line that screen readers hear. */
   readonly status = this.told.asReadonly();
 
+  /**
+   * Turns edit mode on. The last change of an earlier session is dropped, so the status line
+   * does not tell it again as if it had just happened.
+   */
   start(): void {
+    if (!this.on()) {
+      this.told.update(({ count }) => ({ text: '', count: count + 1 }));
+    }
     this.on.set(true);
   }
 

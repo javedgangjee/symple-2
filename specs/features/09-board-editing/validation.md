@@ -69,6 +69,7 @@ Edit mode and the board behind it, in `edit-mode.spec.ts` of `src/app/edit/` and
 | EM2 | Edit mode is on, and Tab and then Enter are pressed. | The scan does not move, nothing is picked, and neither key has its default action stopped. |
 | EM3 | The mode is `dwell`, a dwell runs on a cell, and edit mode turns on. | The dwell is dropped, and no cell is pressed after the dwell time. |
 | EM4 | Edit mode turns off, and Enter is pressed. | The scan starts at the first group. |
+| EM5 | A change is told in edit mode, edit mode turns off, and it turns on again. This covers finding 7 of review.md, the status line that repeats an old change. | The status text is empty. |
 
 The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 

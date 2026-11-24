@@ -34,4 +34,13 @@ describe('EditMode', () => {
       switches.stop();
     }
   });
+
+  it('EM5: edit mode that turns on again does not tell the last change of the session before', () => {
+    const edit = TestBed.inject(EditMode);
+    edit.start();
+    edit.tell('Pain removed');
+    edit.stop();
+    edit.start();
+    expect(edit.status().text).toBe('');
+  });
 });
