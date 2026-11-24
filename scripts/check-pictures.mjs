@@ -2,10 +2,12 @@
 //
 // Usage: node scripts/check-pictures.mjs
 // It runs the cases of check A3 of specs/features/23-symbols-and-icons/validation.md and exits with
-// an error when any case fails. Case PC3 reads the list as it was before feature 23 from git.
+// an error when any case fails. Case PC3 reads the list as it was before feature 23 from git, and
+// case PC5 reads the installed package lucide-static.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -22,6 +24,11 @@ const OWN_FILES = ['stop.svg'];
 const BEFORE = 'd9e3812';
 // The rule of loadBoards for a symbol file.
 const SYMBOL_FILE = /^[a-z0-9-]+\.svg$/;
+// The Lucide release the app draws its icons from, its number of icons and its kinds of shape.
+const LUCIDE = join(ROOT, 'src', 'data', 'lucide.json');
+const LUCIDE_VERSION = '1.77.0';
+const LUCIDE_COUNT = 2098;
+const LUCIDE_TAGS = ['path', 'circle', 'rect', 'line', 'ellipse', 'polyline', 'polygon'];
 
 const failures = [];
 
@@ -164,6 +171,49 @@ check('PC4', 'ATTRIBUTION.txt gives the original name of each Mulberry file.', (
     problems.push(
       `${originals.size - unique.size} original names are given to more than one file.`,
     );
+  }
+});
+
+check('PC5', `lucide.json holds every icon of lucide-static ${LUCIDE_VERSION}.`, (problems) => {
+  const require = createRequire(import.meta.url);
+  const packageFolder = dirname(require.resolve('lucide-static/package.json'));
+  const { version } = JSON.parse(readFileSync(join(packageFolder, 'package.json'), 'utf8'));
+  if (version !== LUCIDE_VERSION) {
+    problems.push(`lucide-static ${version} is installed, and ${LUCIDE_VERSION} is expected.`);
+  }
+  const nodes = JSON.parse(readFileSync(join(packageFolder, 'icon-nodes.json'), 'utf8'));
+  const drawings = readdirSync(join(packageFolder, 'icons'));
+  const icons = JSON.parse(readFileSync(LUCIDE, 'utf8'));
+  const seen = new Set();
+  for (const { name, shapes } of icons) {
+    if (seen.has(name)) {
+      problems.push(`${name} is in lucide.json twice.`);
+    }
+    seen.add(name);
+    if (!nodes[name]) {
+      problems.push(`${name} is in lucide.json but not in the package.`);
+      continue;
+    }
+    if (!drawings.includes(`${name}.svg`)) {
+      problems.push(`${name} has no file in the icons folder of the package.`);
+    }
+    const expected = nodes[name].map(([tag, attributes]) => ({ tag, ...attributes }));
+    if (JSON.stringify(shapes) !== JSON.stringify(expected)) {
+      problems.push(`${name} does not have the shapes of the package.`);
+    }
+    for (const shape of shapes ?? []) {
+      if (!LUCIDE_TAGS.includes(shape.tag)) {
+        problems.push(`${name} has a shape with the tag ${shape.tag}.`);
+      }
+    }
+  }
+  for (const name of Object.keys(nodes)) {
+    if (!seen.has(name)) {
+      problems.push(`${name} is in the package but not in lucide.json.`);
+    }
+  }
+  if (icons.length !== LUCIDE_COUNT) {
+    problems.push(`lucide.json holds ${icons.length} icons, and it should hold ${LUCIDE_COUNT}.`);
   }
 });
 
