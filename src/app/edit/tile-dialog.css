@@ -206,15 +206,11 @@ button.primary:hover {
   background: var(--dark);
 }
 
-:is(button, .kinds label, .icons label, .swatches label, .symbols label):hover {
+:is(button, .kinds label, .swatches label, .pictures label):hover {
   border-color: var(--ink);
 }
 
-:is(
-  button:not(.primary),
-  .kinds label:not(:has(:checked)),
-  .icons label:not(:has(:checked))
-):hover {
+:is(button:not(.primary), .kinds label:not(:has(:checked))):hover {
   background: var(--control-hover);
 }
 
@@ -245,8 +241,9 @@ svg {
 }
 
 /* The tile dialog has the preview on the left and the fields on the right. */
-/* The fields stretch to the height of the sheet, and the lists of symbols and icons take the room that is left. */
-/* On a narrow window the preview sits above the fields. */
+/* The title sits over the preview, so the fields start at the top of the sheet. */
+/* The fields stretch to the height of the sheet, and the list of pictures takes the room that is left. */
+/* On a narrow window the title and the preview sit above the fields. */
 .sheet form.split {
   grid-template-columns: minmax(14rem, 2fr) minmax(0, 3fr);
   grid-template-rows: auto minmax(0, 1fr);
@@ -254,19 +251,31 @@ svg {
   align-items: start;
 }
 
+.split h2 {
+  grid-area: 1 / 1;
+}
+
+.split .preview {
+  grid-area: 2 / 1;
+}
+
 .split .fields {
+  grid-area: 1 / 2 / 3 / 3;
   display: flex;
   flex-direction: column;
+  /* A little less room between the fields keeps two rows of pictures in view at 1024 by 768. */
+  gap: 1rem;
   align-self: stretch;
   min-height: 0;
 }
 
-/* The symbol list and the icon list take the free height and scroll inside themselves. */
+/* The Picture field takes the free height, and its list scrolls inside itself. */
 .fields fieldset.grow {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
-  min-height: 9rem;
+  /* The field shrinks to the room that is left, but not below a list of a row or two. */
+  min-height: 18.5rem;
 }
 
 /* The buttons stay at the bottom of the sheet and in view. */
@@ -279,15 +288,15 @@ svg {
   background: color-mix(in oklab, var(--light) var(--glass-settings), transparent);
 }
 
-.split h2 {
-  grid-column: 1 / -1;
-}
-
 @media (width < 52rem) {
   .sheet form.split {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
     align-content: start;
+  }
+
+  .split :is(h2, .preview, .fields) {
+    grid-area: auto;
   }
 
   .preview {
@@ -305,15 +314,13 @@ svg {
 }
 
 /* The colour is a row of round swatches. The one in use carries a tick. */
-.swatches,
-.icons {
+.swatches {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
 }
 
-.swatches label,
-.icons label {
+.swatches label {
   display: grid;
   place-items: center;
   width: 3rem;
@@ -365,42 +372,33 @@ svg {
   --tick: var(--light);
 }
 
-/* The icon is a row of square boxes. The list scrolls inside the sheet. */
-.icons {
+/* The choice of Symbols or Icons sits above the box. */
+.grow > .kinds {
+  margin-bottom: 0.5rem;
+}
+
+/* The name of the box and the line that counts share a row. */
+.find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 0.75rem;
+  margin-bottom: 0.375rem;
+}
+
+.find .small,
+.find .hint {
+  margin: 0;
+}
+
+/* The pictures are a list that scrolls, in as many columns as fit. It takes the height that is left. */
+/* Each one shows its symbol or its icon on a white plate, and its name. Show more ends the list. */
+.pictures {
   flex: 1 1 auto;
-  align-content: flex-start;
-  min-height: 0;
-  padding: 4px;
-  overflow: auto;
-}
-
-.icons label {
-  border-radius: 0.6rem;
-  background: var(--control);
-}
-
-.icons label:has(input:checked) {
-  border-color: var(--dark);
-  background: var(--dark);
-  color: var(--light);
-}
-
-.icons app-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  stroke-width: 2;
-}
-
-/* The symbols are a list that scrolls, in as many columns as fit. It takes the height that is left. */
-/* Each one shows its picture on a white plate. */
-.symbols {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 2px;
-  flex: 1 1 auto;
-  align-content: start;
-  min-height: 0;
-  margin-top: 0.75rem;
+  /* The list keeps room for a row or two when the window is small, and the form scrolls instead. */
+  min-height: 6.5rem;
+  margin-top: 0.5rem;
   padding: 4px;
   overflow: auto;
   border: 1px solid var(--line);
@@ -408,7 +406,19 @@ svg {
   background: var(--control);
 }
 
-.symbols label {
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 2px;
+}
+
+.pictures .more {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.pictures label {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -419,16 +429,12 @@ svg {
   font-weight: 600;
 }
 
-.symbols .hint {
-  grid-column: 1 / -1;
-}
-
-.symbols label:has(input:checked) {
+.pictures label:has(input:checked) {
   background: var(--dark);
   color: var(--light);
 }
 
-.symbols label:has(input:focus-visible) {
+.pictures label:has(input:focus-visible) {
   outline-offset: -3px;
 }
 
@@ -446,4 +452,12 @@ svg {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* An icon is drawn in the colour of the text on its plate, which stays white when it is chosen. */
+.plate app-icon {
+  width: 100%;
+  height: 100%;
+  color: var(--ink);
+  stroke-width: 2;
 }

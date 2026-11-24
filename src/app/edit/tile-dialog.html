@@ -56,53 +56,10 @@
           />
         </div>
 
-        <fieldset class="grow">
-          <legend>Symbol</legend>
-          <!-- Enter in the box that filters does not add the tile, because the caregiver is still choosing. -->
-          <label class="small" for="tile-find">Find a symbol</label>
-          <input
-            #find
-            id="tile-find"
-            type="text"
-            autocomplete="off"
-            aria-controls="tile-symbols"
-            [value]="query()"
-            (input)="query.set(find.value)"
-            (keydown.enter)="$event.preventDefault()"
-          />
-          <div class="symbols" id="tile-symbols">
-            <!-- No symbol is always in the list, so the caregiver can take a symbol away whatever the filter holds. -->
-            <label>
-              <input
-                type="radio"
-                name="tile-symbol"
-                value=""
-                [checked]="symbol() === ''"
-                (change)="symbol.set('')"
-              />
-              <span class="plate"></span>
-              No symbol
-            </label>
-            @for (item of symbols(); track item.file) {
-              <label>
-                <input
-                  type="radio"
-                  name="tile-symbol"
-                  [value]="item.file"
-                  [checked]="symbol() === item.file"
-                  (change)="symbol.set(item.file)"
-                />
-                <span class="plate"
-                  ><img [src]="'symbols/' + item.file" alt="" loading="lazy" draggable="false"
-                /></span>
-                {{ item.name }}
-              </label>
-            } @empty {
-              <p class="hint">No symbol has that name.</p>
-            }
-          </div>
-        </fieldset>
-      } @else {
+        <ng-container *ngTemplateOutlet="pictureField" />
+      }
+
+      @if (showStyle()) {
         <fieldset>
           <legend>Style</legend>
           <div class="kinds three">
@@ -145,24 +102,7 @@
       </fieldset>
 
       @if (kind() === 'open') {
-        <fieldset class="grow">
-          <legend>Icon</legend>
-          <div class="icons">
-            @for (item of icons; track item.name) {
-              <label>
-                <input
-                  type="radio"
-                  name="tile-icon"
-                  [value]="item.name"
-                  [checked]="icon() === item.name"
-                  (change)="icon.set(item.name)"
-                />
-                <span class="sr-only">{{ item.label }}</span>
-                <app-icon [name]="item.name" />
-              </label>
-            }
-          </div>
-        </fieldset>
+        <ng-container *ngTemplateOutlet="pictureField" />
       }
 
       <div class="actions">
@@ -173,4 +113,96 @@
       </div>
     </div>
   </form>
+
+  <!-- The Picture field. A cell that speaks shows it after the phrase and a cell that opens a board after the colour. -->
+  <ng-template #pictureField>
+    <fieldset class="grow">
+      <legend>Picture</legend>
+      <div class="kinds" role="radiogroup" aria-label="Kind of picture">
+        @for (item of kinds(); track item.value) {
+          <label>
+            <input
+              type="radio"
+              name="tile-picture-kind"
+              [value]="item.value"
+              [checked]="view() === item.value"
+              (change)="setView(item.value)"
+            />
+            {{ item.label }}
+          </label>
+        }
+      </div>
+
+      <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
+      <!-- The line that counts sits beside the name of the box, so the list keeps the height. -->
+      <!-- It is a polite live region and not a status role, because the board screen keeps the one status line of the page. -->
+      <div class="find">
+        <label class="small" for="tile-find">Find a picture</label>
+        <p class="hint" id="tile-picture-count" aria-live="polite" aria-atomic="true">
+          {{ countLine() }}
+        </p>
+      </div>
+      <input
+        #find
+        id="tile-find"
+        type="text"
+        autocomplete="off"
+        aria-controls="tile-pictures"
+        aria-describedby="tile-picture-count"
+        [value]="query()"
+        (input)="setQuery(find.value)"
+        (keydown.enter)="$event.preventDefault()"
+      />
+
+      <!-- The list scrolls, and Show more is at its end, after the last picture. -->
+      <div #pictureList class="pictures" id="tile-pictures">
+        <div class="choices" role="radiogroup" aria-label="Pictures">
+          <!-- No picture is always in the list of a cell that speaks, whatever the box holds. -->
+          @if (kind() === 'speak') {
+            <label>
+              <input
+                type="radio"
+                name="tile-picture"
+                value=""
+                [checked]="chosenKey() === ''"
+                (change)="pick(undefined)"
+              />
+              <span class="plate"></span>
+              No picture
+            </label>
+          }
+          @for (item of items(); track item.key) {
+            <label>
+              <input
+                type="radio"
+                name="tile-picture"
+                [value]="item.key"
+                [checked]="chosenKey() === item.key"
+                (change)="pick(item.picture)"
+              />
+              @let shown = item.picture;
+              <span class="plate">
+                @if (shown.kind === 'symbol') {
+                  <img
+                    [src]="'symbols/' + shown.symbol"
+                    alt=""
+                    width="40"
+                    height="40"
+                    loading="lazy"
+                    draggable="false"
+                  />
+                } @else {
+                  <app-icon [name]="shown.icon" />
+                }
+              </span>
+              {{ item.name }}
+            </label>
+          }
+        </div>
+        @if (hasMore()) {
+          <button type="button" class="more" (click)="showMore()">Show more</button>
+        }
+      </div>
+    </fieldset>
+  </ng-template>
 </dialog>
