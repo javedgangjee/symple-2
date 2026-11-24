@@ -1,6 +1,6 @@
 # Each target calls the npm script of the same name. See package.json.
 
-.PHONY: install start stop build test e2e lint format-check check
+.PHONY: install start stop build test e2e lint format-check check-pictures check
 
 # Installs the packages and the Chromium browser that the end to end tests use.
 install:
@@ -31,10 +31,14 @@ lint:
 format-check:
 	npm run format:check
 
+check-pictures:
+	npm run check:pictures
+
 # Runs every check in turn and stops at the first one that fails.
 check:
 	$(MAKE) lint
 	$(MAKE) format-check
+	$(MAKE) check-pictures
 	$(MAKE) test
 	$(MAKE) e2e
 	$(MAKE) build
