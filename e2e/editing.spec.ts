@@ -120,9 +120,9 @@ const pictureKind = (page: Page, kind: 'Symbols' | 'Icons') =>
     .filter({ has: page.getByRole('radio', { name: new RegExp(`^${kind}`) }) });
 
 /**
- * A picture of the list, by the value of its radio button, such as `symbol:drink.svg`. Two
- * pictures can share a name, as the two symbols "drink" do, so a test that needs one of them
- * finds it by its value. The label is pressed, because the radio button inside it is see-through.
+ * A picture of the list, by the value of its radio button, such as `symbol:drink.svg`. The value
+ * names one picture only, so a test that needs that picture finds it by its value. The label is
+ * pressed, because the radio button inside it is see-through.
  */
 const pictureByValue = (page: Page, value: string) =>
   pictureList(page)

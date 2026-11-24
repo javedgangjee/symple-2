@@ -217,6 +217,29 @@ check('PC5', `lucide.json holds every icon of lucide-static ${LUCIDE_VERSION}.`,
   }
 });
 
+check('PC6', 'No two symbols have the same name.', (problems) => {
+  const files = new Map();
+  for (const { file, name } of list) {
+    const key = String(name).toLowerCase();
+    files.set(key, [...(files.get(key) ?? []), file]);
+  }
+  for (const [name, shared] of files) {
+    if (shared.length > 1) {
+      problems.push(`the name "${name}" is given to ${shared.join(', ')}.`);
+    }
+  }
+  const names = new Map(list.map((entry) => [entry.file, entry.name]));
+  for (const [file, name] of [
+    ['drink-2.svg', 'drink 2'],
+    ['hot-2.svg', 'hot 2'],
+    ['open-3.svg', 'open 3'],
+  ]) {
+    if (names.get(file) !== name) {
+      problems.push(`${file} is named "${names.get(file)}", and it should be named "${name}".`);
+    }
+  }
+});
+
 if (failures.length > 0) {
   console.error(`check-pictures: ${failures.length} case(s) failed: ${failures.join(', ')}.`);
   process.exit(1);

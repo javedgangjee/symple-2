@@ -143,9 +143,28 @@ for (const [original, file] of placed) {
 }
 
 // The list: every Mulberry file and every file drawn for Symple, sorted by file name.
+// A file whose name ends in a number took that number because its plain name was taken. If its
+// name is taken too, the name gets the same number at its end, such as "drink 2" for drink-2.svg.
+// The files without a number are named first, so the names the app had before stay as they are.
 const list = [];
+const takenNames = new Set(
+  [
+    ...[...placed].map(([original, file]) => [file, displayNameOf(original)]),
+    ...OWN_FILES.map((file) => [file, file.replace(/\.svg$/, '')]),
+  ]
+    .filter(([file]) => !/-\d+\.svg$/.test(file))
+    .map(([file, name]) => (oldNames.get(file) ?? name).toLowerCase()),
+);
 for (const [original, file] of placed) {
-  list.push({ file, name: oldNames.get(file) ?? displayNameOf(original) });
+  let name = oldNames.get(file) ?? displayNameOf(original);
+  const number = /-(\d+)\.svg$/.exec(file);
+  if (number) {
+    if (takenNames.has(name.toLowerCase())) {
+      name = `${name} ${number[1]}`;
+    }
+    takenNames.add(name.toLowerCase());
+  }
+  list.push({ file, name });
 }
 for (const file of OWN_FILES) {
   list.push({ file, name: oldNames.get(file) ?? file.replace(/\.svg$/, '') });
