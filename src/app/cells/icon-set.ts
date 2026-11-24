@@ -102,9 +102,15 @@ function isIcon(value: unknown): value is LucideIcon {
 /** The drawing of an icon that the set does not have, and of every icon while the set loads. */
 const NO_SHAPES: readonly LucideShape[] = [];
 
+/** The wait in milliseconds after the first failed read of the set. It doubles after each one. */
+const FIRST_WAIT = 1000;
+
+/** The longest wait in milliseconds between two reads of the set. */
+const LONGEST_WAIT = 60_000;
+
 /**
  * The drawings of the Lucide set. The set is read the first time an icon asks for a drawing,
- * and only once. A board with only the core icons never reads it.
+ * and only once if the read succeeds. A board with only the core icons never reads it.
  */
 @Injectable({ providedIn: 'root' })
 export class IconSet {
@@ -114,7 +120,13 @@ export class IconSet {
   /** The drawings by Lucide name. It is null until the set has been read. */
   private readonly icons = signal<ReadonlyMap<string, readonly LucideShape[]> | null>(null);
 
-  /** Whether the set is being read or has been read. */
+  /**
+   * The number of failed reads whose wait is over. Each icon reads it, so an icon on screen
+   * asks again, and starts a new read, when a wait ends.
+   */
+  private readonly failures = signal(0);
+
+  /** Whether the set is being read, has been read, or waits to be read again. */
   private started = false;
 
   /**
@@ -124,6 +136,7 @@ export class IconSet {
    * computed value that calls it gets the shapes once they arrive.
    */
   shapes(name: string): readonly LucideShape[] {
+    this.failures();
     this.load();
     return this.icons()?.get(name) ?? NO_SHAPES;
   }
@@ -142,8 +155,13 @@ export class IconSet {
         const icons = entries.filter(isIcon);
         this.icons.set(new Map(icons.map((icon) => [icon.name, icon.shapes])));
       } catch {
-        // The icons stay empty, and the next icon that asks tries again.
-        this.started = false;
+        // The icons stay empty. After a wait that grows with each failure, every icon on
+        // screen asks again, so a read that keeps failing cannot loop fast.
+        const wait = Math.min(FIRST_WAIT * 2 ** this.failures(), LONGEST_WAIT);
+        setTimeout(() => {
+          this.started = false;
+          this.failures.update((count) => count + 1);
+        }, wait);
       }
     });
   }

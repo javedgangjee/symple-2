@@ -72,4 +72,41 @@ describe('IconSet', () => {
     expect(shapesOf(apple)).toEqual(TWO_ICONS[0].shapes);
     expect(shapesOf(house)).toEqual(TWO_ICONS[1].shapes);
   });
+
+  describe('when a read fails', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('IC7: an icon on screen gets its shapes when a later read of the set succeeds', async () => {
+      let fails = true;
+      useSet(() => (fails ? Promise.reject(new Error('No network.')) : Promise.resolve(TWO_ICONS)));
+      const fixture = TestBed.createComponent(Icon);
+      fixture.componentRef.setInput('name', 'lucide:apple');
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      const svg: SVGElement | null = fixture.nativeElement.querySelector('svg');
+      expect(svg?.children.length).toBe(0);
+      expect(reads).toBe(1);
+
+      // The set is not read again at once, so a read that keeps failing cannot loop fast.
+      await vi.advanceTimersByTimeAsync(999);
+      fixture.detectChanges();
+      expect(reads).toBe(1);
+
+      fails = false;
+      await vi.advanceTimersByTimeAsync(1);
+      fixture.detectChanges();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      expect(reads).toBe(2);
+      expect(fixture.nativeElement.querySelector('svg')).toBe(svg);
+      expect(svg ? shapesOf(svg) : []).toEqual(TWO_ICONS[0].shapes);
+    });
+  });
 });
