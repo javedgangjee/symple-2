@@ -75,11 +75,11 @@ describe('TileDialog', () => {
     localStorage.clear();
   });
 
-  it('TD1: Add tile shows Label, Phrase, Symbol and Colour, with a preview', async () => {
+  it('TD1: Add Tile shows Label, Phrase, Symbol and Colour, with a preview', async () => {
     await open({ kind: 'add-tile' });
     expect(dialog().open).toBe(true);
     expect(dialog().getAttribute('aria-labelledby')).toBe('tile-title');
-    expect(title()).toBe('Add tile');
+    expect(title()).toBe('Add Tile');
     expect(fieldNames()).toEqual(['Label', 'Phrase', 'Symbol', 'Colour']);
     expect(one('.preview').hasAttribute('inert')).toBe(true);
     expect(one('.preview app-cell')).toBeTruthy();
@@ -127,9 +127,9 @@ describe('TileDialog', () => {
     expect(previewLabel()).toBe('abcdefghijklmnopqrstuvwx');
   });
 
-  it('TD6: Add board shows Name, Style, Colour and Icon, and no icon of a key or a control', async () => {
+  it('TD6: Add Board shows Name, Style, Colour and Icon, and no icon of a key or a control', async () => {
     await open({ kind: 'add-board' });
-    expect(title()).toBe('Add board');
+    expect(title()).toBe('Add Board');
     expect(fieldNames()).toEqual(['Name', 'Style', 'Colour', 'Icon']);
     expect(previewLabel()).toBe('New board');
     expect(chosen('tile-style')).toBe('bleed');
@@ -158,7 +158,7 @@ describe('TileDialog', () => {
 
   it('TD8: Cancel and Escape close the dialog with no change and give the focus back', async () => {
     const opener = document.createElement('button');
-    opener.textContent = 'Add tile';
+    opener.textContent = 'Add Tile';
     document.body.appendChild(opener);
     const data = TestBed.inject(BoardData);
     const before = data.set();

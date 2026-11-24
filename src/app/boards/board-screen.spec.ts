@@ -130,19 +130,19 @@ describe('BoardScreen', () => {
     expect(new Set(shares()).size).toBe(1);
   });
 
-  it('S6: an empty group is drawn with no cell, and its only control is the Add tile button', async () => {
+  it('S6: an empty group is drawn with no cell, and its only control is the Add Tile button', async () => {
     await draw({ groups: [{ cells: [cell('A')] }, { cells: [] }] });
     expect(groups().length).toBe(2);
     expect(element.querySelectorAll('app-cell').length).toBe(1);
     const controls = groups()[1].querySelectorAll('button, a, input, select, textarea');
-    expect(Array.from(controls, (control) => control.textContent?.trim())).toEqual(['Add tile']);
+    expect(Array.from(controls, (control) => control.textContent?.trim())).toEqual(['Add Tile']);
   });
 
-  it('S7: a board with no groups is drawn with no cell, and its only control is the Add tile button', async () => {
+  it('S7: a board with no groups is drawn with no cell, and its only control is the Add Tile button', async () => {
     await draw({ groups: [] });
     expect(groups().length).toBe(0);
     expect(element.querySelectorAll('app-cell').length).toBe(0);
-    expect(buttons().map((button) => button.textContent?.trim())).toEqual(['Add tile']);
+    expect(buttons().map((button) => button.textContent?.trim())).toEqual(['Add Tile']);
   });
 
   it('S8: a tile that speaks writes its phrase to the status region and does not change', async () => {
@@ -793,13 +793,13 @@ describe('BoardScreen', () => {
       expect(toolNames(slotOf('Needs'))).toContain('Remove Needs');
     });
 
-    it('ES7: out of edit mode an empty group shows an Add tile button, which turns edit mode on and opens the tile dialog', async () => {
+    it('ES7: out of edit mode an empty group shows an Add Tile button, which turns edit mode on and opens the tile dialog', async () => {
       await drawBoard('needs', {
         editing: false,
         before: () => data.change((set) => addGroup(set, 'needs')),
       });
       const add = groups()[3].querySelector('button');
-      expect(texts(groups()[3])).toEqual(['Add tile']);
+      expect(texts(groups()[3])).toEqual(['Add Tile']);
       expect(add?.hasAttribute('data-caregiver-control')).toBe(true);
       expect(add?.tabIndex).toBe(-1);
       add?.click();
@@ -809,9 +809,9 @@ describe('BoardScreen', () => {
       expect(element.querySelector('app-tile-dialog dialog')?.hasAttribute('open')).toBe(true);
     });
 
-    it('ES8: in edit mode an empty group shows Add tile and Remove column', async () => {
+    it('ES8: in edit mode an empty group shows Add Tile and Remove column', async () => {
       await drawBoard('needs', { before: () => data.change((set) => addGroup(set, 'needs')) });
-      expect(texts(groups()[3])).toEqual(['Add tile', 'Remove column']);
+      expect(texts(groups()[3])).toEqual(['Add Tile', 'Remove column']);
       expect(groups()[3].querySelector('button')?.tabIndex).toBe(0);
     });
 
@@ -869,7 +869,7 @@ describe('BoardScreen', () => {
             addGroup(setBoard(set, 'needs', { title: 'Needs', layout: 'rows' }), 'needs'),
           ),
       });
-      expect(texts(groups()[3])).toEqual(['Add tile', 'Remove row']);
+      expect(texts(groups()[3])).toEqual(['Add Tile', 'Remove row']);
       const footer = TestBed.createComponent(EditActions);
       await footer.whenStable();
       expect(texts(footer.nativeElement)[0]).toBe('Add row');
@@ -904,7 +904,7 @@ describe('BoardScreen', () => {
       expect(scan.state()).toEqual({ phase: 'groups', group: 0, cell: null });
     });
 
-    it('ES16: Add tile of an empty group, pressed while Help is picked up, leaves Help where it was', async () => {
+    it('ES16: Add Tile of an empty group, pressed while Help is picked up, leaves Help where it was', async () => {
       await drawBoard('needs', { before: () => data.change((set) => addGroup(set, 'needs')) });
       await pressCell('Help');
       groups()[3].querySelector<HTMLElement>('.add-tile')?.click();

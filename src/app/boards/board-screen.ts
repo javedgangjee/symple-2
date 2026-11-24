@@ -117,7 +117,7 @@ function shareWithNoSize(cells: readonly Cell[]): number {
   return cells.some((cell) => cell.size !== undefined) ? NAMED_SIZES.medium : 1;
 }
 
-/** Whether an event came from a button, such as Add tile of an empty group, which does its own work. */
+/** Whether an event came from a button, such as Add Tile of an empty group, which does its own work. */
 function onButton(event: Event): boolean {
   return event.target instanceof Element && event.target.closest('button') !== null;
 }
@@ -553,7 +553,7 @@ export class BoardScreen {
   }
 
   /**
-   * The Add tile button of an empty group or of an empty board was pressed. It turns edit mode
+   * The Add Tile button of an empty group or of an empty board was pressed. It turns edit mode
    * on, because the button also shows out of edit mode, and opens the tile dialog for that group.
    */
   protected addTileTo(group?: number): void {
@@ -595,7 +595,7 @@ export class BoardScreen {
 
   /**
    * Removes a cell. The focus goes to the Remove button of the next cell, then of the cell
-   * before, then to the Add tile button of the group, which is empty by then.
+   * before, then to the Add Tile button of the group, which is empty by then.
    */
   private removeAt(at: CellPosition): void {
     const name = this.nameAt(at);
@@ -838,7 +838,7 @@ export class BoardScreen {
 
   /**
    * Puts the focus on an edit button of the cell at a place. A cell without that button gives
-   * its first one, and a group with no cell there gives its Add tile button.
+   * its first one, and a group with no cell there gives its Add Tile button.
    */
   private focusTool(grid: HTMLElement, { at, tool }: FocusAsk): void {
     const group = grid.querySelectorAll(':scope > .group')[at.group];

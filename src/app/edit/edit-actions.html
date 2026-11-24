@@ -1,4 +1,4 @@
-<!-- The buttons follow the footer of context/design/home.html, which has no Configure board button. -->
+<!-- The buttons follow the footer of context/design/home.html, which has no Configure Board button. -->
 <!-- Each icon is copied from the Lucide icon set, and a comment names it. -->
 @let cellsFull = !room.forAnyCell();
 @let groupsFull = !room.forGroup();
@@ -31,7 +31,7 @@
     <path d="M5 12h14" />
     <path d="M12 5v14" />
   </svg>
-  Add board
+  Add Board
 </button>
 <button
   class="add"
@@ -47,7 +47,7 @@
     <path d="M5 12h14" />
     <path d="M12 5v14" />
   </svg>
-  Add tile
+  Add Tile
 </button>
 <button class="add" type="button" aria-haspopup="dialog" (click)="openBoardSettings()">
   <!-- Lucide settings-2. -->
@@ -57,7 +57,7 @@
     <circle cx="17" cy="17" r="3" />
     <circle cx="7" cy="7" r="3" />
   </svg>
-  Configure board
+  Configure Board
 </button>
 <button #done class="done" type="button" (click)="stop()">
   <!-- Lucide check. -->

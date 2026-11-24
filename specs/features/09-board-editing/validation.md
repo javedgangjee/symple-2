@@ -82,8 +82,8 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES4 | Edit mode is on over Needs. | The Back cell has "Go back" and "Move Back", and no Edit or Remove button. |
 | ES5 | "Remove Help" is pressed. | Help is gone, the status line reads "Help removed", and the focus is on the Remove button of the next cell. |
 | ES6 | Edit mode is on over home. | The cell Keyboards has no Remove button. |
-| ES7 | A board has an empty group, and edit mode is off. | The group shows a button named "Add tile" that carries `data-caregiver-control` and is not a tab stop. A press turns edit mode on and opens the tile dialog. |
-| ES8 | Edit mode is on, and a group is empty. | The group shows "Add tile" and "Remove column". |
+| ES7 | A board has an empty group, and edit mode is off. | The group shows a button named "Add Tile" that carries `data-caregiver-control` and is not a tab stop. A press turns edit mode on and opens the tile dialog. |
+| ES8 | Edit mode is on, and a group is empty. | The group shows "Add Tile" and "Remove column". |
 | ES9 | A press on Help, and then a press on Pain. | Help takes the place of Pain, "Move Help" carried `aria-pressed="true"` in between, and the status line tells the new place. |
 | ES10 | A press on Help, and then Escape. | Help stays where it was, and nothing is picked up. |
 | ES11 | "Move Help" has the focus, and Right is pressed, then Down. | Help is in the next column, then one place lower, and the focus stays on "Move Help". |
@@ -91,17 +91,17 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES13 | The board has the rows layout and edit mode is on. | The footer button reads "Add row", and an empty group reads "Remove row". |
 | ES14 | Needs is on show, and the set changes so that the cell on home that opens Needs is removed. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
 | ES15 | The mode is `step`, the scan highlights the first group of Needs, and the board Food is renamed in the set. This covers finding 3 of review.md, the scan that goes to rest on any change of the set. | The scan still highlights the first group. |
-| ES16 | Needs has an empty fourth column. A press on Help, and then on Add tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
+| ES16 | Needs has an empty fourth column. A press on Help, and then on Add Tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add Tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
 
 The footer, in `src/app/edit/edit-actions.spec.ts` and `src/app/shell/footer.spec.ts`:
 
 | Case | Input | Expected result |
 | --- | --- | --- |
 | EA1 | Edit mode is off. | The footer holds no button. |
-| EA2 | Edit mode is on. | The footer holds Add column, Add board, Add tile, Configure board and Done, in that order. |
+| EA2 | Edit mode is on. | The footer holds Add column, Add Board, Add Tile, Configure Board and Done, in that order. |
 | EA3 | Done is pressed. | Edit mode is off. |
 | EA4 | Add column is pressed. | The board has one more group. |
-| EA5 | No group has room for a cell. | Add tile and Add board carry `aria-disabled="true"` and are described by a line that says every column is full. A press changes nothing. |
+| EA5 | No group has room for a cell. | Add Tile and Add Board carry `aria-disabled="true"` and are described by a line that says every column is full. A press changes nothing. |
 
 The settings panel and the header, in `settings-panel.spec.ts` and `header.spec.ts`:
 
@@ -116,17 +116,17 @@ The dialogs, in `tile-dialog.spec.ts`, `remove-dialog.spec.ts` and `board-dialog
 
 | Case | Input | Expected result |
 | --- | --- | --- |
-| TD1 | Add tile is pressed. | A dialog named "Add tile" shows Label, Phrase, Symbol and Colour, with a preview. |
+| TD1 | Add Tile is pressed. | A dialog named "Add Tile" shows Label, Phrase, Symbol and Colour, with a preview. |
 | TD2 | The label "Juice" is typed. | The preview reads "Juice". |
 | TD3 | "dri" is typed in the box that filters the symbols. | The list holds only the symbols whose name has "dri" in it. |
 | TD4 | Add is pressed with an empty label. | The dialog stays open, the Label field is marked invalid, and a line says that a label is needed. |
 | TD5 | A label of 25 characters is typed. | The field holds the first 24. |
-| TD6 | Add board is pressed. | A dialog named "Add board" shows Name, Style, Colour and Icon. The icons do not include back, backspace, caps, trash, check or cross. |
+| TD6 | Add Board is pressed. | A dialog named "Add Board" shows Name, Style, Colour and Icon. The icons do not include back, backspace, caps, trash, check or cross. |
 | TD7 | "Edit Help" is pressed. | The dialog is named "Edit Help" and is filled in with the label, the phrase, the symbol and the colour of Help. It has no choice of type. |
 | TD8 | Cancel is pressed, and in a second run Escape. | The dialog is closed each time, the set did not change, and the focus is back on the button that opened the dialog. |
 | RD1 | "Remove My boards" is pressed on home. | A dialog names My boards and says that 9 boards and their cells will be removed. Cancel leaves the set as it was. |
 | RD2 | Remove is pressed in that dialog. | The boards are gone. |
-| BG1 | Configure board is pressed over Needs. | A dialog shows the title "Needs" and the layout Columns as chosen. |
+| BG1 | Configure Board is pressed over Needs. | A dialog shows the title "Needs" and the layout Columns as chosen. |
 | BG2 | Rows is chosen and Save is pressed. | The board has the rows layout, and the grid carries `data-layout="rows"`. |
 
 Dragging and room, in `drag.spec.ts` and `room.spec.ts` of `src/app/edit/`:
@@ -165,15 +165,15 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | Case | Input | Expected result |
 | --- | --- | --- |
 | ED1 | On Needs, the panel is opened and Edit boards is pressed. | The panel closes, each cell shows its edit buttons, the footer shows its five buttons, and the settings button is gone. The cells are the same size as before. |
-| ED2 | In edit mode, Add tile is pressed, the label "Juice" is typed, the symbol "drink" is picked and Add is pressed. Done is pressed, and the page is reloaded. | Needs holds a cell "Juice" after the reload. |
+| ED2 | In edit mode, Add Tile is pressed, the label "Juice" is typed, the symbol "drink" is picked and Add is pressed. Done is pressed, and the page is reloaded. | Needs holds a cell "Juice" after the reload. |
 | ED3 | After case ED2, the scan runs on Needs. | The scan reaches "Juice", a pick speaks "Juice", and the scan never lands on an edit control. |
-| ED4 | Add board is pressed on home, the name "Outings" is typed and Add is pressed. Open Outings is pressed. | The board Outings is on show in edit mode, with the title "Outings" in the header and a Back cell. |
+| ED4 | Add Board is pressed on home, the name "Outings" is typed and Add is pressed. Open Outings is pressed. | The board Outings is on show in edit mode, with the title "Outings" in the header and a Back cell. |
 | ED5 | Help is edited to "Help me" with the phrase "Please help me". Done is pressed, and Help me is picked by scan. | The stand-in for speech records "Please help me". |
 | ED6 | Remove Pain is pressed. | Pain is gone, and it is still gone after a reload. |
 | ED7 | Help is dragged from the first column to the top of the third. | Help is the first cell of the third column, and the order holds after a reload. |
 | ED8 | Help is pressed, and then Pain. | Help is in the place of Pain. |
 | ED9 | Tab reaches "Move Help", and Right is pressed. | Help is in the second column. |
-| ED10 | Configure board is pressed, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Home is still drawn in columns. |
+| ED10 | Configure Board is pressed, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Home is still drawn in columns. |
 | ED11 | Add column is pressed, and then Remove column on the new group. | The board has four columns, and then three. |
 | ED12 | Add column is pressed until it says it is disabled. | No cell of the board is under 48px wide or high. |
 | ED13 | Edit mode is on over home, on Needs and in the tile dialog, in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
@@ -181,7 +181,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED15 | Edit mode is on. | Every edit button, footer button and dialog control is at least 48px high and wide. |
 | ED16 | Edit boards is pressed on the QWERTY keyboard. | Home is on show in edit mode. The Keyboards cell has no Remove button and no Open button. |
 | ED17 | In edit mode, ten scan times pass, and Tab and Enter are pressed. | No group and no cell is highlighted. Tab moves the focus through the edit buttons in the order of the cells and then to the footer. |
-| ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The scan never lands on the Add tile button of the empty column. |
+| ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The scan never lands on the Add Tile button of the empty column. |
 | ED19 | Reduced motion is asked for, and a cell is moved with two presses. | No cell is animated. |
 
 Changed cases in other files:
@@ -200,7 +200,7 @@ Run `npm start`, open the app in Chrome on the Mac and sign in.
 
 1. Open `context/design/home.html?edit` in a second window, and `context/design/home.html?edit&tile=Needs` in a third.
 2. In the app, turn edit mode on over home and open the tile dialog for Needs, in each of the five themes.
-3. Expected: the edit buttons, the footer and the dialog match the mockup in place, size and colour. The footer also holds Configure board, which the mockup does not have.
+3. Expected: the edit buttons, the footer and the dialog match the mockup in place, size and colour. The footer also holds Configure Board, which the mockup does not have.
 
 ### H2. The keyboard and a screen reader (7, 34, 37, 38)
 

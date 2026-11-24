@@ -13,7 +13,7 @@ import { EditMode } from './edit-mode';
 import { Room } from './room';
 
 /**
- * The buttons of edit mode in the footer: Add column, Add board, Add tile, Configure board and
+ * The buttons of edit mode in the footer: Add column, Add Board, Add Tile, Configure Board and
  * Done. An Add button with no room stays in the tab order, says that it is disabled and why,
  * and does nothing.
  */
@@ -37,7 +37,7 @@ export class EditActions {
     this.board()?.layout === 'rows' ? 'row' : 'column',
   );
 
-  /** Why Add tile and Add board do nothing, for the caregiver and for screen readers. */
+  /** Why Add Tile and Add Board do nothing, for the caregiver and for screen readers. */
   protected readonly cellsFullText = computed(
     () =>
       `Every ${this.groupKind()} is full. Remove a tile or add a ${this.groupKind()} to add another.`,

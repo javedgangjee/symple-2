@@ -215,7 +215,7 @@ function isBoardIcon(name: IconName): name is BoardIcon {
 const ICONS = ICON_NAMES.filter(isBoardIcon).map((name) => ({ name, label: ICON_LABELS[name] }));
 
 /**
- * The tile dialog. Add tile, Add board and the Edit button of a cell open it. It shows the
+ * The tile dialog. Add Tile, Add Board and the Edit button of a cell open it. It shows the
  * fields of a cell that speaks or of a cell that opens a board, and a preview of the cell that
  * follows each change. It changes nothing itself: Add and Save emit the fields, and the board
  * screen applies them and closes the dialog. It is a caregiver screen, so scanning does not reach it.
@@ -278,7 +278,7 @@ export class TileDialog {
     if (asked?.kind === 'edit-tile') {
       return `Edit ${this.current()?.label ?? ''}`.trim();
     }
-    return asked?.kind === 'add-board' ? 'Add board' : 'Add tile';
+    return asked?.kind === 'add-board' ? 'Add Board' : 'Add Tile';
   });
 
   protected readonly placeholder = computed(() =>

@@ -53,12 +53,12 @@ describe('EditActions', () => {
     expect(edit.status().text).toBe('Column 4 added');
   });
 
-  it('EA5: with no room for a cell, Add tile and Add board say they are disabled and why, and do nothing', async () => {
+  it('EA5: with no room for a cell, Add Tile and Add Board say they are disabled and why, and do nothing', async () => {
     await draw();
     TestBed.inject(Room).set({ cells: [false, false, false], group: true });
     await fixture.whenStable();
     const before = data.set();
-    for (const name of ['Add tile', 'Add board']) {
+    for (const name of ['Add Tile', 'Add Board']) {
       const add = button(name);
       expect(add.getAttribute('aria-disabled'), name).toBe('true');
       const line = element.querySelector(`#${add.getAttribute('aria-describedby')}`);

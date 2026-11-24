@@ -20,7 +20,7 @@ import { SCAN_TIME, marked, pass, pickByScan, switchKey } from './support/scan';
 import { spokenTexts } from './support/speech';
 
 /** The five buttons of edit mode in the footer, in their order. */
-const ACTIONS = ['Add column', 'Add board', 'Add tile', 'Configure board', 'Done'];
+const ACTIONS = ['Add column', 'Add Board', 'Add Tile', 'Configure Board', 'Done'];
 
 /** The scan time and the post click delay that the scan helpers move the clock by. */
 const SCAN = { scanTime: SCAN_TIME, postClickDelay: 500 } as const;
@@ -77,7 +77,7 @@ async function pressCell(page: Page, name: string): Promise<void> {
 
 /** Fills in the tile dialog for a new cell that speaks and adds the cell. */
 async function addTile(page: Page, label: string, symbol?: string): Promise<void> {
-  await editAction(page, 'Add tile').click();
+  await editAction(page, 'Add Tile').click();
   await sheet(page).getByLabel('Label').fill(label);
   if (symbol) {
     await sheet(page).getByLabel('Find a symbol').fill(symbol);
@@ -179,8 +179,8 @@ test('ED4: a board that is added from home opens in edit mode with its title and
   page,
 }) => {
   await edit(page, 'home');
-  await editAction(page, 'Add board').click();
-  await expect(sheet(page).getByRole('heading')).toHaveText('Add board');
+  await editAction(page, 'Add Board').click();
+  await expect(sheet(page).getByRole('heading')).toHaveText('Add Board');
   await sheet(page).getByLabel('Name').fill('Outings');
   await sheet(page).getByRole('button', { name: 'Add', exact: true }).click();
   await tool(page, 'Open Outings').click();
@@ -277,7 +277,7 @@ test('ED10: the rows layout of Needs holds after a reload, and home is still dra
   page,
 }) => {
   await edit(page, 'needs');
-  await editAction(page, 'Configure board').click();
+  await editAction(page, 'Configure Board').click();
   await expect(sheet(page).getByLabel('Title')).toHaveValue('Needs');
   await sheet(page).locator('label').filter({ hasText: 'Rows' }).click();
   await sheet(page).getByRole('button', { name: 'Save', exact: true }).click();
@@ -382,13 +382,13 @@ test('ED15: every edit button, footer button and dialog control is at least 48px
   expect(await smallControls(page.locator('main'), '.tool, .add-tile, .remove-group')).toEqual([]);
   expect(await smallControls(page.locator('app-footer'), 'button')).toEqual([]);
   const controls = 'button, input[type="text"], label:has(input[type="radio"])';
-  await editAction(page, 'Add tile').click();
+  await editAction(page, 'Add Tile').click();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
   await sheet(page).getByRole('button', { name: 'Cancel' }).click();
-  await editAction(page, 'Add board').click();
+  await editAction(page, 'Add Board').click();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
   await sheet(page).getByRole('button', { name: 'Cancel' }).click();
-  await editAction(page, 'Configure board').click();
+  await editAction(page, 'Configure Board').click();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
 });
 
@@ -442,19 +442,19 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
     'Edit Keyboards',
     'Move Keyboards',
     'Add column',
-    'Add board',
+    'Add Board',
   ]);
   await switchKey(page, 'Enter');
   expect(await marked(page, 'data-scan')).toEqual({ groups: [], cells: [] });
   expect(await marked(page, 'data-confirmed')).toEqual({ groups: [], cells: [] });
 });
 
-test('ED18: out of edit mode the scan never lands on the Add tile button of an empty column', async ({
+test('ED18: out of edit mode the scan never lands on the Add Tile button of an empty column', async ({
   page,
 }) => {
   await openBoard(page, 'needs', { ...SCAN, set: needsWithEmptyColumn() });
   await expect(page.locator('main .group')).toHaveCount(4);
-  const add = page.locator('main .group').nth(3).getByRole('button', { name: 'Add tile' });
+  const add = page.locator('main .group').nth(3).getByRole('button', { name: 'Add Tile' });
   await expect(add).toBeVisible();
   await expect(add).toHaveAttribute('data-caregiver-control', '');
   await stopClock(page);

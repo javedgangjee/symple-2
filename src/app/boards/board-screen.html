@@ -146,7 +146,7 @@
           </div>
         }
         @if (group.slots.length === 0) {
-          <!-- An empty group shows its Add tile button out of edit mode too. It is a caregiver control, -->
+          <!-- An empty group shows its Add Tile button out of edit mode too. It is a caregiver control, -->
           <!-- so the scan and the dwell press skip it, and Tab stops on it only in edit mode. -->
           <div class="empty">
             <button
@@ -162,7 +162,7 @@
                 <path d="M5 12h14" />
                 <path d="M12 5v14" />
               </svg>
-              Add tile
+              Add Tile
             </button>
             @if (editing && canRemoveGroup()) {
               <button class="remove-group" type="button" (click)="removeGroupAt(g)">
@@ -179,7 +179,7 @@
       </div>
     }
     @if (board.groups.length === 0) {
-      <!-- A board with no groups shows the same Add tile button. The new cell comes with its first group. -->
+      <!-- A board with no groups shows the same Add Tile button. The new cell comes with its first group. -->
       <div class="empty">
         <button
           class="add-tile"
@@ -194,7 +194,7 @@
             <path d="M5 12h14" />
             <path d="M12 5v14" />
           </svg>
-          Add tile
+          Add Tile
         </button>
       </div>
     }

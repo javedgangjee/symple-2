@@ -149,7 +149,7 @@
   pointer-events: none;
 }
 
-/* An empty group holds its Add tile button in its middle, and in edit mode Remove column under it. */
+/* An empty group holds its Add Tile button in its middle, and in edit mode Remove column under it. */
 /* The two lie in one grid column, which is as wide as the wider of them, so they have one width. */
 .empty {
   display: grid;
