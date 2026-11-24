@@ -8,7 +8,14 @@
   @let shown = tile();
   @switch (shown.style) {
     @case ('symbol') {
-      <span class="plate"><img [src]="'symbols/' + shown.symbol" alt="" draggable="false" /></span>
+      <!-- A symbol tile shows its symbol, or else its icon where the symbol would be. -->
+      <span class="plate">
+        @if (shown.symbol) {
+          <img [src]="'symbols/' + shown.symbol" alt="" draggable="false" />
+        } @else if (shown.icon; as icon) {
+          <app-icon [name]="icon" />
+        }
+      </span>
       <span class="label">{{ label() }}</span>
     }
     @case ('message') {
