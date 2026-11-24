@@ -12,7 +12,8 @@ Symple is an app that lets people who cannot speak or point use a computer alone
 
 ## Rules
 
-- The user commits and merges. Do not commit.
+- Ask the user before a commit or a merge, then do it yourself. One yes can cover a named set of commits, such as the plan steps of one implement run of the spec-driven skill or the fixes of one review. Keep commits small: one for each plan step, fix or change.
+- Never push. The user pushes main.
 - Boards and cells come from `boards.json` and `cells.json`. Do not hardcode them without a stated reason.
 - Every screen for the primary user must work by single switch scanning. A group of cells is a column or a row. Each board sets its own layout, and columns are the default. The caregiver sets it in the board settings of edit mode.
 - Use Firebase if a cloud service is needed, and only when a feature plan calls for it.
