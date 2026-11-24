@@ -97,7 +97,7 @@ The footer, in `src/app/edit/edit-actions.spec.ts` and `src/app/shell/footer.spe
 | Case | Input | Expected result |
 | --- | --- | --- |
 | EA1 | Edit mode is off. | The footer holds no button. |
-| EA2 | Edit mode is on. | The footer holds Add column, Add board, Add tile, Board settings and Done, in that order. |
+| EA2 | Edit mode is on. | The footer holds Add column, Add board, Add tile, Configure board and Done, in that order. |
 | EA3 | Done is pressed. | Edit mode is off. |
 | EA4 | Add column is pressed. | The board has one more group. |
 | EA5 | No group has room for a cell. | Add tile and Add board carry `aria-disabled="true"` and are described by a line that says every column is full. A press changes nothing. |
@@ -125,7 +125,7 @@ The dialogs, in `tile-dialog.spec.ts`, `remove-dialog.spec.ts` and `board-dialog
 | TD8 | Cancel is pressed, and in a second run Escape. | The dialog is closed each time, the set did not change, and the focus is back on the button that opened the dialog. |
 | RD1 | "Remove My boards" is pressed on home. | A dialog names My boards and says that 9 boards and their cells will be removed. Cancel leaves the set as it was. |
 | RD2 | Remove is pressed in that dialog. | The boards are gone. |
-| BG1 | Board settings is pressed over Needs. | A dialog shows the title "Needs" and the layout Columns as chosen. |
+| BG1 | Configure board is pressed over Needs. | A dialog shows the title "Needs" and the layout Columns as chosen. |
 | BG2 | Rows is chosen and Save is pressed. | The board has the rows layout, and the grid carries `data-layout="rows"`. |
 
 Dragging and room, in `drag.spec.ts` and `room.spec.ts` of `src/app/edit/`:
@@ -172,7 +172,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED7 | Help is dragged from the first column to the top of the third. | Help is the first cell of the third column, and the order holds after a reload. |
 | ED8 | Help is pressed, and then Pain. | Help is in the place of Pain. |
 | ED9 | Tab reaches "Move Help", and Right is pressed. | Help is in the second column. |
-| ED10 | Board settings is opened, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Home is still drawn in columns. |
+| ED10 | Configure board is pressed, Rows is chosen and Save is pressed. | The groups of Needs are rows, and they still are after a reload. Home is still drawn in columns. |
 | ED11 | Add column is pressed, and then Remove column on the new group. | The board has four columns, and then three. |
 | ED12 | Add column is pressed until it says it is disabled. | No cell of the board is under 48px wide or high. |
 | ED13 | Edit mode is on over home, on Needs and in the tile dialog, in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
@@ -199,7 +199,7 @@ Run `npm start`, open the app in Chrome on the Mac and sign in.
 
 1. Open `context/design/home.html?edit` in a second window, and `context/design/home.html?edit&tile=Needs` in a third.
 2. In the app, turn edit mode on over home and open the tile dialog for Needs, in each of the five themes.
-3. Expected: the edit buttons, the footer and the dialog match the mockup in place, size and colour. The footer also holds Board settings, which the mockup does not have.
+3. Expected: the edit buttons, the footer and the dialog match the mockup in place, size and colour. The footer also holds Configure board, which the mockup does not have.
 
 ### H2. The keyboard and a screen reader (7, 34, 37, 38)
 

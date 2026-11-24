@@ -13,7 +13,7 @@ import { EditMode } from './edit-mode';
 import { Room } from './room';
 
 /**
- * The buttons of edit mode in the footer: Add column, Add board, Add tile, Board settings and
+ * The buttons of edit mode in the footer: Add column, Add board, Add tile, Configure board and
  * Done. An Add button with no room stays in the tab order, says that it is disabled and why,
  * and does nothing.
  */

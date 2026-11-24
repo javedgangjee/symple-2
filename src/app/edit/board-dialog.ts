@@ -25,7 +25,7 @@ export interface BoardFields {
 const LAYOUT_LABELS: Readonly<Record<LayoutName, string>> = { columns: 'Columns', rows: 'Rows' };
 
 /**
- * The dialog of Board settings. It sets the title and the layout of the board on show.
+ * The dialog that the Configure board button opens. It sets the title and the layout of the board on show.
  * It changes nothing itself: Save emits the fields, and the board screen applies them and
  * closes the dialog.
  */

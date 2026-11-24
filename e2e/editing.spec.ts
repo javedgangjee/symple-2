@@ -20,7 +20,7 @@ import { SCAN_TIME, marked, pass, pickByScan, switchKey } from './support/scan';
 import { spokenTexts } from './support/speech';
 
 /** The five buttons of edit mode in the footer, in their order. */
-const ACTIONS = ['Add column', 'Add board', 'Add tile', 'Board settings', 'Done'];
+const ACTIONS = ['Add column', 'Add board', 'Add tile', 'Configure board', 'Done'];
 
 /** The scan time and the post click delay that the scan helpers move the clock by. */
 const SCAN = { scanTime: SCAN_TIME, postClickDelay: 500 } as const;
@@ -277,7 +277,7 @@ test('ED10: the rows layout of Needs holds after a reload, and home is still dra
   page,
 }) => {
   await edit(page, 'needs');
-  await editAction(page, 'Board settings').click();
+  await editAction(page, 'Configure board').click();
   await expect(sheet(page).getByLabel('Title')).toHaveValue('Needs');
   await sheet(page).locator('label').filter({ hasText: 'Rows' }).click();
   await sheet(page).getByRole('button', { name: 'Save', exact: true }).click();
@@ -388,7 +388,7 @@ test('ED15: every edit button, footer button and dialog control is at least 48px
   await editAction(page, 'Add board').click();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
   await sheet(page).getByRole('button', { name: 'Cancel' }).click();
-  await editAction(page, 'Board settings').click();
+  await editAction(page, 'Configure board').click();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
 });
 
