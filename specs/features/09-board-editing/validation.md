@@ -88,6 +88,9 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES11 | "Move Help" has the focus, and Right is pressed, then Down. | Help is in the next column, then one place lower, and the focus stays on "Move Help". |
 | ES12 | The board has the rows layout, "Move Help" has the focus, and Down is pressed. | Help is in the next row. |
 | ES13 | The board has the rows layout and edit mode is on. | The footer button reads "Add row", and an empty group reads "Remove row". |
+| ES14 | Needs is on show, and the set changes so that the cell on home that opens Needs is removed. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
+| ES15 | The mode is `step`, the scan highlights the first group of Needs, and the board Food is renamed in the set. This covers finding 3 of review.md, the scan that goes to rest on any change of the set. | The scan still highlights the first group. |
+| ES16 | Needs has an empty fourth column. A press on Help, and then on Add tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
 
 The footer, in `src/app/edit/edit-actions.spec.ts` and `src/app/shell/footer.spec.ts`:
 

@@ -33,7 +33,7 @@
         [attr.data-empty]="mark(group.slots.length === 0)"
         [attr.data-scan]="mark(scanned.group === g)"
         [attr.data-scan-bar]="mark(showsBar() && scanned.phase === 'groups' && scanned.group === g)"
-        (click)="onGroupClick(g)"
+        (click)="onGroupClick($event, g)"
       >
         @for (slot of group.slots; track slot.key; let c = $index) {
           @let place = { group: g, cell: c };

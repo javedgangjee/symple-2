@@ -117,6 +117,25 @@ function shareWithNoSize(cells: readonly Cell[]): number {
   return cells.some((cell) => cell.size !== undefined) ? NAMED_SIZES.medium : 1;
 }
 
+/** Whether an event came from a button, such as Add tile of an empty group, which does its own work. */
+function onButton(event: Event): boolean {
+  return event.target instanceof Element && event.target.closest('button') !== null;
+}
+
+/** What the scan is given: the board on show and the number of cells in each of its groups. */
+interface Scanned {
+  readonly id: string;
+  readonly sizes: readonly number[];
+}
+
+function sameScanned(a: Scanned, b: Scanned): boolean {
+  return (
+    a.id === b.id &&
+    a.sizes.length === b.sizes.length &&
+    a.sizes.every((size, index) => size === b.sizes[index])
+  );
+}
+
 /** Whether an event came from an edit button, which does its own work. */
 function onTool(event: Event): boolean {
   return event.target instanceof Element && event.target.closest('.tool') !== null;
@@ -167,6 +186,14 @@ export class BoardScreen {
 
   /** What a group is called in this layout, as "Column" or "Row". */
   protected readonly groupKind = computed(() => (this.layout() === 'rows' ? 'Row' : 'Column'));
+
+  private readonly scanned = computed<Scanned>(
+    () => ({
+      id: this.id(),
+      sizes: this.board()?.groups.map((group) => group.cells.length) ?? [],
+    }),
+    { equal: sameScanned },
+  );
 
   private readonly grid = viewChild<ElementRef<HTMLElement>>('grid');
 
@@ -268,12 +295,23 @@ export class BoardScreen {
       this.dwell.reset();
     });
 
+    // The scan starts again only when another board comes on show or the groups of this one
+    // change in size. A change elsewhere in the set, such as a sync of another board, leaves
+    // the highlight where the primary user has it.
     effect(() => {
-      const sizes = this.board()?.groups.map((group) => group.cells.length) ?? [];
+      const { sizes } = this.scanned();
       untracked(() => {
-        this.scan.show(sizes);
+        this.scan.show([...sizes]);
         this.dwell.reset();
       });
+    });
+
+    // A change of the set, such as a sync from another device, can remove the board on show.
+    // The screen would then hold no cell and no Back cell, so home opens in its place.
+    effect(() => {
+      if (!this.board() && this.id() !== HOME_BOARD_ID) {
+        untracked(() => void this.router.navigateByUrl('/', { replaceUrl: true }));
+      }
     });
 
     this.scan.picks.pipe(takeUntilDestroyed()).subscribe((position) => this.pressAt(position));
@@ -662,10 +700,10 @@ export class BoardScreen {
     }
   }
 
-  /** A press on an empty group puts the picked cell there. */
-  protected onGroupClick(group: number): void {
+  /** A press on an empty group puts the picked cell there. A press on a button of the group does not. */
+  protected onGroupClick(event: Event, group: number): void {
     const held = this.picked();
-    if (held && this.groups()[group]?.slots.length === 0) {
+    if (held && !onButton(event) && this.groups()[group]?.slots.length === 0) {
       this.picked.set(null);
       this.move(held, { group, cell: 0 });
     }

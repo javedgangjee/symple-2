@@ -4,12 +4,13 @@ import { Router, provideRouter } from '@angular/router';
 import { standInForDialog } from '../edit/dialog-stand-in';
 import { EditMode } from '../edit/edit-mode';
 import { Message } from '../keyboard/message';
+import { Scan } from '../scan/scan';
 import { ScanSettingValues, ScanSettings } from '../scan/scan-settings';
 import { SettingsOpen } from '../settings/settings-open';
 import { FakeVoiceSource } from '../speech/fake-voice-source';
 import { VOICE_SOURCE } from '../speech/voice-source';
 import { Back } from './back';
-import { addGroup, setBoard } from '../edit/board-edits';
+import { addGroup, removeCell, setBoard } from '../edit/board-edits';
 import { EditActions } from '../edit/edit-actions';
 import { Board, BoardData, Cell, CellSize, Tile } from './board-data';
 import { BoardScreen } from './board-screen';
@@ -872,6 +873,45 @@ describe('BoardScreen', () => {
       const footer = TestBed.createComponent(EditActions);
       await footer.whenStable();
       expect(texts(footer.nativeElement)[0]).toBe('Add row');
+    });
+
+    it('ES14: a set change that removes the board on show opens home', async () => {
+      await drawBoard('needs', { editing: false });
+      const router = TestBed.inject(Router);
+      await router.navigateByUrl('/board/needs');
+      const groupsOfHome = data.board('home')?.groups ?? [];
+      const opensNeeds = (one: Cell) =>
+        one.tile.action?.type === 'open' && one.tile.action.board === 'needs';
+      const group = groupsOfHome.findIndex((candidate) => candidate.cells.some(opensNeeds));
+      const at = { group, cell: groupsOfHome[group].cells.findIndex(opensNeeds) };
+      data.change((set) => removeCell(set, 'home', at));
+      await fixture.whenStable();
+      expect(data.board('needs')).toBeUndefined();
+      await vi.waitFor(() => expect(router.url).toBe('/'));
+    });
+
+    it('ES15: a change to a board that is not on show leaves the scan where it is', async () => {
+      await drawBoard('needs', {
+        editing: false,
+        before: () => TestBed.inject(ScanSettings).set({ selectionMode: 'step' }),
+      });
+      const scan = TestBed.inject(Scan);
+      await key(document.body, 'Enter');
+      expect(scan.state()).toEqual({ phase: 'groups', group: 0, cell: null });
+      data.change((set) => setBoard(set, 'food', { title: 'Meals', layout: 'columns' }));
+      await fixture.whenStable();
+      expect(data.board('food')?.title).toBe('Meals');
+      expect(scan.state()).toEqual({ phase: 'groups', group: 0, cell: null });
+    });
+
+    it('ES16: Add tile of an empty group, pressed while Help is picked up, leaves Help where it was', async () => {
+      await drawBoard('needs', { before: () => data.change((set) => addGroup(set, 'needs')) });
+      await pressCell('Help');
+      groups()[3].querySelector<HTMLElement>('.add-tile')?.click();
+      await fixture.whenStable();
+      expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
+      expect(cellOrder()[3]).toEqual([]);
+      expect(edit.dialog()).toEqual({ kind: 'add-tile', group: 3 });
     });
   });
 });
