@@ -88,7 +88,7 @@ The board screen in edit mode, in `src/app/boards/board-screen.spec.ts`:
 | ES10 | A press on Help, and then Escape. | Help stays where it was, and nothing is picked up. |
 | ES11 | "Move Help" has the focus, and Right is pressed, then Down. | Help is in the next column, then one place lower, and the focus stays on "Move Help". |
 | ES12 | The board has the rows layout, "Move Help" has the focus, and Down is pressed. | Help is in the next row. |
-| ES13 | The board has the rows layout and edit mode is on. | The footer button reads "Add row", and an empty group reads "Remove row". |
+| ES13 | The board has the rows layout and edit mode is on. | The button beside the grid is named "Add row", and an empty group reads "Remove row". |
 | ES14 | Needs is on show, and the set changes so that the cell on home that opens Needs is removed. This covers finding 1 of review.md, the empty screen with no Back cell. | The set has no board Needs, and home is on show. |
 | ES15 | The mode is `step`, the scan highlights the first group of Needs, and the board Food is renamed in the set. This covers finding 3 of review.md, the scan that goes to rest on any change of the set. | The scan still highlights the first group. |
 | ES16 | Needs has an empty fourth column. A press on Help, and then on Add Tile of the fourth column. This covers finding 6 of review.md, the picked cell that moves when Add Tile is pressed. | Help stays in the first column, the fourth column stays empty, and the tile dialog is open for the fourth column. |
@@ -98,9 +98,11 @@ The footer, in `src/app/edit/edit-actions.spec.ts` and `src/app/shell/footer.spe
 | Case | Input | Expected result |
 | --- | --- | --- |
 | EA1 | Edit mode is off. | The footer holds no button. |
-| EA2 | Edit mode is on. | The footer holds Add column, Add Board, Add Tile, Configure Board and Done, in that order. |
+| EA2 | Edit mode is on. | The footer holds Add Board, Add Tile, Configure Board and Done, in that order. |
 | EA3 | Done is pressed. | Edit mode is off. |
-| EA4 | Add column is pressed. | The board has one more group. |
+| EA4 | Add column, the button beside the grid, is pressed. This case and cases EA6 and EA7 are in `board-screen.spec.ts`. | The board has one more group, the status line reads "Column 4 added", and the footer holds no Add column button. |
+| EA6 | The board has no room for a group. | Add column carries `aria-disabled="true"` and is described by a line that says the board has no room for another column. A press changes nothing. |
+| EA7 | Edit mode is off. | The screen has no Add column button. |
 | EA5 | No group has room for a cell. | Add Tile and Add Board carry `aria-disabled="true"` and are described by a line that says every column is full. A press changes nothing. |
 
 The settings panel and the header, in `settings-panel.spec.ts` and `header.spec.ts`:
@@ -164,7 +166,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 
 | Case | Input | Expected result |
 | --- | --- | --- |
-| ED1 | On Needs, the panel is opened and Edit boards is pressed. | The panel closes, each cell shows its edit buttons, the footer shows its five buttons, and the settings button is gone. The cells are the same size as before. |
+| ED1 | On Needs, the panel is opened and Edit boards is pressed. | The panel closes, each cell shows its edit buttons, the footer shows its four buttons, Add column shows beside the grid, and the settings button is gone. The cells are the same size as before. |
 | ED2 | In edit mode, Add Tile is pressed, the label "Juice" is typed, the symbol "drink" is picked and Add is pressed. Done is pressed, and the page is reloaded. | Needs holds a cell "Juice" after the reload. |
 | ED3 | After case ED2, the scan runs on Needs. | The scan reaches "Juice", a pick speaks "Juice", and the scan never lands on an edit control. |
 | ED4 | Add Board is pressed on home, the name "Outings" is typed and Add is pressed. Open Outings is pressed. | The board Outings is on show in edit mode, with the title "Outings" in the header and a Back cell. |

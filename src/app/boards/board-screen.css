@@ -1,5 +1,6 @@
-/* The screen fills the main area. */
+/* The screen fills the main area. Add column is placed from its right edge. */
 :host {
+  position: relative;
   display: grid;
   min-width: 0;
   min-height: 0;
@@ -114,6 +115,7 @@
 }
 
 .tool:focus-visible,
+.add-group:focus-visible,
 .add-tile:focus-visible,
 .remove-group:focus-visible {
   outline: 3px solid var(--ink);
@@ -190,7 +192,39 @@
   transition: background-color 160ms var(--ease);
 }
 
+/* Add column is a dashed box with a plus in its middle. It lies in the right margin of the */
+/* page, as high as the grid, and takes no room from the grid. The margin is 4 parts in 100 of */
+/* the page beside the 92 of the screen, and the padding of the page lies beyond it. The box */
+/* sits in the middle of the two. */
+.add-group {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(100% + max(4px, (100% * 4 / 92 + var(--pad) - 48px) / 2));
+  display: grid;
+  place-items: center;
+  width: 48px;
+  padding: 0;
+  border: 3px dashed color-mix(in oklab, var(--ink) 75%, var(--canvas));
+  border-radius: 9.6px;
+  background: color-mix(in oklab, var(--light) 30%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+
+.add-group:hover {
+  background: color-mix(in oklab, var(--light) 90%, transparent);
+}
+
+/* With no room for a group the box is dimmed by its fill only, so the plus keeps its contrast. */
+.add-group[aria-disabled='true'] {
+  background: transparent;
+  cursor: not-allowed;
+}
+
 /* The icon is drawn as the icons of the footer buttons are. */
+.add-group svg,
 .add-tile svg,
 .remove-group svg {
   flex: none;
@@ -203,6 +237,12 @@
   stroke-linejoin: round;
 }
 
+/* The plus of Add column stands alone, so it is drawn a little larger than an icon beside a label. */
+.add-group svg {
+  width: 28px;
+  height: 28px;
+}
+
 .add-tile:hover,
 .remove-group:hover {
   background: color-mix(in oklab, var(--light) 90%, transparent);
@@ -211,6 +251,7 @@
 /* People who ask for less transparency get solid buttons. */
 @media (prefers-reduced-transparency: reduce) {
   .tool,
+  .add-group,
   .add-tile,
   .remove-group {
     background: var(--light);

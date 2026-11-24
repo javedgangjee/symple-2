@@ -18,12 +18,12 @@ describe('Footer', () => {
     expect(element.querySelectorAll('button').length).toBe(0);
   });
 
-  it('EA2: in edit mode the footer holds Add column, Add Board, Add Tile, Configure Board and Done', async () => {
+  it('EA2: in edit mode the footer holds Add Board, Add Tile, Configure Board and Done', async () => {
     TestBed.inject(EditMode).start();
     const element = await draw();
     const names = Array.from(element.querySelectorAll('footer button'), (button) =>
       button.textContent?.trim(),
     );
-    expect(names).toEqual(['Add column', 'Add Board', 'Add Tile', 'Configure Board', 'Done']);
+    expect(names).toEqual(['Add Board', 'Add Tile', 'Configure Board', 'Done']);
   });
 });

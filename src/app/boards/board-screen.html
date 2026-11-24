@@ -199,6 +199,30 @@
       </div>
     }
   </div>
+  <!-- Add column lies in the margin beside the grid, so the grid keeps its place and its size. -->
+  <!-- With no room for a group it stays in the tab order, says that it is disabled and why, and does nothing. -->
+  @if (editing) {
+    @let groupsFull = !room.forGroup();
+    @let addGroupName = 'Add ' + groupKind().toLowerCase();
+    <button
+      class="add-group"
+      type="button"
+      [attr.aria-label]="addGroupName"
+      [attr.aria-disabled]="groupsFull"
+      [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"
+      [title]="groupsFull ? groupsFullText() : addGroupName"
+      (click)="addGroup()"
+    >
+      <!-- Lucide plus. -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12h14" />
+        <path d="M12 5v14" />
+      </svg>
+    </button>
+    @if (groupsFull) {
+      <p class="sr-only" id="edit-groups-full">{{ groupsFullText() }}</p>
+    }
+  }
   <!-- The cell that is dragged follows the pointer. It is a picture of the cell, which lies in the grid as a gap. -->
   @if (lifted(); as cell) {
     <div

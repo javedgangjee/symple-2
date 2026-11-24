@@ -1,22 +1,7 @@
 <!-- The buttons follow the footer of context/design/home.html, which has no Configure Board button. -->
+<!-- Add column is not here. The board screen shows it beside the grid, where the new column goes. -->
 <!-- Each icon is copied from the Lucide icon set, and a comment names it. -->
 @let cellsFull = !room.forAnyCell();
-@let groupsFull = !room.forGroup();
-<button
-  class="add"
-  type="button"
-  [attr.aria-disabled]="groupsFull"
-  [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"
-  [title]="groupsFull ? groupsFullText() : ''"
-  (click)="addGroup()"
->
-  <!-- Lucide plus. -->
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M5 12h14" />
-    <path d="M12 5v14" />
-  </svg>
-  Add {{ groupKind() }}
-</button>
 <button
   class="add"
   type="button"
@@ -67,7 +52,4 @@
 <!-- The lines that say why an Add button does nothing. A screen reader hears one with the button. -->
 @if (cellsFull) {
   <p class="sr-only" id="edit-cells-full">{{ cellsFullText() }}</p>
-}
-@if (groupsFull) {
-  <p class="sr-only" id="edit-groups-full">{{ groupsFullText() }}</p>
 }

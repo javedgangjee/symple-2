@@ -45,14 +45,6 @@ describe('EditActions', () => {
     expect(edit.isOn()).toBe(false);
   });
 
-  it('EA4: Add column gives the board one more group', async () => {
-    await draw();
-    expect(data.board('needs')?.groups.length).toBe(3);
-    await press('Add column');
-    expect(data.board('needs')?.groups.map((group) => group.cells.length)).toEqual([5, 4, 4, 0]);
-    expect(edit.status().text).toBe('Column 4 added');
-  });
-
   it('EA5: with no room for a cell, Add Tile and Add Board say they are disabled and why, and do nothing', async () => {
     await draw();
     TestBed.inject(Room).set({ cells: [false, false, false], group: true });
@@ -67,6 +59,5 @@ describe('EditActions', () => {
       expect(edit.dialog(), name).toBeNull();
     }
     expect(data.set()).toBe(before);
-    expect(button('Add column').getAttribute('aria-disabled')).toBe('false');
   });
 });

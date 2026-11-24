@@ -19,8 +19,12 @@ import { test } from './support/firebase';
 import { SCAN_TIME, marked, pass, pickByScan, switchKey } from './support/scan';
 import { spokenTexts } from './support/speech';
 
-/** The five buttons of edit mode in the footer, in their order. */
-const ACTIONS = ['Add column', 'Add Board', 'Add Tile', 'Configure Board', 'Done'];
+/** The four buttons of edit mode in the footer, in their order. */
+const ACTIONS = ['Add Board', 'Add Tile', 'Configure Board', 'Done'];
+
+/** The Add column button, which lies in the margin beside the grid. It reads Add row in the rows layout. */
+const addGroup = (page: Page, name = 'Add column') =>
+  page.locator('main .add-group').and(page.getByRole('button', { name, exact: true }));
 
 /** The scan time and the post click delay that the scan helpers move the clock by. */
 const SCAN = { scanTime: SCAN_TIME, postClickDelay: 500 } as const;
@@ -282,7 +286,7 @@ test('ED10: the rows layout of Needs holds after a reload, and home is still dra
   await sheet(page).locator('label').filter({ hasText: 'Rows' }).click();
   await sheet(page).getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('main .grid')).toHaveAttribute('data-layout', 'rows');
-  await expect(editAction(page, 'Add row')).toBeVisible();
+  await expect(addGroup(page, 'Add row')).toBeVisible();
   await editAction(page, 'Done').click();
   await expect(page.locator('main .tool')).toHaveCount(0);
   expectDirection(await measure(page), 'rows');
@@ -298,7 +302,7 @@ test('ED11: Add column gives the board four columns, and Remove column on the ne
   page,
 }) => {
   await edit(page, 'needs');
-  await editAction(page, 'Add column').click();
+  await addGroup(page).click();
   await expect(page.locator('main .group')).toHaveCount(4);
   await page.locator('main .group').nth(3).getByRole('button', { name: 'Remove column' }).click();
   await expect(page.locator('main .group')).toHaveCount(3);
@@ -308,7 +312,7 @@ test('ED12: when Add column says it is disabled, no cell of the board is under 4
   page,
 }) => {
   await edit(page, 'needs');
-  const add = editAction(page, 'Add column');
+  const add = addGroup(page);
   // The count of presses has a limit, so a button that never says it is disabled fails the test.
   for (let pressCount = 0; pressCount < 40; pressCount++) {
     if ((await add.getAttribute('aria-disabled')) === 'true') {
@@ -379,7 +383,9 @@ test('ED15: every edit button, footer button and dialog control is at least 48px
   page,
 }) => {
   await edit(page, 'needs', { set: needsWithEmptyColumn() });
-  expect(await smallControls(page.locator('main'), '.tool, .add-tile, .remove-group')).toEqual([]);
+  expect(
+    await smallControls(page.locator('main'), '.tool, .add-group, .add-tile, .remove-group'),
+  ).toEqual([]);
   expect(await smallControls(page.locator('app-footer'), 'button')).toEqual([]);
   const controls = 'button, input[type="text"], label:has(input[type="radio"])';
   await editAction(page, 'Add Tile').click();

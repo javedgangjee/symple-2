@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { standInForDialog } from '../edit/dialog-stand-in';
 import { EditMode } from '../edit/edit-mode';
+import { Room } from '../edit/room';
 import { Message } from '../keyboard/message';
 import { Scan } from '../scan/scan';
 import { ScanSettingValues, ScanSettings } from '../scan/scan-settings';
@@ -862,7 +863,7 @@ describe('BoardScreen', () => {
       expect(status()).toBe('Help moved to row 2, place 2');
     });
 
-    it('ES13: in the rows layout the footer button reads Add row, and an empty group reads Remove row', async () => {
+    it('ES13: in the rows layout the button beside the grid is named Add row, and an empty group reads Remove row', async () => {
       await drawBoard('needs', {
         before: () =>
           data.change((set) =>
@@ -870,9 +871,40 @@ describe('BoardScreen', () => {
           ),
       });
       expect(texts(groups()[3])).toEqual(['Add Tile', 'Remove row']);
+      expect(element.querySelector('.add-group')?.getAttribute('aria-label')).toBe('Add row');
+    });
+
+    it('EA4: Add column beside the grid gives the board one more group, and the footer has no such button', async () => {
+      await drawBoard('needs');
+      expect(element.querySelector('.grid .add-group')).toBeNull();
+      await press('Add column');
+      expect(data.board('needs')?.groups.map((group) => group.cells.length)).toEqual([5, 4, 4, 0]);
+      expect(status()).toBe('Column 4 added');
       const footer = TestBed.createComponent(EditActions);
       await footer.whenStable();
-      expect(texts(footer.nativeElement)[0]).toBe('Add row');
+      expect(texts(footer.nativeElement)).toEqual([
+        'Add Board',
+        'Add Tile',
+        'Configure Board',
+        'Done',
+      ]);
+    });
+
+    it('EA6: with no room for a group, Add column says it is disabled and why, and does nothing', async () => {
+      await drawBoard('needs');
+      TestBed.inject(Room).set({ cells: [true, true, true], group: false });
+      await fixture.whenStable();
+      const add = named('Add column');
+      expect(add.getAttribute('aria-disabled')).toBe('true');
+      const line = element.querySelector(`#${add.getAttribute('aria-describedby')}`);
+      expect(line?.textContent).toContain('no room for another column');
+      await press('Add column');
+      expect(data.board('needs')?.groups.length).toBe(3);
+    });
+
+    it('EA7: out of edit mode the screen has no Add column button', async () => {
+      await drawBoard('needs', { editing: false });
+      expect(element.querySelector('.add-group')).toBeNull();
     });
 
     it('ES14: a set change that removes the board on show opens home', async () => {

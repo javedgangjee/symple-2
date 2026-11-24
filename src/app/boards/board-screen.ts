@@ -21,6 +21,7 @@ import {
   CellFields,
   addBoard,
   addCell,
+  addGroup,
   canRemove,
   canRemoveGroup,
   editCell,
@@ -169,7 +170,7 @@ export class BoardScreen {
   private readonly message = inject(Message);
   private readonly speech = inject(Speech);
   private readonly switches = inject(Switches);
-  private readonly room = inject(Room);
+  protected readonly room = inject(Room);
   private readonly view = inject(DOCUMENT).defaultView;
   protected readonly edit = inject(EditMode);
   protected readonly settings = inject(ScanSettings);
@@ -563,6 +564,28 @@ export class BoardScreen {
       return;
     }
     this.edit.open(group === undefined ? { kind: 'add-tile' } : { kind: 'add-tile', group });
+  }
+
+  /** Why Add column does nothing, for the caregiver and for screen readers. */
+  protected readonly groupsFullText = computed(
+    () => `The board has no room for another ${this.groupKind().toLowerCase()}.`,
+  );
+
+  /**
+   * The Add column button beside the grid was pressed. With no room for a group it stays in
+   * the tab order, says why and does nothing.
+   */
+  protected addGroup(): void {
+    const board = this.board();
+    if (!board) {
+      return;
+    }
+    if (!this.room.forGroup()) {
+      this.edit.tell(this.groupsFullText());
+      return;
+    }
+    this.data.change((set) => addGroup(set, board.id));
+    this.edit.tell(`${this.groupKind()} ${board.groups.length + 1} added`);
   }
 
   protected removeGroupAt(group: number): void {

@@ -8,13 +8,12 @@ import {
   viewChild,
 } from '@angular/core';
 import { BoardData } from '../boards/board-data';
-import { addGroup } from './board-edits';
 import { EditMode } from './edit-mode';
 import { Room } from './room';
 
 /**
- * The buttons of edit mode in the footer: Add column, Add Board, Add Tile, Configure Board and
- * Done. An Add button with no room stays in the tab order, says that it is disabled and why,
+ * The buttons of edit mode in the footer: Add Board, Add Tile, Configure Board and Done.
+ * An Add button with no room stays in the tab order, says that it is disabled and why,
  * and does nothing.
  */
 @Component({
@@ -43,11 +42,6 @@ export class EditActions {
       `Every ${this.groupKind()} is full. Remove a tile or add a ${this.groupKind()} to add another.`,
   );
 
-  /** Why Add column does nothing. */
-  protected readonly groupsFullText = computed(
-    () => `The board has no room for another ${this.groupKind()}.`,
-  );
-
   constructor() {
     // Edit mode starts with the focus on Done, as in the mockup, so the focus is not lost when
     // the settings panel closes. A dialog that opens at the same moment takes the focus itself.
@@ -56,20 +50,6 @@ export class EditActions {
         this.done().nativeElement.focus();
       }
     });
-  }
-
-  protected addGroup(): void {
-    const board = this.board();
-    if (!board) {
-      return;
-    }
-    if (!this.room.forGroup()) {
-      this.edit.tell(this.groupsFullText());
-      return;
-    }
-    this.data.change((set) => addGroup(set, board.id));
-    const kind = this.groupKind();
-    this.edit.tell(`${kind[0].toUpperCase()}${kind.slice(1)} ${board.groups.length + 1} added`);
   }
 
   /** Opens the tile dialog for a new cell or a new board, when a group has room for the cell. */

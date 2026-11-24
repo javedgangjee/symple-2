@@ -1,7 +1,9 @@
 /* Copied from the edit buttons of the footer in context/design/home.html. */
 /* The buttons are as tall as the footer, so the cells keep their size when edit mode turns on. */
+/* The three Add buttons share one width, that of the widest, and Done keeps its own. */
 :host {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
   align-items: center;
   gap: 12px;
 }
@@ -12,6 +14,7 @@
   --h: 48px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   height: var(--h);
   min-width: 48px;
