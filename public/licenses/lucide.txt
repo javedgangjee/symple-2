@@ -1,5 +1,4 @@
-The line icons in this app are copied from the Lucide icon set, version 1.77.0.
-They are board, heart, chat, keyboard, back, backspace, trash, check, cross, restaurant, cafe, mood, group, place, game, thumbs, apps and caps on the boards, the settings gear, the tab, stepper, list and play icons of the settings panel, and the alert icon of the sign in screen.
+This app holds the drawings of every icon of the Lucide icon set, version 1.77.0, taken from the package lucide-static.
 Source: https://lucide.dev
 They are used under the ISC License. Some of them come from the Feather project and are also under the MIT License. The text of the licence follows.
 

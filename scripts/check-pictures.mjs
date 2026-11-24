@@ -240,6 +240,37 @@ check('PC6', 'No two symbols have the same name.', (problems) => {
   }
 });
 
+check('PC7', 'The licence notes of the two sets ship with the app.', (problems) => {
+  const licenses = join(ROOT, 'public', 'licenses');
+  const mulberry = join(licenses, 'mulberry.txt');
+  if (!existsSync(mulberry)) {
+    problems.push('public/licenses/mulberry.txt does not exist.');
+  } else {
+    // The import copies LICENSE.txt of the release unchanged, so the file holds its lines.
+    const text = readFileSync(mulberry, 'utf8');
+    for (const line of [
+      'The Mulberry Symbol set',
+      'Copyright 2018-2026 Steve Lee',
+      'Creative Commons Attribution-Share Alike License',
+      'https://creativecommons.org/licenses/by-sa/4.0/',
+    ]) {
+      if (!text.includes(line)) {
+        problems.push(`mulberry.txt does not hold "${line}".`);
+      }
+    }
+  }
+  const lucide = readFileSync(join(licenses, 'lucide.txt'), 'utf8');
+  if (!lucide.includes('lucide-static') || !lucide.includes(LUCIDE_VERSION)) {
+    problems.push(`lucide.txt does not name the package lucide-static ${LUCIDE_VERSION}.`);
+  }
+  if (lucide.includes('They are board, heart')) {
+    problems.push('lucide.txt still lists a few icons as the ones the app copied.');
+  }
+  if (!lucide.includes('ISC License')) {
+    problems.push('lucide.txt no longer holds the ISC License.');
+  }
+});
+
 if (failures.length > 0) {
   console.error(`check-pictures: ${failures.length} case(s) failed: ${failures.join(', ')}.`);
   process.exit(1);

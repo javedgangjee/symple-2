@@ -29,6 +29,7 @@ Command: `node scripts/check-pictures.mjs`
 | PC4 | `public/symbols/ATTRIBUTION.txt`. | It gives an original name for each of the 3,436 Mulberry files, and it says that `stop.svg` was drawn for Symple. |
 | PC5 | `src/data/lucide.json` and the package `lucide-static`. | The file holds each of the 2,098 icons of version 1.77.0 with the shapes of the package. |
 | PC6 | The names of the list. This case comes from finding 2 of the review, which says three pairs of symbols share the names "drink", "hot" and "open". | No two symbols have the same name without regard to case. `drink-2.svg` is named "drink 2", `hot-2.svg` is named "hot 2" and `open-3.svg` is named "open 3". |
+| PC7 | `public/licenses/mulberry.txt` and `public/licenses/lucide.txt`. This case comes from finding 3 of the review, which says the licence notes that ship with the app do not match the new sets. | `mulberry.txt` is the `LICENSE.txt` of the Mulberry release: it names the Mulberry Symbol set, Steve Lee and the Creative Commons Attribution-Share Alike licence, and it links to CC BY-SA 4.0. `lucide.txt` says the app holds every icon of Lucide 1.77.0 from the package `lucide-static`, it no longer lists a few icons as the ones copied, and it still holds the ISC License. |
 
 ### A4. Unit tests (1, 2, 5, 13 to 15, 17 to 22)
 

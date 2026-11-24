@@ -65,7 +65,7 @@ Once a board has changed, the whole set of boards is kept in the local storage o
 
 ## Symbols
 
-The boards use the Mulberry Symbols set, release 3.6.1 with 3,436 files, copyright 2018-2026 Steve Lee, licensed under Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). The source is https://mulberrysymbols.org. The files in `public/symbols/` are unchanged apart from their names, and `public/symbols/ATTRIBUTION.txt` lists each file with its original name. One symbol, `stop.svg`, is not from Mulberry. It was drawn for Symple.
+The boards use the Mulberry Symbols set, release 3.6.1 with 3,436 files, copyright 2018-2026 Steve Lee, licensed under Creative Commons Attribution-ShareAlike 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). The source is https://mulberrysymbols.org. The files in `public/symbols/` are unchanged apart from their names, and `public/symbols/ATTRIBUTION.txt` lists each file with its original name. One symbol, `stop.svg`, is not from Mulberry. It was drawn for Symple. The licence text ships with the app in `public/licenses/mulberry.txt`.
 
 Every line icon in the app comes from Lucide version 1.77.0, through the package `lucide-static`, used under the ISC License. The source is https://lucide.dev. The icons are drawn inline in `src/app/cells/icon.ts`, `src/app/shell/header.html`, `src/app/settings/settings-panel.html` and `src/app/auth/sign-in-screen.html`, and each one names the Lucide icon it copies. A few Lucide icons come from the Feather project and are also under the MIT License, as the Lucide licence says. The licence text ships with the app in `public/licenses/lucide.txt`.
 

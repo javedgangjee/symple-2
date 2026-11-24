@@ -8,8 +8,9 @@
 // The script reads them from public/symbols/ATTRIBUTION.txt and src/data/symbols.json.
 // Every other symbol is copied under a new name: its Mulberry name in lower case, with each run
 // of other characters turned into one hyphen. A name that is taken gets a number at its end.
-// The script writes src/data/symbols.json and public/symbols/ATTRIBUTION.txt, and it reports any
-// file it could not place. Running it a second time changes nothing.
+// The script writes src/data/symbols.json and public/symbols/ATTRIBUTION.txt, copies LICENSE.txt
+// to public/licenses/mulberry.txt, and reports any file it could not place. Running it a second
+// time changes nothing.
 
 import { copyFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -20,6 +21,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SYMBOLS = join(ROOT, 'public', 'symbols');
 const ATTRIBUTION = join(SYMBOLS, 'ATTRIBUTION.txt');
 const LIST = join(ROOT, 'src', 'data', 'symbols.json');
+const LICENSE = join(ROOT, 'public', 'licenses', 'mulberry.txt');
 
 // The symbol that was drawn for Symple and is not from Mulberry.
 const OWN_FILES = ['stop.svg'];
@@ -45,6 +47,10 @@ if (!version.endsWith(RELEASE)) {
   fail(
     `the folder holds "${version || 'no VERSION.txt'}", but this script is for release ${RELEASE}.`,
   );
+}
+const licenseFile = join(source, 'LICENSE.txt');
+if (!existsSync(licenseFile)) {
+  fail(`${licenseFile} does not exist. The release holds the licence of the set in that file.`);
 }
 
 /** Turns a Mulberry file name into a file name that loadBoards accepts. */
@@ -193,6 +199,9 @@ const credits = [
   '',
 ];
 writeFileSync(ATTRIBUTION, credits.join('\n'));
+
+// The licence of the release ships with the app, unchanged.
+copyFileSync(licenseFile, LICENSE);
 
 console.log(`Mulberry release ${RELEASE}: ${originals.length} files in the release.`);
 console.log(`Kept ${kept.size} files under their names, copied ${copied} new or changed files.`);
