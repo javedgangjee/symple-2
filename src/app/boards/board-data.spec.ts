@@ -699,6 +699,67 @@ describe('Board data rules', () => {
     expect(loaded && homeIds(loaded)).toEqual(['needs', 'help']);
   });
 
+  /** Gives the tile of a home cell by its id. */
+  function homeTile(loaded: LoadedBoards, id: string) {
+    return boardOf(loaded, 'home').groups[0].cells.find((cell) => cell.tile.id === id)?.tile;
+  }
+
+  it('LI1: a tile with the icon lucide:apple is read with that icon', () => {
+    const loaded = withTile('needs', { icon: 'lucide:apple' });
+    expect(loaded.faults).toEqual([]);
+    expect(homeTile(loaded, 'needs')?.icon).toBe('lucide:apple');
+  });
+
+  it('LI2: tiles with the icons lucide:, lucide:Apple and apple are each skipped with a line that names the icon', () => {
+    const icons = ['lucide:', 'lucide:Apple', 'apple'];
+    const extra = icons.map((icon, index) => ({
+      id: `odd-${index}`,
+      label: `Odd ${index}`,
+      colour: 'soft1',
+      style: 'bleed',
+      icon,
+      action: { type: 'open', board: 'food' },
+    }));
+    const boards = validBoards();
+    boards[0].groups = [{ cells: [{ tile: 'needs' }, ...extra.map(({ id }) => ({ tile: id }))] }];
+    const loaded = loadBoards([...validTiles(), ...extra], boards);
+    expect(homeIds(loaded)).toEqual(['needs']);
+    expect(loaded.faults.length).toBe(3);
+    icons.forEach((icon, index) => {
+      expect(loaded.faults[index]).toContain(`"odd-${index}"`);
+      expect(loaded.faults[index]).toContain(`"${icon}"`);
+    });
+  });
+
+  it('LI3: a tile with the icon heart is read, as it is today', () => {
+    const loaded = withTile('needs', { icon: 'heart' });
+    expect(loaded.faults).toEqual([]);
+    expect(homeTile(loaded, 'needs')?.icon).toBe('heart');
+  });
+
+  it('LI4: a symbol tile that names the icon lucide:apple and no symbol is read', () => {
+    const loaded = withTile('help', { symbol: undefined, icon: 'lucide:apple' });
+    expect(loaded.faults).toEqual([]);
+    const tile = homeTile(loaded, 'help');
+    expect(tile?.style).toBe('symbol');
+    expect(tile?.icon).toBe('lucide:apple');
+    expect(tile?.symbol).toBeUndefined();
+  });
+
+  it('LI5: a symbol tile that names no symbol and no icon is skipped', () => {
+    const loaded = withTile('help', { symbol: undefined, icon: undefined });
+    expectSkipped(loaded, 'help', 'a symbol tile must name a symbol or an icon');
+  });
+
+  it('LI6: a tile that opens a board with the style symbol and the symbol dog.svg is read', () => {
+    const loaded = withTile('needs', { style: 'symbol', symbol: 'dog.svg', icon: undefined });
+    expect(loaded.faults).toEqual([]);
+    const tile = homeTile(loaded, 'needs');
+    expect(tile?.style).toBe('symbol');
+    expect(tile?.symbol).toBe('dog.svg');
+    expect(tile?.action).toEqual({ type: 'open', board: 'food' });
+  });
+
   it('R27: the service writes each fault to the console as a warning', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const tiles = validTiles().map((tile) =>
