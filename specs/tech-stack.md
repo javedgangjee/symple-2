@@ -81,10 +81,11 @@ The versions below were set on 2026-11-16.
 
 - The mockups in `context/design/` show the intended look and layout. They are a guide and can be changed when a feature plan gives a reason.
 - The product typeface is Libre Franklin, as in the mockups. The font file ships with the app, so it works offline.
+- The tab icon is the black and white Symple icon of `src/app/shell/logo.ts`. `public/favicon.svg` holds it with the letter drawn as a path, and `public/favicon.ico` is made from it.
 - Red Hat Display is stored next to it in `context/design/mockups/home/fonts/` for later use. No screen uses it until the user says so.
 - The boards use the Mulberry symbol set, which is licensed CC BY-SA 4.0. The app must credit it, and any changed symbol must be shared under the same licence.
 - Every line icon is a Lucide icon, copied from Lucide 1.77.0 and drawn inline, so the app has no icon package. Lucide is under the ISC licence, and `public/licenses/lucide.txt` holds its text. Decided on 2026-11-22.
-- The settings panel is 80 parts in 100 of the width of the window and 95 of its height. It has no notes under its settings, and it has no layout control. The rate, the pitch and the volume are set with a minus and a plus button, as the times are.
+- The settings panel is 80 parts in 100 of the width of the window and 95 of its height. The tile dialog of edit mode has the same size, and both read it from `--panel-width` and `--panel-height` in `src/styles.css`. The Board settings dialog stays narrow. It has no notes under its settings, and it has no layout control. The rate, the pitch and the volume are set with a minus and a plus button, as the times are.
 - The style budget of a component in `angular.json` is a warning at 8 kB and an error at 16 kB. It was raised from 4 kB and 8 kB in feature 8, because the styles of the settings panel are larger than 4 kB. Angular has one such budget for all components.
 - A group of cells is a column or a row. In the columns layout each group is a column, read top to bottom. In the rows layout each group is a row, read left to right. Each board sets its own layout in its `layout` field, and a board with none is drawn in columns. The caregiver sets it in the board settings of edit mode. Scan order follows the groups and then the cells of a group.
 - A board can hold any number of groups and a group any number of cells, as long as no cell gets smaller than 48px in the window in use. An Add button of edit mode with no room says that it is disabled and why.

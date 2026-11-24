@@ -62,6 +62,21 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 8 syncs the six scan values and the four voice values to the Firestore document `users/{uid}`, next to the theme and the layout, so the document holds twelve fields.
 - Feature 8 adds `public/licenses/lucide.txt` with the ISC licence of the Lucide icons.
 - Feature 8 adds unit tests for the panel, the voice values and the sync of the new values, and end to end tests in `e2e/settings.spec.ts`.
+- Feature 9 adds edit mode for the caregiver. The settings panel gets a Boards category, first in the list, with an Edit boards button that closes the panel and turns edit mode on for the board on show.
+- Feature 9 shows an Edit and a Remove button on each cell in edit mode, and an Open button on a cell that opens a board. The Back cell shows a Go back button and cannot be edited or removed.
+- Feature 9 shows Add Board, Add Tile, Configure Board and Done in the footer in edit mode, and an Add column or Add row box beside the grid.
+- Feature 9 adds the tile dialog, which adds or edits a cell that speaks with a label, a phrase, a Mulberry symbol and a colour, and adds or edits a board with a name, a style, a colour and an icon. The dialog shows a preview and has the size of the settings panel.
+- Feature 9 lets the caregiver move a cell by dragging it, or by one press that picks it up and a second press that puts it down.
+- Feature 9 adds the Board settings dialog, which sets the title of a board and its layout of columns or rows.
+- Feature 9 tells screen readers each change in a status line, such as "Help moved to column 2, place 1".
+- Feature 9 disables an Add button, and says why, when one more cell or group would make a cell smaller than 48px in the window in use.
+- Feature 9 keeps the edited boards in local storage under `symple.boards` and `symple.tiles`, as two JSON texts in the shape of the built-in files. Nothing is stored until the first change.
+- Feature 9 syncs the edited boards to the Firestore document `users/{uid}/data/boards`, which holds the whole set as the two texts `tiles` and `boards`.
+- Feature 9 adds the optional field `locked` to a board in `boards.json`. The four keyboards and the Keyboards list carry it and cannot be edited.
+- Feature 9 adds `src/data/symbols.json`, which lists the Mulberry symbols of `public/symbols/` by name for the symbol list of the tile dialog.
+- Feature 9 adds `public/favicon.svg`, so the browser tab shows the black and white Symple icon.
+- Feature 9 adds a Board editing section to `README.md`, and the six requests to try in the Rules Playground after each change of the Firestore rules.
+- Feature 9 adds unit tests for the stored set, the changes to a set, edit mode, the dialogs, dragging and the sync of the boards, and end to end tests in `e2e/editing.spec.ts`.
 
 ### Changed
 
@@ -78,9 +93,22 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 8 replaces the OpenMoji stop symbol in `public/symbols/stop.svg` with a drawing made for Symple, a red octagon with a white hand.
 - Feature 8 raises the style budget of a component in `angular.json` to a warning at 8 kB and an error at 16 kB, because the styles of the panel are larger than 4 kB.
 - Feature 8 changes the Scanning section of `README.md` to describe the panel, and its Symbols section to credit Lucide.
+- Feature 9 makes the layout of columns or rows a setting of each board. The stored setting `symple.layout` is no longer read or written, and the sync no longer covers it.
+- Feature 9 removes the stored boards from the device at sign out, so a second account on the same device does not see them.
+- Feature 9 makes `firestore.rules` check what an account writes. The settings document takes only its twelve known fields, each a text of at most 500 characters, and the boards document takes only `tiles` and `boards`, each a text of at most 500,000 characters.
+- Feature 9 opens the settings panel on the Boards category, and hides the settings button while edit mode is on.
+- Feature 9 rests the scan and the dwell press while edit mode is on, and the scan starts from rest at the first switch press after Done.
+- Feature 9 opens home when the stored set no longer holds the board on show, as a sync from another device can cause.
+- Feature 9 raises the bundle size budget in `angular.json` to a warning at 1 MB and an error at 2 MB.
+- Feature 9 changes the rule in `CLAUDE.md` so that the agent asks before a commit or a merge and then does it, and never pushes.
+
+### Fixed
+
+- Feature 9 fixes a drag that started in the settings panel and ended outside it, which closed the panel. This was finding 2 of the review of feature 8.
 
 ### Removed
 
 - Feature 5 removes the end to end case Y7 of `e2e/keyboard.spec.ts`, which said that pressing the message asks for no speech.
 - Feature 8 removes `public/licenses/material-icons.txt` and every credit for the Material icons and for OpenMoji.
 - Feature 8 removes the end to end case N15 of `e2e/sign-in.spec.ts`, which checked that Sign out sits in the bottom right corner of the footer, and the unit case O2 of the footer, which pressed Sign out there.
+- Feature 9 removes the recoloured cell rules in `src/styles/cells.css` that no cell used.

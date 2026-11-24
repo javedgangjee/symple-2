@@ -12,7 +12,8 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 4. **Scanning.** The app highlights groups and then cells in turn, and one switch or several switches pick a target, while caregiver controls are skipped. The sign in screen is a caregiver screen and is not scanned. After a pick, the scan waits for a set time, called the post click delay, before it starts again, and switch presses in that time are ignored. The feature also built the five selection modes, the dwell press and the scan time bar. Covers: Capabilities (scanning), Principle 2, Accessibility and Inclusion. Status: done.
 5. **Speech.** The app speaks text through a voice source interface, with the system voices as the first source. Picking a cell on a board speaks its phrase and shows the confirmed look of feature 4, as any picked cell does, and picking the message on the keyboard speaks the message. Covers: Speech output, Product Purpose. Status: done.
 8. **Settings.** The caregiver sets the scan time, the post click delay, the selection mode, the dwell time, the dwell style, whether the progress bar is shown, the theme, and the voice with its rate, pitch and volume. The layout of columns or rows is not set here. The user decided on 2026-11-23 that it is a setting of each board, which feature 9 adds. The settings panel shows the credit for the Mulberry symbols and for the Lucide icons. The Sign out button moves from the footer into the settings panel, and the new settings join the sync of feature 3. Covers: Speech output (caregiver picks the voice), Principle 5. Status: done.
-9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and sets the layout of each board to columns or rows, and the changes are saved and join the sync of feature 3. An empty board shows an Add button, which is a caregiver control that scanning skips. An empty group shows nothing out of edit mode and keeps its place in the grid. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: in progress.
+9. **Board editing.** The caregiver adds, removes, moves and edits boards and cells on the device, and sets the layout of each board to columns or rows, and the changes are saved and join the sync of feature 3. An empty board shows an Add button, which is a caregiver control that scanning skips. An empty group shows nothing out of edit mode and keeps its place in the grid. Covers: Users (secondary user), Operating Context (caregiver configures on the same device), Principle 5. Status: done.
+23. **Symbols and icons for a tile.** In the tile dialog the caregiver gives a tile a Mulberry symbol or a Lucide icon, and searches all the Mulberry symbols and all the Lucide icons by name. Covers: Capabilities (cell contents), Principle 5, the user's request of 2026-11-24. Status: planned.
 7. **Word suggestions.** The keyboard shows suggested words for the word being typed. The keyboard itself was merged into feature 2 on 2026-11-16, and speaking the message moved to feature 5. Covers: Product Purpose (say something to the person in the room), the keyboard mockup. Status: planned.
 
 ## Release
@@ -58,9 +59,9 @@ Each question must be answered in the plan of the feature it names.
 - Feature 13: whether the Mac app also goes to the Mac App Store, or is offered only as a download.
 - Feature 13: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 7.
 - Feature 13: what the release holds now that it comes before the Mac app and the iPad app. Its goal still names a download link for the Mac app and an App Store submission for the iPad app, and neither app exists until features 10 and 11.
-- Feature 9: how a board stores its layout of columns or rows, and what happens to the stored setting `symple.layout` and its sync. Feature 8 took the layout control out of the settings panel, so today nothing in the app changes the layout.
-- Feature 9: whether the Firestore cache on the device is cleared at sign out. Today it keeps the theme and the layout of the account, and feature 9 adds the edited boards, which hold the user's own phrases. This was finding 5 of the review of feature 3.
-- Feature 9: whether `firestore.rules` checks the type and the size of what an account writes. Today the rules accept any field of any size in the account's own documents. This was finding 6 of the review of feature 3.
+- Feature 23: where the full sets come from and how they ship. The repo holds 100 Mulberry symbols and the few Lucide icons that the app draws inline. The full sets are about 3,400 Mulberry symbols and about 1,600 Lucide icons. tech-stack.md says the app has no icon package, so the plan must say whether the icons come as files in `public/` or as a package.
+- Feature 23: how a tile stores an icon in `cells.json`, since a tile that speaks has only a `symbol` field today, and whether a board cell can take a symbol.
+- Feature 23: how the dialog lists and searches about 5,000 pictures without slowing down, and what the larger sets do to the size of the app on the Mac and the iPad.
 - Feature 14: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
 - Feature 17: when the timed games are added, and how slow they run.
 - Feature 18: where the Twilio keys are kept and how incoming texts reach the app. The two candidates are Firebase functions with Firestore, and Twilio Conversations.
@@ -146,6 +147,19 @@ Each question must be answered in the plan of the feature it names.
 - Feature 8: the feature was merged on 2026-11-23 although its validate run did not pass. Step 12 of its plan.md, which fixes findings 2 and 4 of its review, was not implemented.
 - Feature 8: findings 2 and 4 of its review were fixed after the merge, on 2026-11-23, on the branch of feature 9. Finding 2 was a drag out of the settings panel that closed it, and finding 4 was the markup of the minus and plus buttons that was written out four times. Their cases PA21, PA22, ST20 and ST21 pass.
 
+## Decisions made on 2026-11-23 and 2026-11-24, on feature 9
+
+- Feature 9: a cell is moved with a pointer only, by a drag or by two presses. The Move button of a cell and the arrow keys were removed.
+- Feature 9: Remove takes away only the cell, with no dialog. A cell that opens a board leaves its board in the set, and the app has no way yet to put such a cell back.
+- Feature 9: the cell that opens Keyboards can be moved, edited, opened and removed. The keyboards themselves cannot be edited.
+- Feature 9: Add column is a dashed box beside the grid, and the footer holds Add Board, Add Tile, Configure Board and Done.
+- Feature 9: an empty group shows nothing out of edit mode and keeps its place in the grid. The user decided this on 2026-11-24, and it replaced the decision of 2026-11-16 for groups. A board with no groups still shows its Add Tile button.
+- Feature 9: the tile dialog has the size of the settings panel. Both read it from `--panel-width` and `--panel-height` in `src/styles.css`.
+- Feature 9: the tab icon is the black and white Symple icon, in `public/favicon.svg`.
+- Feature 9: the agent asks before a commit or a merge and then does it, and never pushes. CLAUDE.md holds the rule.
+- Feature 9: the feature was merged on 2026-11-24 although its validate run did not pass. The three open points are in the list of skipped checks below.
+- Feature 23: the search over all Mulberry symbols and all Lucide icons was asked for on 2026-11-24 as a fix of feature 9, and the user chose to plan it as a feature of its own.
+
 ## Skipped checks
 
 Each line is a check that was skipped during validation, with the requirement that has no passing check until it is run. A check is removed from this list when it is run and passes.
@@ -154,6 +168,9 @@ Each line is a check that was skipped during validation, with the requirement th
 - Feature 3, skipped on 2026-11-19: check H6 of its validation.md, which tests the Firestore access rules in the Rules Playground. Requirement 29, which says that an account can reach only its own document `users/{uid}`, has no passing check until then. No automated test covers the rules, because the tests do not use the Firebase emulator.
 - Feature 4, merged on 2026-11-21 with no validate run: its validation.md has no Results section, so no check of it is recorded as passed. The manual checks H1 to H8, which try the scan, the look, a real switch, the modes and the dwell press by hand, were not recorded. Until validate is run, none of its requirements has a recorded passing check.
 - Feature 8, skipped on 2026-11-23: check H2 of its validation.md, which uses the settings panel with the keyboard only and listens with VoiceOver. It is the only manual check of feature 8 that was not run. Requirements 9, 10 and 14, on the keyboard and screen readers in the panel, have only automated checks until then.
+- Feature 9, failed on 2026-11-24: check H2 of its validation.md, which uses edit mode with the keyboard only. One expectation failed: after Enter on Done the focus is on the page body, where the check says the focus is never there. Nothing was changed. Either Done must send the focus to a control, or the check must say that it holds only while edit mode is on.
+- Feature 9, skipped on 2026-11-24: check H6 of its validation.md, which signs in with a second account on the same device and looks for the first account's tile. Item 16 of its requirements, the device that forgets the boards at sign out, has only the unit case AU1 and the end to end case N14 until then.
+- Feature 9, on 2026-11-24: check A4 of its validation.md, the end to end tests, had no clean full run. On a quiet machine one or two tests of each run stopped at the sign in screen before their first step, a different test each time, and each passed when run again. This is the lost sign in that the decisions of feature 4 record, and its cause is still unknown. ED13, the axe check of edit mode in every theme, takes 44 to 60 seconds of its 90 second limit and ran past it once.
 
 ## Not on the roadmap
 
