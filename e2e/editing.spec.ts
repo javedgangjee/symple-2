@@ -1,4 +1,6 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, type Response } from '@playwright/test';
+import lucideFile from '../src/data/lucide.json' with { type: 'json' };
+import symbolsFile from '../src/data/symbols.json' with { type: 'json' };
 import { axeViolations } from './support/axe';
 import {
   THEMES,
@@ -33,7 +35,7 @@ const title = (page: Page) => page.locator('h1');
 const sheet = (page: Page) => page.locator('dialog.sheet[open]');
 const footerButtons = (page: Page) => page.locator('app-footer button');
 
-/** The tile of a cell that speaks "Juice", and the Needs board with that cell at the end of its second group. */
+/** The tile of a cell that speaks "Juice". */
 const JUICE = {
   id: 'e2e-juice',
   label: 'Juice',
@@ -42,16 +44,28 @@ const JUICE = {
   symbol: 'drink.svg',
   action: { type: 'speak', phrase: 'Juice' },
 };
-const needsWithJuice = () =>
+
+/** The tile of a cell that speaks "Apple" and shows the Lucide icon `apple`, as Add Tile stores it. */
+const APPLE = {
+  id: 'e2e-apple',
+  label: 'Apple',
+  colour: 'light',
+  style: 'symbol',
+  icon: 'lucide:apple',
+  action: { type: 'speak', phrase: 'Apple' },
+};
+
+/** The Needs board with a cell at the end of its second group, where Add Tile puts a new cell. */
+const needsEndingWith = (tile: { id: string }) =>
   setWith(
     'needs',
     (board) => ({
       ...board,
       groups: board.groups.map((group, index) =>
-        index === 1 ? { cells: [...group.cells, { tile: JUICE.id }] } : group,
+        index === 1 ? { cells: [...group.cells, { tile: tile.id }] } : group,
       ),
     }),
-    [JUICE],
+    [tile],
   );
 
 /** The Needs board with a fourth group, which is empty. */
@@ -90,23 +104,146 @@ async function pressCell(page: Page, name: string): Promise<void> {
   await page.mouse.click(x, y);
 }
 
-/** Fills in the tile dialog for a new cell that speaks and adds the cell. */
-async function addTile(page: Page, label: string, symbol?: string): Promise<void> {
+/** The box "Find a picture" of the tile dialog. */
+const findBox = (page: Page) => sheet(page).getByLabel('Find a picture');
+
+/** The line of the Picture field that says how many pictures are shown and how many match. */
+const countLine = (page: Page) => sheet(page).locator('#tile-picture-count');
+
+/** The list of pictures of the tile dialog, which scrolls. */
+const pictureList = (page: Page) => sheet(page).locator('#tile-pictures');
+
+/** The choice of Symbols or Icons, which reads "Symbols (3,437)" once the lists have loaded. */
+const pictureKind = (page: Page, kind: 'Symbols' | 'Icons') =>
+  sheet(page)
+    .locator('.kinds label')
+    .filter({ has: page.getByRole('radio', { name: new RegExp(`^${kind}`) }) });
+
+/**
+ * A picture of the list, by the value of its radio button, such as `symbol:drink.svg`. Two
+ * pictures can share a name, as the two symbols "drink" do, so a test that needs one of them
+ * finds it by its value. The label is pressed, because the radio button inside it is see-through.
+ */
+const pictureByValue = (page: Page, value: string) =>
+  pictureList(page)
+    .locator('label')
+    .filter({ has: page.locator(`input[name="tile-picture"][value="${value}"]`) });
+
+/** A picture of the list, by its exact name, such as "Advent calendar". */
+const pictureNamed = (page: Page, name: string) =>
+  pictureList(page)
+    .locator('label')
+    .filter({ has: page.getByRole('radio', { name, exact: true }) });
+
+/**
+ * Fills in the tile dialog for a new cell that speaks and adds the cell. A picture is found by
+ * the text typed in "Find a picture" and picked by the value of its radio button.
+ */
+async function addTile(
+  page: Page,
+  label: string,
+  picture?: { find: string; value: string },
+): Promise<void> {
   await editAction(page, 'Add Tile').click();
   await sheet(page).getByLabel('Label').fill(label);
-  if (symbol) {
-    await sheet(page).getByLabel('Find a symbol').fill(symbol);
-    const named = new RegExp(`^\\s*${symbol}\\s*$`);
-    await sheet(page).locator('.symbols label').filter({ hasText: named }).click();
+  if (picture) {
+    await findBox(page).fill(picture.find);
+    await pictureByValue(page, picture.value).click();
   }
   await sheet(page).getByRole('button', { name: 'Add', exact: true }).click();
   await expect(sheet(page)).toHaveCount(0);
+}
+
+/** The shapes that a drawn icon holds, by the `d` of each path or else the name of the element. */
+async function drawnShapes(icon: Locator): Promise<string[]> {
+  return icon
+    .locator('path, circle, rect, line, ellipse, polyline, polygon')
+    .evaluateAll((shapes) => shapes.map((shape) => shape.getAttribute('d') ?? shape.tagName));
+}
+
+/** The shapes of a Lucide icon in `src/data/lucide.json`, in the form of `drawnShapes`. */
+function lucideShapes(name: string): string[] {
+  const icon = lucideFile.find((item) => item.name === name);
+  if (!icon) {
+    throw new Error(`The Lucide set has no icon "${name}".`);
+  }
+  return icon.shapes.map((shape) => ('d' in shape && shape.d !== undefined ? shape.d : shape.tag));
+}
+
+/** Whether an image has loaded. */
+async function imageLoaded(image: Locator): Promise<boolean> {
+  return image.evaluate(
+    (element) =>
+      element instanceof HTMLImageElement && element.complete && element.naturalWidth > 0,
+  );
+}
+
+/**
+ * Notes each response of a page that carries `lucide.json` or `symbols.json`. The dev server
+ * gives the chunk of each file a name like `chunk-SOK7XA6I.js`, which does not name the file,
+ * so the body of each script and each JSON response is read too. It carries the file when it
+ * holds the first and the last name of the file, each in quotes, as the build writes them.
+ */
+function watchPictureFiles(page: Page): () => Promise<string[]> {
+  const markers = [
+    {
+      file: 'lucide.json',
+      names: [lucideFile[0].name, lucideFile[lucideFile.length - 1].name],
+    },
+    {
+      file: 'symbols.json',
+      names: [symbolsFile[0].file, symbolsFile[symbolsFile.length - 1].file],
+    },
+  ];
+  const checks: Promise<string[]>[] = [];
+  const check = async (response: Response): Promise<string[]> => {
+    const url = response.url();
+    const byName = markers.flatMap(({ file }) =>
+      url.includes(file) || url.includes(file.replace('.', '-'))
+        ? [`${file} by its URL ${url}`]
+        : [],
+    );
+    const type = (await response.headerValue('content-type')) ?? '';
+    if (!/javascript|json/.test(type)) {
+      return byName;
+    }
+    const body = await response.text().catch(() => '');
+    const byBody = markers.flatMap(({ file, names }) =>
+      names.every((name) => body.includes(JSON.stringify(name)))
+        ? [`${file} in the body of ${url}`]
+        : [],
+    );
+    return [...byName, ...byBody];
+  };
+  page.on('response', (response) => checks.push(check(response)));
+  return async () => (await Promise.all(checks)).flat();
 }
 
 /** Takes over the clock of the page and stops it, so the scan moves only when the test moves the time. */
 async function stopClock(page: Page): Promise<void> {
   await page.clock.install();
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 2000);
+}
+
+/**
+ * Lets the scan run on for eight steps after a pick, which is more than two rounds of the three
+ * groups of Needs, and gives each stop that is not a group or a cell of the board. The scan
+ * starts again after a pick.
+ */
+async function stopsOffTheBoard(page: Page): Promise<string[]> {
+  const stops: string[] = [];
+  for (let step = 0; step < 8; step++) {
+    await pass(page, SCAN_TIME);
+    stops.push(
+      await page.evaluate(() => {
+        const active = document.activeElement;
+        return !active || active === document.body || active.matches('.group, app-cell button')
+          ? 'board'
+          : active.outerHTML;
+      }),
+    );
+  }
+  return stops.filter((stop) => stop !== 'board');
 }
 
 /** Takes the focus off whatever holds it. */
@@ -155,7 +292,7 @@ test('ED2: a tile that is added with a label and a symbol is on Needs after a re
   page,
 }) => {
   await edit(page, 'needs');
-  await addTile(page, 'Juice', 'drink');
+  await addTile(page, 'Juice', { find: 'drink', value: 'symbol:drink.svg' });
   await expect(cell(page, 'Juice')).toBeVisible();
   await editAction(page, 'Done').click();
   await page.reload();
@@ -168,25 +305,12 @@ test('ED2: a tile that is added with a label and a symbol is on Needs after a re
 test('ED3: the scan reaches the added tile and speaks it, and never lands on an edit control', async ({
   page,
 }) => {
-  await openBoard(page, 'needs', { ...SCAN, set: needsWithJuice() });
+  await openBoard(page, 'needs', { ...SCAN, set: needsEndingWith(JUICE) });
   await stopClock(page);
   await pickByScan(page, 1, 4);
   expect((await marked(page, 'data-confirmed')).cells).toEqual(['Juice']);
   expect(await spokenTexts(page)).toEqual(['Juice']);
-  // The scan starts again after the pick. Every stop of its next two rounds is a group of the board.
-  const stops: string[] = [];
-  for (let step = 0; step < 8; step++) {
-    await pass(page, SCAN_TIME);
-    stops.push(
-      await page.evaluate(() => {
-        const active = document.activeElement;
-        return !active || active === document.body || active.matches('.group, app-cell button')
-          ? 'board'
-          : active.outerHTML;
-      }),
-    );
-  }
-  expect(stops.filter((stop) => stop !== 'board')).toEqual([]);
+  expect(await stopsOffTheBoard(page)).toEqual([]);
   await expect(page.locator('main .tool')).toHaveCount(0);
 });
 
@@ -554,4 +678,296 @@ test.describe('with reduced motion', () => {
     );
     expect(animated).toBe(0);
   });
+});
+
+/** The radio buttons and the other controls of the Picture field that are measured for their size. */
+const PICTURE_CONTROLS = 'button, input[type="text"], label:has(input[type="radio"])';
+
+/** The Picture field of the tile dialog. */
+const pictureField = (page: Page) =>
+  sheet(page)
+    .locator('fieldset')
+    .filter({ has: page.locator('legend', { hasText: 'Picture' }) });
+
+/**
+ * Reads the control that has the focus: what it is, whether it is inside the open dialog, and
+ * whether its focus ring is on show. A radio button is see-through, so its label draws the ring.
+ * The ring is on show when the control matches `:focus-visible`, the element that draws the ring
+ * has an outline, and its box lies inside the window and inside the part of each box around it
+ * that scrolls and shows.
+ */
+async function focusReading(
+  page: Page,
+): Promise<{ name: string; value: string; inDialog: boolean; shown: boolean }> {
+  return page.evaluate(() => {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) {
+      return { name: 'none', value: '', inDialog: false, shown: false };
+    }
+    const radio = active instanceof HTMLInputElement && active.type === 'radio';
+    const ring = (radio ? active.closest('label') : active) ?? active;
+    const style = getComputedStyle(ring);
+    const box = ring.getBoundingClientRect();
+    let inView =
+      box.width > 0 &&
+      box.height > 0 &&
+      box.left >= -1 &&
+      box.top >= -1 &&
+      box.right <= window.innerWidth + 1 &&
+      box.bottom <= window.innerHeight + 1;
+    for (let parent = ring.parentElement; parent && inView; parent = parent.parentElement) {
+      if (getComputedStyle(parent).overflow !== 'visible') {
+        const edge = parent.getBoundingClientRect();
+        const left = edge.left + parent.clientLeft;
+        const top = edge.top + parent.clientTop;
+        inView =
+          box.left >= left - 1 &&
+          box.top >= top - 1 &&
+          box.right <= left + parent.clientWidth + 1 &&
+          box.bottom <= top + parent.clientHeight + 1;
+      }
+    }
+    const label = active.closest('label')?.textContent ?? '';
+    return {
+      name: (active.getAttribute('aria-label') ?? (label || active.textContent || active.id))
+        .replace(/\s+/g, ' ')
+        .trim(),
+      value: active instanceof HTMLInputElement ? active.value : '',
+      inDialog: active.closest('dialog.sheet[open]') !== null,
+      shown:
+        active.matches(':focus-visible') &&
+        style.outlineStyle !== 'none' &&
+        parseFloat(style.outlineWidth) > 0 &&
+        inView,
+    };
+  });
+}
+
+test('PI1: a tile with the symbol "Advent calendar" is on Needs after a reload, and its image has loaded', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  await editAction(page, 'Add Tile').click();
+  await sheet(page).getByLabel('Label').fill('Advent');
+  await findBox(page).fill('advent calendar');
+  await pictureNamed(page, 'Advent calendar').click();
+  await sheet(page).getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(sheet(page)).toHaveCount(0);
+  await editAction(page, 'Done').click();
+  await page.reload();
+  await expect(title(page)).toHaveText('Needs');
+  const image = cell(page, 'Advent').locator('img');
+  await expect(image).toHaveAttribute('src', 'symbols/advent-calendar.svg');
+  await expect.poll(() => imageLoaded(image)).toBe(true);
+});
+
+test('PI2: a tile with the icon "apple" is on Needs after a reload, and it draws the icon and no image', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  await editAction(page, 'Add Tile').click();
+  await sheet(page).getByLabel('Label').fill('Apple');
+  await pictureKind(page, 'Icons').click();
+  await findBox(page).fill('apple');
+  await pictureNamed(page, 'apple').click();
+  await sheet(page).getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(sheet(page)).toHaveCount(0);
+  await editAction(page, 'Done').click();
+  await page.reload();
+  await expect(title(page)).toHaveText('Needs');
+  const apple = cell(page, 'Apple');
+  await expect(apple).toBeVisible();
+  // The drawing is the one of the Lucide icon, so the cell shows the icon that was picked.
+  await expect
+    .poll(() => drawnShapes(apple.locator('app-icon svg')))
+    .toEqual(lucideShapes('apple'));
+  expect(lucideShapes('apple').length).toBeGreaterThan(0);
+  await expect(apple.locator('img')).toHaveCount(0);
+});
+
+test('PI3: the scan reaches the tile with the icon "apple" and speaks it, and never lands on an edit control', async ({
+  page,
+}) => {
+  await openBoard(page, 'needs', { ...SCAN, set: needsEndingWith(APPLE) });
+  await stopClock(page);
+  await pickByScan(page, 1, 4);
+  expect((await marked(page, 'data-confirmed')).cells).toEqual(['Apple']);
+  expect(await spokenTexts(page)).toEqual(['Apple']);
+  expect(await stopsOffTheBoard(page)).toEqual([]);
+  await expect(page.locator('main .tool')).toHaveCount(0);
+});
+
+test('PI4: a board that is added from home with the symbol "dog" shows the symbol, and the scan opens it', async ({
+  page,
+}) => {
+  await edit(page, 'home', SCAN);
+  await editAction(page, 'Add Board').click();
+  await sheet(page).getByLabel('Name').fill('Pets');
+  await pictureKind(page, 'Symbols').click();
+  // The empty box lists the symbols from "a", so "dog" is found by its name.
+  await findBox(page).fill('dog');
+  await pictureNamed(page, 'dog').click();
+  await sheet(page).getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(sheet(page)).toHaveCount(0);
+  await editAction(page, 'Done').click();
+  await expect(footerButtons(page)).toHaveCount(0);
+  const image = cell(page, 'Pets').locator('img');
+  await expect(image).toHaveAttribute('src', 'symbols/dog.svg');
+  const groups = await cellsByGroup(page);
+  const group = groups.findIndex((names) => names.includes('Pets'));
+  await stopClock(page);
+  await pickByScan(page, group, groups[group].indexOf('Pets'));
+  await expect(title(page)).toHaveText('Pets');
+});
+
+test('PI5: the cell on home that opens Needs takes the icon "house" and keeps its Bleed style after a reload', async ({
+  page,
+}) => {
+  await edit(page, 'home');
+  await tool(page, 'Edit Needs').click();
+  await expect(sheet(page).getByRole('heading')).toHaveText('Edit Needs');
+  await findBox(page).fill('house');
+  await pictureNamed(page, 'house').click();
+  await sheet(page).getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(sheet(page)).toHaveCount(0);
+  await page.reload();
+  await expect(title(page)).toHaveText('Home');
+  const needs = page.locator('main app-cell button[aria-label="Needs"]');
+  await expect(needs).toHaveClass(/\bbleed\b/);
+  // The drawing is the Lucide house, so the cell no longer draws its heart.
+  await expect
+    .poll(() => drawnShapes(needs.locator('app-icon svg')))
+    .toEqual(lucideShapes('house'));
+  expect(lucideShapes('house').length).toBeGreaterThan(0);
+});
+
+test('PI6: after Show more is pressed twice the list holds 180 symbols, and each image in view has loaded', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  await editAction(page, 'Add Tile').click();
+  await expect(countLine(page)).toHaveText('Showing 60 of 3,437');
+  const more = pictureList(page).getByRole('button', { name: 'Show more', exact: true });
+  await more.click();
+  await expect(countLine(page)).toHaveText('Showing 120 of 3,437');
+  await more.click();
+  await expect(countLine(page)).toHaveText('Showing 180 of 3,437');
+  await expect(pictureList(page).locator('input[value^="symbol:"]')).toHaveCount(180);
+  // The images load lazily, so the test waits for those that are in the part of the list on show.
+  const images = () =>
+    pictureList(page).evaluate((list) => {
+      const edge = list.getBoundingClientRect();
+      const top = edge.top + list.clientTop;
+      const bottom = top + list.clientHeight;
+      const inView = Array.from(list.querySelectorAll('img')).filter((image) => {
+        const box = image.getBoundingClientRect();
+        return box.bottom > top && box.top < bottom && box.bottom > 0 && box.top < innerHeight;
+      });
+      return {
+        inView: inView.length,
+        notLoaded: inView
+          .filter((image) => !image.complete || image.naturalWidth === 0)
+          .map((image) => image.getAttribute('src')),
+      };
+    });
+  await expect.poll(async () => (await images()).notLoaded).toEqual([]);
+  expect((await images()).inView).toBeGreaterThan(0);
+});
+
+test('PI7: home loads with nothing stored and fetches neither lucide.json nor symbols.json', async ({
+  page,
+}) => {
+  const found = watchPictureFiles(page);
+  await openBoard(page, 'home');
+  await page.waitForLoadState('load');
+  // Firebase calls are left without an answer, so the network never goes quiet. The app would
+  // start a lazy load as soon as home is drawn, so a short wait is long enough to see one.
+  await page.waitForTimeout(1500);
+  expect(await found()).toEqual([]);
+});
+
+test('PI8: axe reports no WCAG 2.2 Level AA violation in the tile dialog on Symbols and on Icons, in any theme', async ({
+  page,
+}) => {
+  test.slow();
+  for (const theme of THEMES) {
+    await edit(page, 'needs', { theme });
+    await editAction(page, 'Add Tile').click();
+    await expect(countLine(page)).toHaveText('Showing 60 of 3,437');
+    expect(await axeViolations(page), `${theme} Symbols`).toEqual([]);
+    await pictureKind(page, 'Icons').click();
+    await expect(countLine(page)).toHaveText('Showing 60 of 2,110');
+    expect(await axeViolations(page), `${theme} Icons`).toEqual([]);
+  }
+});
+
+test('PI9: on Icons each control of the Picture field is at least 48px high and wide, and each name keeps its contrast', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  await editAction(page, 'Add Tile').click();
+  await pictureKind(page, 'Icons').click();
+  await expect(countLine(page)).toHaveText('Showing 60 of 2,110');
+  expect(await pictureField(page).locator(PICTURE_CONTROLS).count()).toBeGreaterThan(60);
+  expect(await smallControls(pictureField(page), PICTURE_CONTROLS)).toEqual([]);
+  // The pointer is moved off the list, so no picture shows its hover look.
+  await page.mouse.move(1, 1);
+  const names = (await drawnContrast(page, 'dialog.sheet[open] #tile-pictures')).filter(
+    ({ what }) => what.startsWith('text '),
+  );
+  expect(names.length).toBeGreaterThan(0);
+  const low = names
+    .filter(({ ratio }) => ratio < 4.5)
+    .map(({ what, ratio }) => `${what}: ${ratio.toFixed(2)} of 4.5`);
+  expect(low).toEqual([]);
+});
+
+test('PI10: with the keyboard alone Tab reaches each part of the Picture field, the arrow keys pick, and the focus stays in the dialog and on show', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  await editAction(page, 'Add Tile').click();
+  await expect(countLine(page)).toHaveText('Showing 60 of 3,437');
+  await expect(sheet(page).getByLabel('Label')).toBeFocused();
+  const readings: Awaited<ReturnType<typeof focusReading>>[] = [];
+  const press = async (key: string) => {
+    await page.keyboard.press(key);
+    const reading = await focusReading(page);
+    readings.push(reading);
+    return reading;
+  };
+  await press('Tab');
+  await expect(sheet(page).getByLabel('Phrase')).toBeFocused();
+  // Tab goes to the choice of Symbols or Icons, on the chosen one.
+  const kind = await press('Tab');
+  expect(kind.value).toBe('symbol');
+  await press('Tab');
+  await expect(findBox(page)).toBeFocused();
+  // Tab goes to the list, on the chosen picture, which is "No picture" for a new tile.
+  const first = await press('Tab');
+  expect(first).toMatchObject({ name: 'No picture', value: '' });
+  // Each arrow key moves to the next picture and picks it.
+  const picked = [first.value];
+  for (let step = 0; step < 4; step++) {
+    const next = await press('ArrowDown');
+    expect(picked, `step ${step + 1}`).not.toContain(next.value);
+    expect(next.value).toMatch(/^symbol:/);
+    await expect(sheet(page).locator(`input[name="tile-picture"]:checked`)).toHaveValue(next.value);
+    picked.push(next.value);
+  }
+  const back = await press('ArrowUp');
+  expect(back.value).toBe(picked[picked.length - 2]);
+  await expect(sheet(page).locator(`input[name="tile-picture"]:checked`)).toHaveValue(back.value);
+  // Tab goes from the list to Show more.
+  const more = await press('Tab');
+  expect(more.name).toBe('Show more');
+  // Tab goes on round the dialog twice, and Shift with Tab goes back round it, and never leaves.
+  for (let step = 0; step < 24; step++) {
+    await press('Tab');
+  }
+  for (let step = 0; step < 12; step++) {
+    await press('Shift+Tab');
+  }
+  expect(readings.filter(({ inDialog }) => !inDialog).map(({ name }) => name)).toEqual([]);
+  expect(readings.filter(({ shown }) => !shown).map(({ name }) => name)).toEqual([]);
 });
