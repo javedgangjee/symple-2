@@ -2,4 +2,6 @@
 /* The rest of its look comes from tile-dialog.css. */
 .sheet.narrow {
   width: min(32rem, calc(100vw - 2 * var(--pad)));
+  height: auto;
+  max-height: calc(100dvh - 2 * var(--pad));
 }

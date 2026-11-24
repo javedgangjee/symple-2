@@ -10,12 +10,13 @@
   --quiet: color-mix(in oklab, var(--ink) 78%, var(--light));
   --control: oklch(1 0 0 / 0.5);
   --control-hover: oklch(1 0 0 / 0.85);
-  width: min(50rem, calc(100vw - 2 * var(--pad)));
+  width: var(--panel-width);
+  height: var(--panel-height);
   max-width: none;
-  max-height: calc(100dvh - 2 * var(--pad));
+  max-height: none;
   margin: auto;
   padding: 1.5rem;
-  overflow: auto;
+  overflow: hidden;
   border: 0;
   border-radius: calc(var(--radius) + 3px);
   background: color-mix(in oklab, var(--light) var(--glass-settings), transparent);
@@ -29,6 +30,21 @@
     inset 0 0 0 1px oklch(1 0 0 / 0.35),
     0 2px 4px oklch(0.2 var(--shc) var(--shade) / 0.12),
     0 24px 60px -12px oklch(0.2 var(--shc) var(--shade) / 0.45);
+}
+
+/* The sheet is a column. The form takes the height that is left and scrolls only when the window is too small. */
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet form {
+  flex: 1;
+  min-height: 0;
+  /* The room around the form keeps the focus rings of the controls from being cut off. */
+  margin: -0.5rem;
+  padding: 0.5rem;
+  overflow: auto;
 }
 
 .sheet::backdrop {
@@ -229,11 +245,38 @@ svg {
 }
 
 /* The tile dialog has the preview on the left and the fields on the right. */
+/* The fields stretch to the height of the sheet, and the lists of symbols and icons take the room that is left. */
 /* On a narrow window the preview sits above the fields. */
 .sheet form.split {
-  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-columns: minmax(14rem, 2fr) minmax(0, 3fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 1.25rem 1.5rem;
   align-items: start;
+}
+
+.split .fields {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  min-height: 0;
+}
+
+/* The symbol list and the icon list take the free height and scroll inside themselves. */
+.fields fieldset.grow {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 9rem;
+}
+
+/* The buttons stay at the bottom of the sheet and in view. */
+.actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  background: color-mix(in oklab, var(--light) var(--glass-settings), transparent);
 }
 
 .split h2 {
@@ -243,13 +286,21 @@ svg {
 @media (width < 52rem) {
   .sheet form.split {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    align-content: start;
+  }
+
+  .preview {
+    width: min(15rem, 100%);
+    height: 10rem;
+    aspect-ratio: auto;
   }
 }
 
 .preview {
   display: grid;
-  width: min(15rem, 100%);
-  height: 10rem;
+  width: 100%;
+  aspect-ratio: 3 / 2;
   margin-inline: auto;
 }
 
@@ -314,7 +365,15 @@ svg {
   --tick: var(--light);
 }
 
-/* The icon is a row of square boxes. */
+/* The icon is a row of square boxes. The list scrolls inside the sheet. */
+.icons {
+  flex: 1 1 auto;
+  align-content: flex-start;
+  min-height: 0;
+  padding: 4px;
+  overflow: auto;
+}
+
 .icons label {
   border-radius: 0.6rem;
   background: var(--control);
@@ -332,13 +391,15 @@ svg {
   stroke-width: 2;
 }
 
-/* The symbols are a list that scrolls, in as many columns as fit, so the dialog stays short */
-/* enough to show Add in a window 768px high. Each one shows its picture on a white plate. */
+/* The symbols are a list that scrolls, in as many columns as fit. It takes the height that is left. */
+/* Each one shows its picture on a white plate. */
 .symbols {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
   gap: 2px;
-  max-height: 7.5rem;
+  flex: 1 1 auto;
+  align-content: start;
+  min-height: 0;
   margin-top: 0.75rem;
   padding: 4px;
   overflow: auto;

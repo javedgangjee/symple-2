@@ -329,6 +329,41 @@ test('ED20: on a window 768px wide, Add column lies beside the grid and inside t
   expect(addBox.width).toBeGreaterThanOrEqual(48);
 });
 
+test('ED21: the Add Tile dialog and the Add Board dialog are as wide and as high as the settings panel', async ({
+  page,
+}) => {
+  await openBoard(page, 'needs');
+  for (const size of [
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+  ]) {
+    await page.setViewportSize(size);
+    // The settings button is hidden in edit mode, so the panel is measured before edit mode starts.
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    const panel = await boxOf(page.locator('dialog.panel[open]'));
+    await page.getByRole('button', { name: 'Edit boards', exact: true }).click();
+    await expect(page.locator('dialog.panel[open]')).toHaveCount(0);
+    for (const action of ['Add Tile', 'Add Board']) {
+      await editAction(page, action).click();
+      const box = await boxOf(sheet(page));
+      expect(box.width).toBeCloseTo(panel.width, 0);
+      expect(box.height).toBeCloseTo(panel.height, 0);
+      // The sheet lies inside the window, and Cancel and the confirm button are in view.
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(size.width);
+      expect(box.y + box.height).toBeLessThanOrEqual(size.height);
+      for (const name of ['Cancel', 'Add']) {
+        await expect(sheet(page).getByRole('button', { name, exact: true })).toBeInViewport({
+          ratio: 1,
+        });
+      }
+      await sheet(page).getByRole('button', { name: 'Cancel' }).click();
+    }
+    await editAction(page, 'Done').click();
+  }
+});
+
 test('ED12: when Add column says it is disabled, no cell of the board is under 48px', async ({
   page,
 }) => {

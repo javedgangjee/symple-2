@@ -23,6 +23,9 @@
   --ring: clamp(4px, 0.6vmin, 5px);
   --radius: clamp(14px, 2.2vmin, 22px);
   --ease: ease-out;
+  /* The settings panel, the tile dialog and the board dialog of Add Board share this size. */
+  --panel-width: 80vw;
+  --panel-height: 95dvh;
 }
 
 * {

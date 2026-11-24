@@ -187,6 +187,7 @@ The cases are in `e2e/editing.spec.ts` and run at both window sizes, 1024 by 768
 | ED18 | A board with an empty column is on show, out of edit mode, and the scan runs for two rounds. | The empty column shows no Add Tile button, and the scan goes round the three columns that hold cells. |
 | ED20 | The window is 768px wide and 1024px high, and edit mode is on over Needs. | Add column lies to the right of the grid, is at least 48px wide, and lies inside the window with its focus ring. |
 | ED19 | Reduced motion is asked for, and a cell is moved with two presses. | No cell is animated. |
+| ED21 | The window is 1024px by 768px and then 768px by 1024px, and edit mode is on over Needs. The settings panel, the Add Tile dialog and the Add Board dialog are opened in turn. | The two dialogs are as wide and as high as the settings panel, lie inside the window, and show their Cancel and Add buttons in full. |
 
 ED9 tested the arrow keys on the Move button of a cell. It was removed with the button on 2026-11-23.
 

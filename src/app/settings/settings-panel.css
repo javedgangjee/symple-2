@@ -13,8 +13,8 @@
   --quiet: color-mix(in oklab, var(--ink) 78%, var(--light));
   --control: oklch(1 0 0 / 0.5);
   --control-hover: oklch(1 0 0 / 0.85);
-  width: 80vw;
-  height: 95dvh;
+  width: var(--panel-width);
+  height: var(--panel-height);
   max-width: none;
   max-height: none;
   margin: auto;

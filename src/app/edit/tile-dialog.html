@@ -56,7 +56,7 @@
           />
         </div>
 
-        <fieldset>
+        <fieldset class="grow">
           <legend>Symbol</legend>
           <!-- Enter in the box that filters does not add the tile, because the caregiver is still choosing. -->
           <label class="small" for="tile-find">Find a symbol</label>
@@ -145,7 +145,7 @@
       </fieldset>
 
       @if (kind() === 'open') {
-        <fieldset>
+        <fieldset class="grow">
           <legend>Icon</legend>
           <div class="icons">
             @for (item of icons; track item.name) {
