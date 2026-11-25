@@ -57,3 +57,11 @@ test('HS4: a file under context/ with a quote and a space in its name is reporte
   assert.equal(code, 1, output);
   assert.match(output, /holds context\/say "hi"\.txt\./);
 });
+
+test('HS5: a password is reported when the line before it starts with two plus signs', () => {
+  const { code, output } = search({
+    'notes.md': 'A note.\n++ b/pic.png\npassword = "hunter2hunter2"\n',
+  });
+  assert.equal(code, 1, output);
+  assert.match(output, /adds a line to notes\.md that looks like a password/);
+});

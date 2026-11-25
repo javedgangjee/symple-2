@@ -47,6 +47,7 @@ Each case makes a repo with one commit and runs case RC5, the search of the hist
 | HS2 | The commit holds the text file `context/café.txt`. | The search fails and names `context/café.txt`. |
 | HS3 | The commit holds the picture `context/é.png`. | The search fails and names `context/é.png`. |
 | HS4 | The commit holds the text file `context/say "hi".txt`. | The search fails and names `context/say "hi".txt`. |
+| HS5 | The commit holds `notes.md`, with the line `++ b/pic.png` and then the line `password = "hunter2hunter2"`. | The search fails and says that the commit adds a line to `notes.md` that looks like a password. Added for finding 3 of review.md, which says an added line that starts with `++ ` is read as a file header. |
 
 ### A4. Unit tests (2, 8, 12, 17)
 

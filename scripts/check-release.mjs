@@ -378,6 +378,11 @@ await check(
     args.push('--no-color', '--no-ext-diff', '--no-textconv', '--diff-merges=first-parent');
     let commit = '';
     let path = '';
+    // True from the line "diff --git" of a file to its first line "@@". The line "+++" names the
+    // file only there. After the "@@" a line that starts with "+++" is an added line of the file
+    // whose own text starts with "++". No line of a file can start with "diff" or "@@" in a
+    // patch, because each one starts with a plus, a minus, a space or a backslash.
+    let inHeader = false;
     const seen = new Set();
     const report = (problem) => {
       if (!seen.has(problem)) {
@@ -388,7 +393,13 @@ await check(
     await gitLines(args, (line) => {
       if (line.startsWith('commit ')) {
         commit = line.slice(7);
-      } else if (line.startsWith('+++ ')) {
+        inHeader = false;
+      } else if (line.startsWith('diff --git ')) {
+        inHeader = true;
+        path = '';
+      } else if (line.startsWith('@@ ')) {
+        inHeader = false;
+      } else if (inHeader && line.startsWith('+++ ')) {
         const name = gitName(line.slice(4));
         path = name === '/dev/null' ? '' : name.slice(2);
         if (path === 'context' || path.startsWith('context/')) {
