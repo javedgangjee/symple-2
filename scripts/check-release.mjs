@@ -475,6 +475,19 @@ await check(
   },
 );
 
+await check('RC11', 'The Privacy section names what Firebase Auth keeps', (problems) => {
+  const readme = read('README.md', problems);
+  const privacy = readme === undefined ? undefined : section(readme, 'Privacy');
+  if (privacy === undefined) {
+    return;
+  }
+  if (privacy.includes('no other data')) {
+    problems.push('The Privacy section says "no other data", and no list of it can be complete.');
+  }
+  const auth = privacy.split('\n').find((line) => line.startsWith('- Firebase Auth')) ?? '';
+  mustHold('The line on Firebase Auth', auth, ['last sign in', 'IP address', 'browser'], problems);
+});
+
 if (failures.length > 0) {
   console.log(`\n${failures.length} of ${cases} cases failed: ${failures.join(', ')}.`);
   process.exit(1);

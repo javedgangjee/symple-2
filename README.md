@@ -112,9 +112,9 @@ If the search reports a value that is safe to publish, add an entry to `ALLOWED`
 
 ## Privacy
 
-Symple keeps the data below, and no other data about its users. It has no adverts and no analytics.
+Symple keeps the data below. It has no adverts and no analytics.
 
-- Firebase Auth holds the email address of each account and checks its password.
+- Firebase Auth holds the email address of each account and checks its password. It also keeps the time the account was made and the time of its last sign in. Google logs the IP address and the browser of each sign in to guard against abuse, and says it keeps the logged IP addresses for a few weeks.
 - Firestore holds a copy of the settings and of the boards of each account, so they follow the account to another device. The access rules let an account read and write its own copy only.
 - The browser keeps the sign in, the settings and the boards on the device. A sign out removes the sign in and the boards.
 - Speech uses the voices of the device. Most of them run on the device. A voice that runs on a server, such as the Google voices of Chrome, sends the spoken text to the maker of that voice.
