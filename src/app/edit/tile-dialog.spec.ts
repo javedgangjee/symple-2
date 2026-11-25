@@ -168,11 +168,33 @@ describe('TileDialog', () => {
     expect(fieldNames()).toEqual(['Name', 'Style', 'Colour', 'Picture']);
     expect(texts('.fields legend')).toEqual(['Picture']);
     expect(previewLabel()).toBe('New board');
-    expect(chosen('tile-style')).toBe('bleed');
+    // Style is a drop down named by its label, with the three styles in their order.
+    const style = one<HTMLSelectElement>('#tile-style');
+    expect(style).toBeInstanceOf(HTMLSelectElement);
+    expect(one('label[for="tile-style"]').textContent?.trim()).toBe('Style');
+    expect(style.labels[0]?.textContent?.trim()).toBe('Style');
+    expect(texts('#tile-style option')).toEqual([
+      'Cropped Icon',
+      'Icon in Circle',
+      'Centered Icon',
+    ]);
+    expect(Array.from(style.options).map((item) => item.value)).toEqual([
+      'bleed',
+      'signage',
+      'stage',
+    ]);
+    expect(style.value).toBe('bleed');
+    expect(element.querySelector('input[name="tile-style"]')).toBeNull();
     expect(chosen('tile-colour')).toBe('dark');
     expect(chosen('tile-picture-kind')).toBe('icon');
     expect(pictures()[0]).toBe('Grid');
     expect(chosenPicture()).toBe('Grid');
+
+    // Centered Icon is chosen in the drop down, and the preview draws the Stage style.
+    style.value = 'stage';
+    style.dispatchEvent(new Event('change', { bubbles: true }));
+    await fixture.whenStable();
+    expect(one('.preview .cell').classList).toContain('stage');
   });
 
   it('TD7: Edit Help shows the label, the phrase and the colour of Help, on Symbols with help first and chosen, and no type', async () => {

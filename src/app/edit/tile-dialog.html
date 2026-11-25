@@ -60,24 +60,21 @@
       }
 
       @if (showStyle()) {
-        <fieldset>
-          <legend>Style</legend>
-          <div class="kinds three">
-            @for (name of styles; track name) {
-              <label>
-                <input
-                  type="radio"
-                  name="tile-style"
-                  [value]="name"
-                  [checked]="style() === name"
-                  (change)="style.set(name)"
-                />
-                {{ styleLabels[name].name }}
-                <small>{{ styleLabels[name].about }}</small>
-              </label>
-            }
-          </div>
-        </fieldset>
+        <!-- The style is a native drop down, so the browser gives it the keyboard and its name for a screen reader. -->
+        <div class="field">
+          <label for="tile-style">Style</label>
+          <span class="pick">
+            <select #styleSelect id="tile-style" (change)="setStyle(styleSelect.value)">
+              @for (name of styles; track name) {
+                <option [value]="name" [selected]="style() === name">
+                  {{ styleLabels[name] }}
+                </option>
+              }
+            </select>
+            <!-- Lucide chevron-down. -->
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </span>
+        </div>
       }
 
       <fieldset>

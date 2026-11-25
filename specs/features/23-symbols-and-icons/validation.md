@@ -103,7 +103,7 @@ The tile dialog, in `src/app/edit/tile-dialog.spec.ts`:
 | Case | Input | Expected result |
 | --- | --- | --- |
 | TD3 | Add Tile is pressed, and "dog" is typed in "Find a picture". This replaces case TD3 of feature 9, which filtered the 99 symbols. | Symbols is chosen. Every picture in the list has "dog" in its name, and the first is "dog". |
-| TD6 | Add Board is pressed. This replaces case TD6 of feature 9, which listed 12 icons. | A dialog named "Add Board" shows Name, Style, Colour and Picture. Icons is chosen, and the first picture in the list is "Grid", which is chosen. |
+| TD6 | Add Board is pressed. This replaces case TD6 of feature 9, which listed 12 icons. | A dialog named "Add Board" shows Name, Style, Colour and Picture. Style is a drop down named by its label "Style", and its options read "Cropped Icon", "Icon in Circle" and "Centered Icon", with Cropped Icon chosen. The user changed the Style control from three boxes to a drop down on 2026-11-24. Icons is chosen, and the first picture in the list is "Grid", which is chosen. |
 | TD7 | "Edit Help" is pressed. This replaces case TD7 of feature 9. | The dialog is filled in with the label, the phrase and the colour of Help. Symbols is chosen, and the first picture in the list is "help", which is chosen. It has no choice of type. |
 | TD9 | Add Tile is pressed with an empty box. | The list holds "No picture" and 60 symbols, and Show more is on show. No line counts the pictures, and the box is named "Find a picture" with no row for its name. The user removed that row and the line that counts on 2026-11-24. |
 | TD10 | After case TD9, Show more is pressed. | The list holds 120 symbols. |
@@ -148,7 +148,7 @@ Claude gives the user the steps of one check at a time and asks for the result. 
 3. Choose Icons, and pick an icon. Type a label and press Add.
 4. Go home, press Add Board, choose Symbols, pick a symbol, type a name and press Add. Press Done.
 
-Expected result: the list fills at once as the text is typed, with no wait that can be seen. The symbols are in colour and the icons are line drawings in the colour of the text. The new cell on Needs shows its icon at the size of a symbol, in the colour of its label. The new cell on home shows its symbol and its name, and it does not look out of place beside the other cells. In each tile dialog the title, the preview, the label or name, the phrase, the style and the colour are on the left, and the Picture field with Cancel and Add or Save under it is on the right. The list shows many rows, and everything on the left can be reached. The user changed the layout on 2026-11-24.
+Expected result: the list fills at once as the text is typed, with no wait that can be seen. The symbols are in colour and the icons are line drawings in the colour of the text. The new cell on Needs shows its icon at the size of a symbol, in the colour of its label. The new cell on home shows its symbol and its name, and it does not look out of place beside the other cells. In each tile dialog the title, the preview, the label or name, the phrase, the style and the colour are on the left, and the Picture field with Cancel and Add or Save under it is on the right. The list shows many rows, and everything on the left can be reached. The user changed the layout on 2026-11-24. In Add Board, Style is a drop down that offers Cropped Icon, Icon in Circle and Centered Icon, and the names Bleed, Signage and Stage do not show. The user changed the Style control on 2026-11-24.
 
 ### H2. The search with real names (2, 18)
 

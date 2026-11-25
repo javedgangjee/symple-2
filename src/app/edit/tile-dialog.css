@@ -144,10 +144,6 @@ input[type='radio'] {
   gap: 0.75rem;
 }
 
-.kinds.three {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 .kinds label {
   display: block;
   min-height: 3rem;
@@ -158,21 +154,46 @@ input[type='radio'] {
   font-weight: 600;
 }
 
-.kinds small {
-  display: block;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--quiet);
-}
-
 .kinds label:has(input:checked) {
   border-color: var(--dark);
   background: var(--dark);
   color: var(--light);
 }
 
-.kinds label:has(input:checked) small {
-  color: inherit;
+/* A choice from a list is a native drop down, drawn as the drop downs of the settings panel are. */
+/* The browser gives it the keyboard and its name for a screen reader. Its arrow is in the colour of its text. */
+.pick {
+  position: relative;
+  display: block;
+}
+
+.pick select {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0 3rem 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: var(--control);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pick select:hover {
+  border-color: var(--ink);
+  background: var(--control-hover);
+}
+
+.pick svg {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  translate: 0 -50%;
+  pointer-events: none;
 }
 
 /* The buttons match the edit buttons in the footer. Add, Save and Remove are filled, as Done is. */
@@ -213,7 +234,7 @@ button.primary:hover {
   background: var(--control-hover);
 }
 
-:is(button, input[type='text']):focus-visible,
+:is(button, input[type='text'], select):focus-visible,
 label:has(> input[type='radio']:focus-visible) {
   outline: 3px solid var(--ink);
   outline-offset: 3px;

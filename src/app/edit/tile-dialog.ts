@@ -138,7 +138,7 @@ function keepTabInside(event: KeyboardEvent, dialog: HTMLDialogElement): void {
  * chosen one, and the preview of the tile dialog is inert, so it takes none.
  */
 function tabStops(dialog: HTMLDialogElement): HTMLElement[] {
-  const candidates = dialog.querySelectorAll<HTMLElement>('button, input, [tabindex]');
+  const candidates = dialog.querySelectorAll<HTMLElement>('button, input, select, [tabindex]');
   return Array.from(candidates).filter(
     (element) =>
       element.tabIndex >= 0 &&
@@ -184,11 +184,11 @@ const COLOURS: readonly { readonly value: CellColour; readonly label: string }[]
   { value: 'light', label: 'White' },
 ];
 
-/** The name and the short description of each style of a cell that opens a board. */
-const STYLE_LABELS: Readonly<Record<BoardCellStyle, { name: string; about: string }>> = {
-  bleed: { name: 'Bleed', about: 'Cropped icon' },
-  signage: { name: 'Signage', about: 'Icon in a disc' },
-  stage: { name: 'Stage', about: 'Centred icon' },
+/** The name that the Style drop down gives each style of a cell that opens a board. */
+const STYLE_LABELS: Readonly<Record<BoardCellStyle, string>> = {
+  bleed: 'Cropped Icon',
+  signage: 'Icon in Circle',
+  stage: 'Centered Icon',
 };
 
 /** The icons that stand for a key or a control. The list does not offer them. */
@@ -532,6 +532,14 @@ export class TileDialog {
 
   protected setPhrase(input: HTMLInputElement): void {
     this.phrase.set(cut(input, PHRASE_LENGTH));
+  }
+
+  /** Takes the style that the Style drop down gives. A value that is not a style is left out. */
+  protected setStyle(value: string): void {
+    const style = BOARD_CELL_STYLES.find((name) => name === value);
+    if (style) {
+      this.style.set(style);
+    }
   }
 
   protected setQuery(text: string): void {

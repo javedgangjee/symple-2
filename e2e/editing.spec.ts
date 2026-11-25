@@ -559,6 +559,12 @@ test('ED14: the labels and the borders of the edit controls keep their contrast 
     // The pictures have loaded, so the list does not change while it is read.
     await expect(listedPictures(page, 'symbol')).toHaveCount(60);
     await expectContrast('dialog.sheet[open]', `${theme} tile dialog`);
+    // Add Board starts on an icon, so its dialog shows the Style drop down, whose text and border are read too.
+    await sheet(page).getByRole('button', { name: 'Cancel' }).click();
+    await editAction(page, 'Add Board').click();
+    await expect(sheet(page).getByLabel('Style')).toBeVisible();
+    await expect(listedPictures(page, 'icon')).toHaveCount(60);
+    await expectContrast('dialog.sheet[open]', `${theme} Add Board dialog`);
   }
 });
 
@@ -570,11 +576,13 @@ test('ED15: every edit button, footer button and dialog control is at least 48px
     await smallControls(page.locator('main'), '.tool, .add-group, .add-tile, .remove-group'),
   ).toEqual([]);
   expect(await smallControls(page.locator('app-footer'), 'button')).toEqual([]);
-  const controls = 'button, input[type="text"], label:has(input[type="radio"])';
+  const controls = 'button, input[type="text"], select, label:has(input[type="radio"])';
   await editAction(page, 'Add Tile').click();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
   await sheet(page).getByRole('button', { name: 'Cancel' }).click();
   await editAction(page, 'Add Board').click();
+  // Add Board starts on an icon, so the Style drop down is measured too.
+  await expect(sheet(page).getByLabel('Style')).toBeVisible();
   expect(await smallControls(sheet(page), controls)).toEqual([]);
   await sheet(page).getByRole('button', { name: 'Cancel' }).click();
   await editAction(page, 'Configure Board').click();
