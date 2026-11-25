@@ -66,7 +66,22 @@
               (pointerleave)="dwell.leave(place)"
             />
             @if (editing) {
-              <!-- The edit buttons, in the order that Tab takes them. Each icon is copied from the Lucide icon set. -->
+              <!-- The edit buttons, in the order that Tab takes them and that they lie in from the top left corner: -->
+              <!-- Remove, Edit, then Open or Go back. Each icon is copied from the Lucide icon set. -->
+              @if (slot.canRemove) {
+                <button
+                  class="tool remove"
+                  type="button"
+                  [attr.aria-label]="'Remove ' + slot.name"
+                  (click)="remove(place)"
+                >
+                  <!-- Lucide x. -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </svg>
+                </button>
+              }
               @if (slot.canEdit) {
                 <button
                   class="tool edit"
@@ -104,20 +119,6 @@
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="m12 19-7-7 7-7" />
                     <path d="M19 12H5" />
-                  </svg>
-                </button>
-              }
-              @if (slot.canRemove) {
-                <button
-                  class="tool remove"
-                  type="button"
-                  [attr.aria-label]="'Remove ' + slot.name"
-                  (click)="remove(place)"
-                >
-                  <!-- Lucide x. -->
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
                   </svg>
                 </button>
               }
@@ -176,10 +177,13 @@
   @if (editing) {
     @let groupsFull = !room.forGroup();
     @let addGroupName = 'Add ' + groupKind().toLowerCase();
+    <!-- A cell that is picked up, or dragged and let go over it, goes to the new group. -->
     <button
+      #newGroup
       class="add-group"
       type="button"
       [attr.data-layout]="layout()"
+      [attr.data-takes]="mark(takesCell())"
       [attr.aria-label]="addGroupName"
       [attr.aria-disabled]="groupsFull"
       [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"

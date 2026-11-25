@@ -52,8 +52,8 @@ const FIRST_TAB: TabId = 'boards';
 
 /** The name of each selection mode in the list. */
 const MODE_LABELS: Readonly<Record<SelectionMode, string>> = {
-  scan: 'Scan, one switch',
-  step: 'Step, two switches',
+  scan: 'Scan',
+  step: 'Step',
   cursor: 'Cursor',
   touch: 'Touch',
   dwell: 'Dwell',

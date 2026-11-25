@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { IconName } from '../boards/board-data';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { IconName, isLucideIconName } from '../boards/board-data';
+import { IconSet, LucideShape } from './icon-set';
+
+/** The prefix of a Lucide name, which the set does not use. */
+const LUCIDE_PREFIX = 'lucide:';
 
 /**
- * Draws one line icon by name. The drawings live here and the data names one,
+ * Draws one line icon by name. The drawings of the core names live here and the data names one,
  * because an icon is a drawing and not board content.
  * Every drawing is copied from the Lucide icon set, version 1.77.0, used under the ISC License.
  * Each case names the Lucide icon it copies. The licence text ships in public/licenses/lucide.txt.
+ * A `lucide:` name is drawn from the shapes of the Lucide set, which the IconSet service reads
+ * the first time such a name is drawn. Each kind of shape has its own case, and every attribute
+ * is bound one by one, so no HTML is ever made from text. A name the set does not have draws nothing.
  * The icon is hidden from screen readers, because the cell carries the name.
  */
 @Component({
@@ -149,6 +156,55 @@ import { IconName } from '../boards/board-data';
             d="M9 19a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-6a1 1 0 0 1 1-1h3.293a.707.707 0 0 0 .5-1.207l-7.086-7.086a1 1 0 0 0-1.414 0l-7.086 7.086a.707.707 0 0 0 .5 1.207H8a1 1 0 0 1 1 1z"
           />
         }
+        @default {
+          @for (shape of lucide(); track $index) {
+            @switch (shape.tag) {
+              @case ('path') {
+                <path [attr.d]="shape.d" />
+              }
+              @case ('circle') {
+                <circle
+                  [attr.cx]="shape.cx"
+                  [attr.cy]="shape.cy"
+                  [attr.r]="shape.r"
+                  [attr.fill]="shape.fill"
+                />
+              }
+              @case ('rect') {
+                <rect
+                  [attr.x]="shape.x"
+                  [attr.y]="shape.y"
+                  [attr.width]="shape.width"
+                  [attr.height]="shape.height"
+                  [attr.rx]="shape.rx"
+                  [attr.ry]="shape.ry"
+                />
+              }
+              @case ('line') {
+                <line
+                  [attr.x1]="shape.x1"
+                  [attr.y1]="shape.y1"
+                  [attr.x2]="shape.x2"
+                  [attr.y2]="shape.y2"
+                />
+              }
+              @case ('ellipse') {
+                <ellipse
+                  [attr.cx]="shape.cx"
+                  [attr.cy]="shape.cy"
+                  [attr.rx]="shape.rx"
+                  [attr.ry]="shape.ry"
+                />
+              }
+              @case ('polyline') {
+                <polyline [attr.points]="shape.points" />
+              }
+              @case ('polygon') {
+                <polygon [attr.points]="shape.points" />
+              }
+            }
+          }
+        }
       }
     </svg>
   `,
@@ -169,6 +225,17 @@ import { IconName } from '../boards/board-data';
   `,
 })
 export class Icon {
+  private readonly iconSet = inject(IconSet);
+
   /** The name of the icon to draw. */
   readonly name = input.required<IconName>();
+
+  /**
+   * The shapes of a Lucide name. A core name has none, and asking for none never reads the set.
+   * The list is empty while the set loads and for a name that the set does not have.
+   */
+  protected readonly lucide = computed((): readonly LucideShape[] => {
+    const name = this.name();
+    return isLucideIconName(name) ? this.iconSet.shapes(name.slice(LUCIDE_PREFIX.length)) : [];
+  });
 }

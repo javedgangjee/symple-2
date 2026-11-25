@@ -1,18 +1,36 @@
 import boardsFile from '../../data/boards.json';
 import cellsFile from '../../data/cells.json';
-import { BoardRecord, BoardSet, Tile, loadBoards, toBoardSet } from '../boards/board-data';
+import {
+  BoardRecord,
+  BoardSet,
+  IconName,
+  Tile,
+  loadBoards,
+  toBoardSet,
+} from '../boards/board-data';
 import { CellPosition } from '../scan/scan';
 import {
+  IconPicture,
+  OpenFields,
   SpeakFields,
+  SymbolPicture,
   addBoard,
   addCell,
   addGroup,
   editCell,
   moveCell,
+  moveToNewGroup,
+  fieldsOf,
   removeCell,
   removeGroup,
   setBoard,
 } from './board-edits';
+
+/** The picture of a symbol. */
+const symbol = (file: string): SymbolPicture => ({ kind: 'symbol', symbol: file });
+
+/** The picture of an icon. */
+const icon = (name: IconName): IconPicture => ({ kind: 'icon', icon: name });
 
 /** The built-in set. No case changes it, because every edit gives a new set. */
 const BUILT_IN = toBoardSet(loadBoards(cellsFile, boardsFile).boards);
@@ -21,7 +39,7 @@ const JUICE: SpeakFields = {
   kind: 'speak',
   label: 'Juice',
   phrase: 'I want juice',
-  symbol: 'drink.svg',
+  picture: symbol('drink.svg'),
   colour: 'light',
 };
 
@@ -96,7 +114,7 @@ const PRODUCED: Readonly<Record<string, () => BoardSet>> = {
       kind: 'speak',
       label: 'Help me',
       phrase: 'I need help',
-      symbol: 'help.svg',
+      picture: symbol('help.svg'),
       colour: 'light',
     }),
   BE6: () =>
@@ -104,7 +122,7 @@ const PRODUCED: Readonly<Record<string, () => BoardSet>> = {
       kind: 'speak',
       label: 'Help me',
       phrase: 'I need help',
-      symbol: 'help.svg',
+      picture: symbol('help.svg'),
       colour: 'light',
     }),
   BE7: () => {
@@ -114,7 +132,7 @@ const PRODUCED: Readonly<Record<string, () => BoardSet>> = {
       label: 'Meals',
       style: 'stage',
       colour: food.colour,
-      icon: food.icon ?? 'board',
+      picture: icon(food.icon ?? 'board'),
     });
   },
   BE8: () => removeCell(BUILT_IN, 'needs', placeOf(BUILT_IN, 'needs', 'help')),
@@ -131,7 +149,7 @@ const PRODUCED: Readonly<Record<string, () => BoardSet>> = {
       label: 'Outings',
       style: 'stage',
       colour: 'grey',
-      icon: 'place',
+      picture: icon('place'),
     }),
   BE17: () => setBoard(BUILT_IN, 'needs', { title: 'Care', layout: 'rows' }),
 };
@@ -245,7 +263,7 @@ describe('The changes to a set', () => {
         label: 'Away',
         style: 'stage',
         colour: 'ink',
-        icon: 'back',
+        picture: icon('back'),
       }),
     ).toBe(BUILT_IN);
   });
@@ -336,12 +354,239 @@ describe('The changes to a set', () => {
         kind: 'speak',
         label: 'Help',
         phrase: 'I need help',
-        symbol: 'help.svg',
+        picture: symbol('help.svg'),
         colour,
       });
     const grey = recoloured(BUILT_IN, 'grey');
     expect(tile(grey, 'help').hue).toBe('c3');
     expect(tile(recoloured(grey, 'dark'), 'help').hue).toBeUndefined();
     expect(loadBoards(grey.tiles, grey.boards).faults).toEqual([]);
+  });
+
+  it('BE20: a cell that is dropped on Add column moves into a new group at the end of the board', () => {
+    const set = moveToNewGroup(BUILT_IN, 'needs', placeOf(BUILT_IN, 'needs', 'help'));
+    const before = layout(BUILT_IN, 'needs');
+    expect(layout(set, 'needs')).toEqual([
+      ['back', 'pain', 'toilet', 'drink'],
+      before[1],
+      before[2],
+      ['help'],
+    ]);
+    expect(set.tiles).toBe(BUILT_IN.tiles);
+    expect(loadBoards(set.tiles, set.boards).faults).toEqual([]);
+  });
+
+  it('BE21: the group that the only cell of a group leaves for a new group stays empty, and a locked board does not change', () => {
+    const once = moveToNewGroup(BUILT_IN, 'needs', placeOf(BUILT_IN, 'needs', 'help'));
+    const twice = moveToNewGroup(once, 'needs', { group: 3, cell: 0 });
+    expect(layout(twice, 'needs').slice(3)).toEqual([[], ['help']]);
+    expect(loadBoards(twice.tiles, twice.boards).faults).toEqual([]);
+    expect(board(BUILT_IN, 'keyboard').locked).toBe(true);
+    expect(moveToNewGroup(BUILT_IN, 'keyboard', { group: 0, cell: 0 })).toBe(BUILT_IN);
+    expect(moveToNewGroup(BUILT_IN, 'needs', { group: 0, cell: 9 })).toBe(BUILT_IN);
+  });
+});
+
+/** The fields of a cell that speaks, as the tile dialog reads them from a tile. */
+function speakFieldsOf(shown: Tile): SpeakFields {
+  const fields = fieldsOf(shown);
+  if (fields?.kind !== 'speak') {
+    throw new Error(`The tile "${shown.id}" is not a cell that speaks.`);
+  }
+  return fields;
+}
+
+/** The fields of a cell that opens a board, as the tile dialog reads them from a tile. */
+function openFieldsOf(shown: Tile): OpenFields {
+  const fields = fieldsOf(shown);
+  if (fields?.kind !== 'open') {
+    throw new Error(`The tile "${shown.id}" is not a cell that opens a board.`);
+  }
+  return fields;
+}
+
+/** A cell that speaks, with a picture or with none. */
+const speaking = (label: string, picture?: SpeakFields['picture']): SpeakFields => ({
+  kind: 'speak',
+  label,
+  phrase: '',
+  colour: 'light',
+  ...(picture && { picture }),
+});
+
+/** The built-in set in which the Yes tile is a `key` tile that shows the icon `check`. */
+function withKeyYes(): BoardSet {
+  return {
+    tiles: BUILT_IN.tiles.map((item) =>
+      item.id === 'yes-green' ? { ...item, style: 'key' } : item,
+    ),
+    boards: BUILT_IN.boards,
+  };
+}
+
+/** The built-in set after the cell on home that opens Needs gets the symbol `dog.svg`. */
+function withNeedsSymbol(): BoardSet {
+  return editCell(BUILT_IN, 'home', placeOf(BUILT_IN, 'home', 'needs'), {
+    ...openFieldsOf(tile(BUILT_IN, 'needs')),
+    picture: symbol('dog.svg'),
+  });
+}
+
+/** The sets that the cases of pictures produce. Case PE10 gives every one of them to `loadBoards`. */
+const PICTURE_SETS: Readonly<Record<string, () => BoardSet>> = {
+  PE1: () => addCell(BUILT_IN, 'needs', speaking('Advent', symbol('advent-calendar.svg'))),
+  PE2: () => addCell(BUILT_IN, 'needs', speaking('Apple', icon('lucide:apple'))),
+  PE3: () => addCell(BUILT_IN, 'needs', speaking('Hello')),
+  PE4: () =>
+    addBoard(BUILT_IN, 'home', {
+      kind: 'open',
+      label: 'Pets',
+      style: 'bleed',
+      colour: 'dark',
+      picture: symbol('dog.svg'),
+    }),
+  PE5: () =>
+    addBoard(BUILT_IN, 'home', {
+      kind: 'open',
+      label: 'House',
+      style: 'stage',
+      colour: 'dark',
+      picture: icon('lucide:house'),
+    }),
+  PE6: () =>
+    editCell(BUILT_IN, 'needs', placeOf(BUILT_IN, 'needs', 'help'), {
+      ...speakFieldsOf(tile(BUILT_IN, 'help')),
+      picture: icon('lucide:apple'),
+    }),
+  'PE7 symbol': withNeedsSymbol,
+  'PE7 icon': () => {
+    const before = withNeedsSymbol();
+    return editCell(before, 'home', placeOf(before, 'home', 'needs'), {
+      ...openFieldsOf(tile(before, 'needs')),
+      style: 'signage',
+      picture: icon('lucide:house'),
+    });
+  },
+  PE8: () => {
+    const before = withKeyYes();
+    return editCell(before, 'yes-no', placeOf(before, 'yes-no', 'yes-green'), {
+      ...speakFieldsOf(tile(before, 'yes-green')),
+      label: 'Yes please',
+    });
+  },
+};
+
+/** The one tile of `after` that `before` does not have. */
+function madeTile(before: BoardSet, after: BoardSet): Tile {
+  const made = newTiles(before, after);
+  expect(made.length).toBe(1);
+  return made[0];
+}
+
+describe('The picture of a cell', () => {
+  it('PE1: a cell that speaks is added with a symbol and has the symbol style and no icon', () => {
+    const made = madeTile(BUILT_IN, PICTURE_SETS['PE1']());
+    expect(made.style).toBe('symbol');
+    expect(made.symbol).toBe('advent-calendar.svg');
+    expect(made.icon).toBeUndefined();
+  });
+
+  it('PE2: a cell that speaks is added with an icon and has the symbol style and no symbol', () => {
+    const made = madeTile(BUILT_IN, PICTURE_SETS['PE2']());
+    expect(made.style).toBe('symbol');
+    expect(made.icon).toBe('lucide:apple');
+    expect(made.symbol).toBeUndefined();
+  });
+
+  it('PE3: a cell that speaks is added with no picture and has the key style', () => {
+    const made = madeTile(BUILT_IN, PICTURE_SETS['PE3']());
+    expect(made.style).toBe('key');
+    expect(made.symbol).toBeUndefined();
+    expect(made.icon).toBeUndefined();
+  });
+
+  it('PE4: a board is added with a symbol, and the cell that opens it has the symbol style and no icon', () => {
+    const set = PICTURE_SETS['PE4']();
+    const opener = newTiles(BUILT_IN, set).find((item) => item.action?.type === 'open');
+    expect(opener?.style).toBe('symbol');
+    expect(opener?.symbol).toBe('dog.svg');
+    expect(opener?.icon).toBeUndefined();
+  });
+
+  it('PE5: a board is added with the Stage style and an icon, and the cell that opens it has both', () => {
+    const set = PICTURE_SETS['PE5']();
+    const opener = newTiles(BUILT_IN, set).find((item) => item.action?.type === 'open');
+    expect(opener?.style).toBe('stage');
+    expect(opener?.icon).toBe('lucide:house');
+  });
+
+  it('PE6: Help gets an icon in place of its symbol and keeps its id, its phrase and its colour', () => {
+    const before = tile(BUILT_IN, 'help');
+    const after = tile(PICTURE_SETS['PE6'](), 'help');
+    expect(before.symbol).toBe('help.svg');
+    expect(after.icon).toBe('lucide:apple');
+    expect(after.symbol).toBeUndefined();
+    expect(after.id).toBe(before.id);
+    expect(after.action).toEqual(before.action);
+    expect(after.colour).toBe(before.colour);
+  });
+
+  it('PE7: the cell that opens Needs gets a symbol, and then an icon with the Signage style', () => {
+    const before = tile(BUILT_IN, 'needs');
+    expect(before.style).toBe('bleed');
+    expect(before.icon).toBe('heart');
+
+    const withSymbol = tile(PICTURE_SETS['PE7 symbol'](), 'needs');
+    expect(withSymbol.style).toBe('symbol');
+    expect(withSymbol.symbol).toBe('dog.svg');
+
+    const withIcon = tile(PICTURE_SETS['PE7 icon'](), 'needs');
+    expect(withIcon.style).toBe('signage');
+    expect(withIcon.icon).toBe('lucide:house');
+    expect(withIcon.symbol).toBeUndefined();
+  });
+
+  it('PE8: a key tile that speaks and shows an icon keeps its style and its icon when only its label is edited', () => {
+    const before = tile(withKeyYes(), 'yes-green');
+    expect(before.style).toBe('key');
+    expect(before.icon).toBe('check');
+    expect(before.action?.type).toBe('speak');
+
+    const after = tile(PICTURE_SETS['PE8'](), 'yes-green');
+    expect(after.label).toBe('Yes please');
+    expect(after.style).toBe('key');
+    expect(after.icon).toBe('check');
+  });
+
+  it('PE9: fieldsOf reads a symbol, an icon of Lucide, an icon of the app and no picture', () => {
+    const apple: Tile = {
+      id: 'apple',
+      label: 'Apple',
+      colour: 'light',
+      style: 'symbol',
+      icon: 'lucide:apple',
+      action: { type: 'speak', phrase: 'Apple' },
+    };
+    const hello: Tile = {
+      id: 'hello',
+      label: 'Hello',
+      colour: 'light',
+      style: 'key',
+      action: { type: 'speak', phrase: 'Hello' },
+    };
+    expect(tile(BUILT_IN, 'needs').icon).toBe('heart');
+    expect(fieldsOf(tile(BUILT_IN, 'help'))?.picture).toEqual(symbol('help.svg'));
+    expect(fieldsOf(apple)?.picture).toEqual(icon('lucide:apple'));
+    expect(fieldsOf(tile(BUILT_IN, 'needs'))?.picture).toEqual(icon('heart'));
+    expect(fieldsOf(hello)).toBeDefined();
+    expect(fieldsOf(hello)?.picture).toBeUndefined();
+  });
+
+  it('PE10: each set that cases PE1 to PE8 produce is read with no fault', () => {
+    for (const [name, produce] of Object.entries(PICTURE_SETS)) {
+      const set = produce();
+      expect(set, name).not.toBe(BUILT_IN);
+      expect(loadBoards(set.tiles, set.boards).faults, name).toEqual([]);
+    }
   });
 });

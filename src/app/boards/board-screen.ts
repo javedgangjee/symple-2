@@ -28,11 +28,12 @@ import {
   fieldsOf,
   moveCell,
   moveInGroups,
+  moveToNewGroup,
   removeCell,
   removeGroup,
   setBoard,
 } from '../edit/board-edits';
-import { Drag, GroupBox, Places, placeUnder, readPlaces, slide } from '../edit/drag';
+import { Drag, GroupBox, Places, isOver, placeUnder, readPlaces, slide } from '../edit/drag';
 import { EditMode } from '../edit/edit-mode';
 import { Room, measureRoom } from '../edit/room';
 import { TileDialog } from '../edit/tile-dialog';
@@ -188,6 +189,9 @@ export class BoardScreen {
 
   private readonly grid = viewChild<ElementRef<HTMLElement>>('grid');
 
+  /** The Add column button beside the grid, which is also a place to drop a cell. */
+  private readonly newGroup = viewChild<ElementRef<HTMLElement>>('newGroup');
+
   /**
    * The scan state that the grid shows. While the post click delay runs on a board that the
    * pick has just opened, no cell of that board is picked, so the grid looks at rest.
@@ -235,6 +239,17 @@ export class BoardScreen {
 
   /** The cell that follows the pointer while it is dragged. */
   protected readonly lifted = signal<Lifted | null>(null);
+
+  /** Whether the cell that is dragged lies over Add column, so it would go to a new group. */
+  private readonly overNewGroup = signal(false);
+
+  /**
+   * Whether Add column shows that it takes a cell: a cell is picked up or dragged over it, and
+   * the board has room for one more group.
+   */
+  protected readonly takesCell = computed(
+    () => (this.picked() !== null || this.overNewGroup()) && this.room.forGroup(),
+  );
 
   /** The place in the grid of the cell that is dragged, which is drawn as a gap. */
   protected readonly gap = computed(() => this.preview()?.to ?? null);
@@ -561,8 +576,8 @@ export class BoardScreen {
   );
 
   /**
-   * The Add column button beside the grid was pressed. With no room for a group it stays in
-   * the tab order, says why and does nothing.
+   * The Add column button beside the grid was pressed. With a cell picked up it puts that cell
+   * in a new group. With no room for a group it stays in the tab order, says why and does nothing.
    */
   protected addGroup(): void {
     const board = this.board();
@@ -571,6 +586,12 @@ export class BoardScreen {
     }
     if (!this.room.forGroup()) {
       this.edit.tell(this.groupsFullText());
+      return;
+    }
+    const held = this.picked();
+    if (held) {
+      this.picked.set(null);
+      this.moveToNewGroup(held);
       return;
     }
     this.data.change((set) => addGroup(set, board.id));
@@ -671,6 +692,25 @@ export class BoardScreen {
   }
 
   /**
+   * Moves a cell into a new group at the end of the board, tells of it and puts the focus on the
+   * Edit button of the cell. With no room for a group it says why and does nothing.
+   */
+  private moveToNewGroup(from: CellPosition): void {
+    if (!this.room.forGroup()) {
+      this.edit.tell(this.groupsFullText());
+      return;
+    }
+    const name = this.nameAt(from);
+    const before = this.data.set();
+    this.data.change((set) => moveToNewGroup(set, this.id(), from));
+    if (this.data.set() === before) {
+      return;
+    }
+    this.edit.tell(`${name} moved to a new ${this.groupKind().toLowerCase()}`);
+    this.focusAsk.set({ at: { group: this.groupSizes().length - 1, cell: 0 }, tool: 'edit' });
+  }
+
+  /**
    * A press on a cell in edit mode. The first press picks the cell up.
    * A press on a second cell puts the first in its place, and a press on the same cell puts it back.
    */
@@ -732,7 +772,10 @@ export class BoardScreen {
     };
   }
 
-  /** The held cell follows the pointer and takes the place under it. */
+  /**
+   * The held cell follows the pointer and takes the place under it. Over Add column it would go
+   * to a new group, so the grid draws it back in its own place.
+   */
   private onDragMove(event: PointerEvent): void {
     const point = { x: event.clientX, y: event.clientY };
     const from = this.drag.move(event.pointerId, point);
@@ -742,22 +785,34 @@ export class BoardScreen {
       return;
     }
     this.picked.set(null);
+    const button = this.newGroup()?.nativeElement;
+    const over = button !== undefined && isOver(point, button.getBoundingClientRect());
+    this.overNewGroup.set(over);
     const own = this.preview()?.to ?? from;
     const hasRoom = (group: number) => group === from.group || this.room.forCell(group);
-    const to = placeUnder(point, this.groupBoxes(grid, grip.key), this.layout(), own, hasRoom);
+    const to = over
+      ? from
+      : placeUnder(point, this.groupBoxes(grid, grip.key), this.layout(), own, hasRoom);
     this.preview.set({ from, to });
     const { tile, width, height } = grip;
     this.lifted.set({ tile, width, height, left: point.x - grip.dx, top: point.y - grip.dy });
   }
 
-  /** The pointer went up or was taken away. A cell that was dragged moves to where it lies. */
+  /**
+   * The pointer went up or was taken away. A cell that was dragged moves to where it lies, or
+   * to a new group when it was let go over Add column.
+   */
   protected onDragEnd(event: PointerEvent): void {
     const from = this.drag.end(event.pointerId);
     const to = this.preview()?.to;
+    const overNewGroup = this.overNewGroup();
     this.grip = null;
     this.lifted.set(null);
     this.preview.set(null);
-    if (from && to) {
+    this.overNewGroup.set(false);
+    if (from && overNewGroup) {
+      this.moveToNewGroup(from);
+    } else if (from && to) {
       this.move(from, to);
     }
   }
@@ -806,14 +861,15 @@ export class BoardScreen {
 
   /**
    * Puts the focus on an edit button of the cell at a place. A cell without that button, or an
-   * ask that names no button, gives its first one, and a group with no cell there gives its Add
-   * Tile button.
+   * ask that names no button, gives its Edit button, or its first button if it has no Edit
+   * button, and a group with no cell there gives its Add Tile button.
    */
   private focusTool(grid: HTMLElement, { at, tool }: FocusAsk): void {
     const group = grid.querySelectorAll(':scope > .group')[at.group];
     const slot = group?.querySelectorAll(':scope > .slot')[at.cell];
     const target =
       (tool && slot?.querySelector(`.tool.${tool}`)) ??
+      slot?.querySelector('.tool.edit') ??
       slot?.querySelector('.tool') ??
       group?.querySelector('.add-tile');
     if (target instanceof HTMLElement) {

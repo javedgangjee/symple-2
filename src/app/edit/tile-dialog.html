@@ -14,14 +14,16 @@
   (keydown)="events.key($event)"
 >
   <form class="split" (submit)="submit($event)">
-    <h2 id="tile-title">{{ title() }}</h2>
+    <!-- The left side holds the title, the preview and the fields that set the words and the look. -->
+    <!-- It scrolls by itself when the window is too low for it. -->
+    <div class="side">
+      <h2 id="tile-title">{{ title() }}</h2>
 
-    <!-- The preview is a picture of the cell. It is inert, so it cannot be pressed or focused and screen readers skip it. -->
-    <div class="preview" inert>
-      <app-cell [tile]="preview()" />
-    </div>
+      <!-- The preview is a picture of the cell. It is inert, so it cannot be pressed or focused and screen readers skip it. -->
+      <div class="preview" inert>
+        <app-cell [tile]="preview()" />
+      </div>
 
-    <div class="fields">
       <div class="field">
         <label for="tile-label">{{ kind() === 'open' ? 'Name' : 'Label' }}</label>
         <input
@@ -55,72 +57,24 @@
             (input)="setPhrase(phraseInput)"
           />
         </div>
+      }
 
-        <fieldset class="grow">
-          <legend>Symbol</legend>
-          <!-- Enter in the box that filters does not add the tile, because the caregiver is still choosing. -->
-          <label class="small" for="tile-find">Find a symbol</label>
-          <input
-            #find
-            id="tile-find"
-            type="text"
-            autocomplete="off"
-            aria-controls="tile-symbols"
-            [value]="query()"
-            (input)="query.set(find.value)"
-            (keydown.enter)="$event.preventDefault()"
-          />
-          <div class="symbols" id="tile-symbols">
-            <!-- No symbol is always in the list, so the caregiver can take a symbol away whatever the filter holds. -->
-            <label>
-              <input
-                type="radio"
-                name="tile-symbol"
-                value=""
-                [checked]="symbol() === ''"
-                (change)="symbol.set('')"
-              />
-              <span class="plate"></span>
-              No symbol
-            </label>
-            @for (item of symbols(); track item.file) {
-              <label>
-                <input
-                  type="radio"
-                  name="tile-symbol"
-                  [value]="item.file"
-                  [checked]="symbol() === item.file"
-                  (change)="symbol.set(item.file)"
-                />
-                <span class="plate"
-                  ><img [src]="'symbols/' + item.file" alt="" loading="lazy" draggable="false"
-                /></span>
-                {{ item.name }}
-              </label>
-            } @empty {
-              <p class="hint">No symbol has that name.</p>
-            }
-          </div>
-        </fieldset>
-      } @else {
-        <fieldset>
-          <legend>Style</legend>
-          <div class="kinds three">
-            @for (name of styles; track name) {
-              <label>
-                <input
-                  type="radio"
-                  name="tile-style"
-                  [value]="name"
-                  [checked]="style() === name"
-                  (change)="style.set(name)"
-                />
-                {{ styleLabels[name].name }}
-                <small>{{ styleLabels[name].about }}</small>
-              </label>
-            }
-          </div>
-        </fieldset>
+      @if (showStyle()) {
+        <!-- The style is a native drop down, so the browser gives it the keyboard and its name for a screen reader. -->
+        <div class="field">
+          <label for="tile-style">Style</label>
+          <span class="pick">
+            <select #styleSelect id="tile-style" (change)="setStyle(styleSelect.value)">
+              @for (name of styles; track name) {
+                <option [value]="name" [selected]="style() === name">
+                  {{ styleLabels[name] }}
+                </option>
+              }
+            </select>
+            <!-- Lucide chevron-down. -->
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </span>
+        </div>
       }
 
       <fieldset>
@@ -143,27 +97,103 @@
           }
         </div>
       </fieldset>
+    </div>
 
-      @if (kind() === 'open') {
-        <fieldset class="grow">
-          <legend>Icon</legend>
-          <div class="icons">
-            @for (item of icons; track item.name) {
+    <!-- The right side holds the Picture field, which takes the height, and the buttons under it. -->
+    <div class="fields">
+      <fieldset class="grow">
+        <legend>Picture</legend>
+        <!-- The box and the kind of picture lie on one row, as the search box of a list and its filter. -->
+        <!-- The box takes the free width, and the two wrap on a narrow window. -->
+        <div class="finder">
+          <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
+          <!-- The box has no row of its own for a name. Its placeholder shows the name. -->
+          <input
+            #find
+            id="tile-find"
+            type="text"
+            autocomplete="off"
+            aria-label="Find a picture"
+            placeholder="Find a picture"
+            aria-controls="tile-pictures"
+            [value]="query()"
+            (input)="setQuery(find.value)"
+            (keydown.enter)="$event.preventDefault()"
+          />
+          <!-- The kind of picture is a native drop down, so the browser gives it the keyboard. -->
+          <!-- It has no visible label, as the box beside it has none, so its name is given here. -->
+          <span class="pick">
+            <select
+              #kindSelect
+              id="tile-kind"
+              aria-label="Kind of picture"
+              aria-controls="tile-pictures"
+              (change)="setView(kindSelect.value)"
+            >
+              @for (item of kinds; track item.value) {
+                <option [value]="item.value" [selected]="view() === item.value">
+                  {{ item.label }}
+                </option>
+              }
+            </select>
+            <!-- Lucide chevron-down. -->
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </span>
+        </div>
+
+        <!-- The list scrolls, and Show more is at its end, after the last picture. -->
+        <div #pictureList class="pictures" id="tile-pictures">
+          <div class="choices" role="radiogroup" aria-label="Pictures">
+            <!-- No picture is always in the list of a cell that speaks, whatever the box holds. -->
+            @if (kind() === 'speak') {
               <label>
                 <input
                   type="radio"
-                  name="tile-icon"
-                  [value]="item.name"
-                  [checked]="icon() === item.name"
-                  (change)="icon.set(item.name)"
+                  name="tile-picture"
+                  value=""
+                  [checked]="chosenKey() === ''"
+                  (change)="pick(undefined)"
                 />
-                <span class="sr-only">{{ item.label }}</span>
-                <app-icon [name]="item.name" />
+                <span class="plate"></span>
+                No picture
+              </label>
+            }
+            @for (item of items(); track item.key) {
+              <label>
+                <input
+                  type="radio"
+                  name="tile-picture"
+                  [value]="item.key"
+                  [checked]="chosenKey() === item.key"
+                  (change)="pick(item.picture)"
+                />
+                @let shown = item.picture;
+                <span class="plate">
+                  @if (shown.kind === 'symbol') {
+                    <img
+                      [src]="'symbols/' + shown.symbol"
+                      alt=""
+                      width="40"
+                      height="40"
+                      loading="lazy"
+                      draggable="false"
+                    />
+                  } @else {
+                    <app-icon [name]="shown.icon" />
+                  }
+                </span>
+                {{ item.name }}
               </label>
             }
           </div>
-        </fieldset>
-      }
+          @if (hasMore()) {
+            <button type="button" class="more" (click)="showMore()">Show more</button>
+          }
+          <!-- The note is empty unless the pictures are loading, failed to load or none has the name. -->
+          <!-- It is a polite live region and not a status role, because the board screen keeps the one status line of the page. -->
+          <p class="hint" id="tile-picture-note" aria-live="polite" [textContent]="note()"></p>
+        </div>
+      </fieldset>
 
       <div class="actions">
         <button type="button" (click)="cancel()">Cancel</button>

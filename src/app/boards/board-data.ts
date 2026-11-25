@@ -14,8 +14,8 @@ export type CellStyle = (typeof CELL_STYLES)[number];
 export const CELL_HUES = ['c1', 'c2', 'c3', 'c4', 'c5'] as const;
 export type CellHue = (typeof CELL_HUES)[number];
 
-/** The line icons. The drawings are in src/app/cells/icon.ts. */
-export const ICON_NAMES = [
+/** The line icons that the app draws itself. The drawings are in src/app/cells/icon.ts. */
+export const CORE_ICON_NAMES = [
   'board',
   'heart',
   'chat',
@@ -35,7 +35,38 @@ export const ICON_NAMES = [
   'thumbs',
   'apps',
 ] as const;
-export type IconName = (typeof ICON_NAMES)[number];
+export type CoreIconName = (typeof CORE_ICON_NAMES)[number];
+
+/**
+ * Any icon of the Lucide set, named by `lucide:` and its Lucide name, such as `lucide:apple`.
+ * The prefix keeps it apart from the core names, some of which are also Lucide names.
+ */
+export type LucideIconName = `lucide:${string}`;
+
+/** The name of an icon: one of the core names, or a Lucide name. */
+export type IconName = CoreIconName | LucideIconName;
+
+/**
+ * The core names again, with the type of any icon name. A filter with a test for a kind of
+ * icon name can then narrow the list, which it cannot do from the narrower type.
+ */
+export const ICON_NAMES: readonly IconName[] = CORE_ICON_NAMES;
+
+/**
+ * The form of a Lucide name: lower case letters, digits and hyphens after the prefix.
+ * The loader checks the form only, so an icon that Lucide does not have still passes.
+ */
+const LUCIDE_ICON = /^lucide:[a-z0-9-]+$/;
+
+/** Tells whether a value is a Lucide name in the right form. */
+export function isLucideIconName(value: unknown): value is LucideIconName {
+  return typeof value === 'string' && LUCIDE_ICON.test(value);
+}
+
+/** Tells whether a value is the name of an icon, core or Lucide. */
+export function isIconName(value: unknown): value is IconName {
+  return isOneOf(CORE_ICON_NAMES, value) || isLucideIconName(value);
+}
 
 /** The sizes with a name, and the number of parts each one takes. */
 export const NAMED_SIZES = { small: 3, medium: 4, large: 5 } as const;
@@ -229,7 +260,7 @@ function readTile(value: Json, id: string): Tile | string {
   if (hue !== undefined && !isOneOf(CELL_HUES, hue)) {
     return `its hue ${show(hue)} is not known`;
   }
-  if (icon !== undefined && !isOneOf(ICON_NAMES, icon)) {
+  if (icon !== undefined && !isIconName(icon)) {
     return `its icon ${show(icon)} is not known`;
   }
   if ((style === 'bleed' || style === 'signage' || style === 'stage') && icon === undefined) {
@@ -241,8 +272,8 @@ function readTile(value: Json, id: string): Tile | string {
   if (symbol !== undefined && !(typeof symbol === 'string' && SYMBOL_FILE.test(symbol))) {
     return `its symbol ${show(symbol)} is not a file name such as "help.svg"`;
   }
-  if (style === 'symbol' && symbol === undefined) {
-    return 'a symbol tile must name a symbol';
+  if (style === 'symbol' && symbol === undefined && icon === undefined) {
+    return 'a symbol tile must name a symbol or an icon';
   }
   if (name !== undefined && !isText(name)) {
     return 'its name is empty';

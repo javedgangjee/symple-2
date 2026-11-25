@@ -749,7 +749,7 @@ describe('BoardScreen', () => {
         .filter((label) => label !== 'Back');
       expect(labels.length).toBe(12);
       for (const label of labels) {
-        expect(toolNames(slotOf(label ?? ''))).toEqual([`Edit ${label}`, `Remove ${label}`]);
+        expect(toolNames(slotOf(label ?? ''))).toEqual([`Remove ${label}`, `Edit ${label}`]);
       }
       // A cell that is inert takes no press and no focus in a browser.
       const hosts = Array.from(element.querySelectorAll('.grid app-cell'));
@@ -784,12 +784,12 @@ describe('BoardScreen', () => {
       expect(focused()).toBe('Remove Pain');
     });
 
-    it('ES6: the cell Keyboards, which opens a locked board, has Edit, Open and Remove buttons', async () => {
+    it('ES6: the cell Keyboards, which opens a locked board, has Remove, Edit and Open buttons', async () => {
       await drawBoard('home');
       expect(toolNames(slotOf('Keyboards'))).toEqual([
+        'Remove Keyboards',
         'Edit Keyboards',
         'Open Keyboards',
-        'Remove Keyboards',
       ]);
     });
 
@@ -936,6 +936,55 @@ describe('BoardScreen', () => {
       expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
       expect(cellOrder()[3]).toEqual([]);
       expect(edit.dialog()).toEqual({ kind: 'add-tile', group: 3 });
+    });
+
+    it('ES19: a press on Help and then on Add column puts Help in a new column and the focus on Edit Help', async () => {
+      await drawBoard('needs');
+      const add = () => named('Add column');
+      expect(add().hasAttribute('data-takes')).toBe(false);
+      await pressCell('Help');
+      expect(add().hasAttribute('data-takes')).toBe(true);
+      await press('Add column');
+      expect(cellOrder()).toEqual([
+        ['Back', 'Pain', 'Toilet', 'Drink'],
+        ['Eat', 'Medicine', 'Hot', 'Blanket'],
+        ['Bed', 'Move me', 'Itch', 'Glasses'],
+        ['Help'],
+      ]);
+      expect(element.querySelector('[data-picked]')).toBeNull();
+      expect(add().hasAttribute('data-takes')).toBe(false);
+      expect(status()).toBe('Help moved to a new column');
+      expect(focused()).toBe('Edit Help');
+      // With nothing picked up, Add column adds an empty group as before.
+      await press('Add column');
+      expect(data.board('needs')?.groups.map((group) => group.cells.length)).toEqual([
+        4, 4, 4, 1, 0,
+      ]);
+      expect(status()).toBe('Column 5 added');
+    });
+
+    it('ES20: with no room for a group, a press on Help and then on Add column moves nothing and says why', async () => {
+      await drawBoard('needs');
+      TestBed.inject(Room).set({ cells: [true, true, true], group: false });
+      await fixture.whenStable();
+      await pressCell('Help');
+      expect(named('Add column').hasAttribute('data-takes')).toBe(false);
+      await press('Add column');
+      expect(cellOrder()[0]).toEqual(['Back', 'Help', 'Pain', 'Toilet', 'Drink']);
+      expect(data.board('needs')?.groups.length).toBe(3);
+      expect(status()).toBe('The board has no room for another column.');
+    });
+
+    it('ES21: in the rows layout a press on Help and then on Add row puts Help in a new row', async () => {
+      await drawBoard('needs', {
+        before: () =>
+          data.change((set) => setBoard(set, 'needs', { title: 'Needs', layout: 'rows' })),
+      });
+      await pressCell('Help');
+      await press('Add row');
+      expect(cellOrder()[3]).toEqual(['Help']);
+      expect(status()).toBe('Help moved to a new row');
+      expect(focused()).toBe('Edit Help');
     });
   });
 });

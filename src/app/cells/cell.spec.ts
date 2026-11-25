@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Tile } from '../boards/board-data';
 import { Message } from '../keyboard/message';
 import { Cell } from './cell';
+import { LUCIDE_FILE } from './icon-set';
 
 const NEEDS: Tile = {
   id: 'needs',
@@ -50,6 +51,22 @@ const CAPS: Tile = {
   style: 'key',
   icon: 'caps',
   action: { type: 'caps' },
+};
+const APPLE: Tile = {
+  id: 'apple',
+  label: 'Apple',
+  colour: 'light',
+  style: 'symbol',
+  icon: 'lucide:apple',
+  action: { type: 'speak', phrase: 'Apple' },
+};
+const DOG: Tile = {
+  id: 'dog',
+  label: 'Dog',
+  colour: 'light',
+  style: 'symbol',
+  symbol: 'dog.svg',
+  action: { type: 'speak', phrase: 'Dog' },
 };
 const MESSAGE: Tile = { id: 'message', label: 'Message', colour: 'light', style: 'message' };
 
@@ -146,5 +163,35 @@ describe('Cell', () => {
     const caret = button.querySelector('.caret');
     expect(caret).not.toBeNull();
     expect(caret?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('CE1: a symbol tile with the icon lucide:apple and no symbol draws the icon on the plate', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: LUCIDE_FILE,
+          useValue: () =>
+            Promise.resolve([{ name: 'apple', shapes: [{ tag: 'path', d: 'M2 2h20' }] }]),
+        },
+      ],
+    });
+    const button = await draw(APPLE);
+    const plate = button.querySelector('.plate');
+    expect(plate).not.toBeNull();
+    expect(plate?.querySelectorAll('img').length).toBe(0);
+    const icons = plate?.querySelectorAll('svg') ?? [];
+    expect(icons.length).toBe(1);
+    expect(icons[0].querySelectorAll('path').length).toBe(1);
+    expect(button.querySelector('.label')?.textContent?.trim()).toBe('Apple');
+  });
+
+  it('CE2: a symbol tile with the symbol dog.svg shows that image on the plate', async () => {
+    const button = await draw(DOG);
+    const plate = button.querySelector('.plate');
+    const images = plate?.querySelectorAll('img') ?? [];
+    expect(images.length).toBe(1);
+    expect(images[0].getAttribute('src')).toBe('symbols/dog.svg');
+    expect(plate?.querySelectorAll('svg').length).toBe(0);
+    expect(button.querySelector('.label')?.textContent?.trim()).toBe('Dog');
   });
 });

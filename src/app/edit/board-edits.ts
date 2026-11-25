@@ -30,14 +30,29 @@ export type BoardCellStyle = (typeof BOARD_CELL_STYLES)[number];
 /** The number of groups that a new board starts with. Its first group holds the Back cell. */
 const NEW_BOARD_GROUPS = 3;
 
+/** A Mulberry symbol, named by its file in public/symbols. */
+export interface SymbolPicture {
+  readonly kind: 'symbol';
+  readonly symbol: string;
+}
+
+/** An icon, named as the field `icon` of a tile names it. */
+export interface IconPicture {
+  readonly kind: 'icon';
+  readonly icon: IconName;
+}
+
+/** The picture of a cell: a symbol or an icon. */
+export type Picture = SymbolPicture | IconPicture;
+
 /** What the caregiver gives for a cell that speaks. */
 export interface SpeakFields {
   readonly kind: 'speak';
   readonly label: string;
   /** The phrase to speak. An empty phrase speaks the label. */
   readonly phrase: string;
-  /** The file name of a symbol, or nothing for a cell that shows its label alone. */
-  readonly symbol?: string;
+  /** The picture of the cell, or nothing for a cell that shows its label alone. */
+  readonly picture?: Picture;
   readonly colour: CellColour;
 }
 
@@ -45,9 +60,10 @@ export interface SpeakFields {
 export interface OpenFields {
   readonly kind: 'open';
   readonly label: string;
+  /** The style of the cell while its picture is an icon. A cell with a symbol has the style `symbol`. */
   readonly style: BoardCellStyle;
   readonly colour: CellColour;
-  readonly icon: IconName;
+  readonly picture: Picture;
 }
 
 export type CellFields = SpeakFields | OpenFields;
@@ -139,16 +155,58 @@ function withNewCell(board: BoardRecord, tileId: string, group?: number): BoardR
   );
 }
 
-/** The tile of a cell that speaks. A cell with a symbol is a symbol tile, and a cell without one shows its label alone. */
+/**
+ * The picture that a tile shows. A `symbol` tile shows its symbol, or its icon when it names no
+ * symbol. A tile of any other style shows its icon, if it has one.
+ */
+export function pictureOf(tile: Tile): Picture | undefined {
+  if (tile.style === 'symbol' && tile.symbol !== undefined) {
+    return { kind: 'symbol', symbol: tile.symbol };
+  }
+  return tile.icon === undefined ? undefined : { kind: 'icon', icon: tile.icon };
+}
+
+/** Whether two pictures are the same picture, or are both nothing. */
+export function samePicture(a: Picture | undefined, b: Picture | undefined): boolean {
+  if (a?.kind === 'symbol' && b?.kind === 'symbol') {
+    return a.symbol === b.symbol;
+  }
+  if (a?.kind === 'icon' && b?.kind === 'icon') {
+    return a.icon === b.icon;
+  }
+  return a === undefined && b === undefined;
+}
+
+/** The fields of a tile that hold a picture. */
+function pictureFields(picture: Picture): Pick<Tile, 'symbol'> | Pick<Tile, 'icon'> {
+  return picture.kind === 'symbol' ? { symbol: picture.symbol } : { icon: picture.icon };
+}
+
+/**
+ * The tile of a cell that speaks. A cell with a symbol or an icon is a symbol tile, which draws
+ * its icon where a symbol would be, and a cell with no picture shows its label alone.
+ */
 function speakTile(id: string, fields: SpeakFields, label: string): Tile {
   const phrase = clean(fields.phrase, PHRASE_LENGTH) || label;
+  const { picture } = fields;
   return {
     id,
     label,
     colour: fields.colour,
-    ...(fields.symbol ? { style: 'symbol', symbol: fields.symbol } : { style: 'key' }),
+    ...(picture ? { style: 'symbol', ...pictureFields(picture) } : { style: 'key' }),
     action: { type: 'speak', phrase },
   };
+}
+
+/**
+ * The look of a cell that opens a board. A cell with a symbol is a symbol tile, and a cell with
+ * an icon has the style that the caregiver chose.
+ */
+function openLook(fields: OpenFields): Pick<Tile, 'style' | 'symbol' | 'icon'> {
+  const { picture } = fields;
+  return picture.kind === 'symbol'
+    ? { style: 'symbol', symbol: picture.symbol }
+    : { style: fields.style, icon: picture.icon };
 }
 
 /**
@@ -199,16 +257,15 @@ function marks(tile: Tile, colour: CellColour, label: string): Pick<Tile, 'hue' 
 }
 
 /**
- * The tile of a cell that speaks, with the fields of an edit. A tile that shows an icon and
- * gets no symbol keeps its style and its icon, as the Yes and No tiles do.
+ * The tile of a cell that speaks, with the fields of an edit. An edit that leaves the picture as
+ * it was keeps the style of the tile and its caption, as the Yes and No tiles need.
  */
 function editedSpeakTile(tile: Tile, fields: SpeakFields, label: string): Tile {
-  const keepsLook = !fields.symbol && tile.style !== 'symbol';
+  const keepsLook = samePicture(pictureOf(tile), fields.picture);
   return {
     ...speakTile(tile.id, fields, label),
     ...(keepsLook && {
       style: tile.style,
-      ...(tile.icon !== undefined && { icon: tile.icon }),
       ...(tile.caption && { caption: tile.caption }),
     }),
     ...marks(tile, fields.colour, label),
@@ -220,8 +277,7 @@ function editedOpenTile(tile: Tile, fields: OpenFields, label: string): Tile {
     id: tile.id,
     label,
     colour: fields.colour,
-    style: fields.style,
-    icon: fields.icon,
+    ...openLook(fields),
     ...(tile.action && { action: tile.action }),
     ...marks(tile, fields.colour, label),
   };
@@ -266,32 +322,33 @@ export function tileFor(fields: CellFields, current?: Tile): Tile {
   if (current) {
     return editedOpenTile(current, fields, label);
   }
-  const { colour, style, icon } = fields;
-  return { id: newId('tile'), label, colour, style, icon, ...pickedHue(colour) };
+  const { colour } = fields;
+  return { id: newId('tile'), label, colour, ...openLook(fields), ...pickedHue(colour) };
 }
 
 /**
  * The fields of a tile, as the tile dialog shows them when a cell is edited. It gives nothing
  * for a tile that cannot be edited, such as the Back tile or a key of a keyboard.
  * A phrase that is the label is given as empty, so it follows the label when the label changes.
+ * A cell that opens a board is edited when it shows a symbol, or an icon in one of the styles
+ * of `BOARD_CELL_STYLES`. With a symbol its style field is the first of those styles, which the
+ * cell takes if the caregiver gives it an icon.
  */
 export function fieldsOf(tile: Tile): CellFields | undefined {
   const { label, colour, action } = tile;
+  const picture = pictureOf(tile);
   if (action?.type === 'speak') {
     const phrase = action.phrase === label ? '' : action.phrase;
-    return {
-      kind: 'speak',
-      label,
-      phrase,
-      colour,
-      ...(tile.symbol !== undefined && { symbol: tile.symbol }),
-    };
+    return { kind: 'speak', label, phrase, colour, ...(picture && { picture }) };
+  }
+  if (action?.type !== 'open' || !picture) {
+    return undefined;
+  }
+  if (picture.kind === 'symbol') {
+    return { kind: 'open', label, style: BOARD_CELL_STYLES[0], colour, picture };
   }
   const style = BOARD_CELL_STYLES.find((name) => name === tile.style);
-  if (action?.type === 'open' && style && tile.icon) {
-    return { kind: 'open', label, style, colour, icon: tile.icon };
-  }
-  return undefined;
+  return style ? { kind: 'open', label, style, colour, picture } : undefined;
 }
 
 /** Gives a board a title, and the same label to each tile that opens it. */
@@ -441,6 +498,22 @@ export function moveCell(
 export function addGroup(set: BoardSet, boardId: string): BoardSet {
   const board = editable(set, boardId);
   return board ? withBoard(set, withGroups(board, [...board.groups, { cells: [] }])) : set;
+}
+
+/**
+ * Moves a cell into a new group at the end of its board, as one change. The group that the cell
+ * leaves stays, and it is empty when the cell was its only one.
+ */
+export function moveToNewGroup(set: BoardSet, boardId: string, from: CellPosition): BoardSet {
+  const board = editable(set, boardId);
+  const moved = board && cellAt(board, from);
+  if (!board || !moved) {
+    return set;
+  }
+  const left = board.groups.map((group, g) =>
+    g === from.group ? { cells: group.cells.filter((_, c) => c !== from.cell) } : group,
+  );
+  return withBoard(set, withGroups(board, [...left, { cells: [moved] }]));
 }
 
 /** Whether a group of a board can be removed: it is empty, and it is not the last group. */

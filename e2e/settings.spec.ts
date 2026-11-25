@@ -273,30 +273,27 @@ scanTest(
   },
 );
 
-scanTest(
-  'ST6: the mode Step, two switches applies when the panel closes, with no reload',
-  async ({ open }) => {
-    const page = await open('home', 'Home');
-    // A reload would lose this mark.
-    await page.evaluate(() => Object.assign(window, { noReload: true }));
-    await openPanelByShortcut(page);
-    await press(page, tab(page, 'Selection'));
-    await panel(page).locator('#settings-mode').selectOption('step');
-    await pass(page, 0);
-    await expect(panel(page).locator('#settings-mode')).toHaveValue('step');
-    await closePanel(page);
+scanTest('ST6: the mode Step applies when the panel closes, with no reload', async ({ open }) => {
+  const page = await open('home', 'Home');
+  // A reload would lose this mark.
+  await page.evaluate(() => Object.assign(window, { noReload: true }));
+  await openPanelByShortcut(page);
+  await press(page, tab(page, 'Selection'));
+  await panel(page).locator('#settings-mode').selectOption('step');
+  await pass(page, 0);
+  await expect(panel(page).locator('#settings-mode')).toHaveValue('step');
+  await closePanel(page);
 
-    await switchKey(page, 'Tab');
-    await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
-    await pass(page, 5 * SCAN_TIME);
-    await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
-    await switchKey(page, 'Tab');
-    await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
-    await pass(page, 5 * SCAN_TIME);
-    await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
-    expect(await page.evaluate(() => Reflect.get(window, 'noReload'))).toBe(true);
-  },
-);
+  await switchKey(page, 'Tab');
+  await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
+  await pass(page, 5 * SCAN_TIME);
+  await expect(groups(page).nth(0)).toHaveAttribute('data-scan', '');
+  await switchKey(page, 'Tab');
+  await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
+  await pass(page, 5 * SCAN_TIME);
+  await expect(groups(page).nth(1)).toHaveAttribute('data-scan', '');
+  expect(await page.evaluate(() => Reflect.get(window, 'noReload'))).toBe(true);
+});
 
 test('ST7: the theme Purple applies at once and stays after a reload', async ({ page }) => {
   await openBoard(page, 'home');
