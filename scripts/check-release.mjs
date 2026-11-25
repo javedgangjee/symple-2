@@ -488,6 +488,22 @@ await check('RC11', 'The Privacy section names what Firebase Auth keeps', (probl
   mustHold('The line on Firebase Auth', auth, ['last sign in', 'IP address', 'browser'], problems);
 });
 
+await check('RC12', 'NOTICE covers every file that holds a Lucide drawing', (problems) => {
+  const notice = read('NOTICE', problems);
+  if (notice === undefined) {
+    return;
+  }
+  // The folders that NOTICE names, such as "src/app/". A file in one of them is covered.
+  const folders = notice.match(/[\w./-]+\//g) ?? [];
+  // A template names each icon it copies in a comment that starts with "Lucide".
+  const paths = git('grep', '-l', '-z', '-e', '<!-- Lucide', '--', 'src/app').split('\0');
+  for (const path of paths.filter(Boolean)) {
+    if (!notice.includes(path) && !folders.some((folder) => path.startsWith(folder))) {
+      problems.push(`NOTICE does not name ${path}, which holds a Lucide drawing.`);
+    }
+  }
+});
+
 if (failures.length > 0) {
   console.log(`\n${failures.length} of ${cases} cases failed: ${failures.join(', ')}.`);
   process.exit(1);
