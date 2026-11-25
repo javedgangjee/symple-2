@@ -77,6 +77,16 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 9 adds `public/favicon.svg`, so the browser tab shows the black and white Symple icon.
 - Feature 9 adds a Board editing section to `README.md`, and the six requests to try in the Rules Playground after each change of the Firestore rules.
 - Feature 9 adds unit tests for the stored set, the changes to a set, edit mode, the dialogs, dragging and the sync of the boards, and end to end tests in `e2e/editing.spec.ts`.
+- Feature 23 adds the full Mulberry Symbols set, release 3.6.1, to `public/symbols/`. The app now holds 3,437 symbols, which are the 3,436 of Mulberry and the stop symbol of Symple, and the folder grows from about 0.9 MB to about 34 MB.
+- Feature 23 adds all 2,098 icons of Lucide 1.77.0 in `src/data/lucide.json`, which a script writes from the new development package `lucide-static`. The app still draws each icon inline and has no icon package at run time.
+- Feature 23 adds a Picture field to the tile dialog, where the caregiver gives a tile a symbol or an icon. It holds a box named "Find a picture", a drop down that reads Symbols or Icons, a list of 60 pictures and a Show more button that adds 60 more.
+- Feature 23 adds a search of the pictures by name. A picture matches when its name holds every typed word, and names that begin with the text come first.
+- Feature 23 lets a tile store a Lucide icon in its `icon` field as `lucide:` followed by the Lucide name, such as `lucide:apple`. A tile that speaks draws the icon where a symbol would be, and a tile that opens a board can now take a symbol.
+- Feature 23 fetches `symbols.json` and `lucide.json` only when they are first needed, so the first download of the app does not grow.
+- Feature 23 lets the caregiver drop a tile on Add column in edit mode, or press Add column while a tile is picked up, which moves the tile into a new column or row at the end of the board.
+- Feature 23 adds `scripts/import-mulberry.mjs` and `scripts/import-lucide.mjs`, which bring in the two sets, and `scripts/check-pictures.mjs`, which checks the lists against the files. `npm run check:pictures` runs the check, and `make check` includes it.
+- Feature 23 adds `public/licenses/mulberry.txt`, which is the licence text of the Mulberry release, and an Importing the pictures section to `README.md`.
+- Feature 23 adds unit tests for the loader, the icons, the edits, the search, the lists of names and the tile dialog, and end to end cases for the pictures and for the drop on Add column in `e2e/editing.spec.ts`.
 
 ### Changed
 
@@ -101,6 +111,14 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 9 opens home when the stored set no longer holds the board on show, as a sync from another device can cause.
 - Feature 9 raises the bundle size budget in `angular.json` to a warning at 1 MB and an error at 2 MB.
 - Feature 9 changes the rule in `CLAUDE.md` so that the agent asks before a commit or a merge and then does it, and never pushes.
+- Feature 23 replaces the Symbol field and the Icon field of the tile dialog with the Picture field. The preview, the label or name, the phrase, the style and the colour are on the left of the dialog, and the Picture field is on the right with Cancel and Add or Save under it.
+- Feature 23 makes Style in Add Board a drop down with the options Cropped Icon, Icon in Circle and Centered Icon, and shows it only while the picture is an icon.
+- Feature 23 names three symbols "drink 2", "hot 2" and "open 3", so no two symbols share a name.
+- Feature 23 reads the Lucide set again after a failed read, so an icon that is already on screen gets its shapes.
+- Feature 23 puts the Remove, Edit and Open buttons of a cell in a row at the top left of the cell in edit mode.
+- Feature 23 names the selection modes "Scan" and "Step" in the settings panel, in place of "Scan, one switch" and "Step, two switches".
+- Feature 23 makes Sign out a button with an outline at the end of the Signed in as row of the settings panel.
+- Feature 23 changes `public/licenses/lucide.txt`, `public/symbols/ATTRIBUTION.txt`, `README.md` and `specs/tech-stack.md` to describe the full sets.
 
 ### Fixed
 
