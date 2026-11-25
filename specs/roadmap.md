@@ -18,7 +18,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 ## Release
 
-13. **Public release.** Symple is released to the public as the web app, with a link to the public repo and its licence. The user decided on 2026-11-25 that the release holds the web app and the repo only. The download link for the Mac app and the App Store submission for the iPad app wait for features 10 and 11. Covers: the release step added on 2026-11-16, Platform. Status: planned.
+13. **Public release.** Symple is released to the public as the web app, with a link to the public repo and its licence. The user decided on 2026-11-25 that the release holds the web app and the repo only. The download link for the Mac app and the App Store submission for the iPad app wait for features 10 and 11. Covers: the release step added on 2026-11-16, Platform. Status: in progress.
 
 ## Packaging
 
