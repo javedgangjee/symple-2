@@ -20,7 +20,9 @@ Mulberry Symbols, release 3.6.1
 
 Lucide, version 1.77.0
   Files:     src/data/lucide.json, and the icon drawings in
-             src/app/cells/icon.ts.
+             src/app/cells/icon.ts, src/app/shell/header.html,
+             src/app/settings/settings-panel.html and
+             src/app/auth/sign-in-screen.html.
   Copyright: 2026 Lucide Icons and Contributors, and for the Feather icons
              2013-present Cole Bemis.
   Licence:   ISC License. Some icons come from the Feather project and are
