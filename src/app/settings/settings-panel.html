@@ -327,11 +327,11 @@
             <div class="set">
               <div class="row">
                 <span class="what">Signed in as</span>
-                <span class="val">{{ email() ?? 'An account with no email address' }}</span>
-              </div>
-              <!-- Sign out is a button with an outline, under the account it signs out of. -->
-              <div class="row">
-                <button class="action" type="button" (click)="signOut()">Sign out</button>
+                <!-- Sign out is a button with an outline, at the end of the row of the account it signs out of. -->
+                <span class="end">
+                  <span class="val">{{ email() ?? 'An account with no email address' }}</span>
+                  <button class="action" type="button" (click)="signOut()">Sign out</button>
+                </span>
               </div>
             </div>
           </div>

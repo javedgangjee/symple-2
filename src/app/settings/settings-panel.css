@@ -257,6 +257,16 @@ button.row svg {
 }
 
 /* A button with words, such as Sign out. It has the outline and the fill of the other controls. */
+/* The end of a row that holds a value and a button. They stay at the right, and wrap when the row is narrow. */
+.end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem 1rem;
+  margin-left: auto;
+}
+
 .action {
   min-width: 3rem;
   min-height: 3rem;
