@@ -414,9 +414,27 @@ svg {
   --tick: var(--light);
 }
 
-/* The choice of Symbols or Icons sits above the box. */
-.grow > .kinds {
-  margin-bottom: 0.5rem;
+/* The box and the drop down of the kind of picture lie on one row. The box takes the free width, */
+/* and the drop down is as wide as its text. On a narrow window the drop down wraps under the box. */
+.finder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.finder input[type='text'] {
+  flex: 1 1 12rem;
+  width: auto;
+  min-width: 0;
+}
+
+.finder .pick {
+  flex: none;
+}
+
+.finder .pick select {
+  width: auto;
+  height: 100%;
 }
 
 /* The note at the end of the list takes no room while it is empty. */

@@ -413,7 +413,7 @@ export class TileDialog {
     },
   );
 
-  /** The two choices of kind. */
+  /** The two kinds of picture, in the order of the drop down. */
   protected readonly kinds: readonly { value: PictureKind; label: string }[] = [
     { value: 'symbol', label: 'Symbols' },
     { value: 'icon', label: 'Icons' },
@@ -549,10 +549,15 @@ export class TileDialog {
   }
 
   /**
-   * Shows the pictures of the other kind. A cell that opens a board takes back the last picture
-   * of that kind it had in this dialog, so its Style field follows the kind on show.
+   * Shows the pictures of the kind that the drop down gives. A value that is not a kind is left
+   * out. A cell that opens a board takes back the last picture of that kind it had in this
+   * dialog, so its Style field follows the kind on show.
    */
-  protected setView(kind: PictureKind): void {
+  protected setView(value: string): void {
+    const kind = this.kinds.find((item) => item.value === value)?.value;
+    if (!kind) {
+      return;
+    }
     this.view.set(kind);
     this.limit.set(PAGE);
     const last = this.lastOfKind[kind];

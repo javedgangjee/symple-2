@@ -103,35 +103,43 @@
     <div class="fields">
       <fieldset class="grow">
         <legend>Picture</legend>
-        <div class="kinds" role="radiogroup" aria-label="Kind of picture">
-          @for (item of kinds; track item.value) {
-            <label>
-              <input
-                type="radio"
-                name="tile-picture-kind"
-                [value]="item.value"
-                [checked]="view() === item.value"
-                (change)="setView(item.value)"
-              />
-              {{ item.label }}
-            </label>
-          }
+        <!-- The box and the kind of picture lie on one row, as the search box of a list and its filter. -->
+        <!-- The box takes the free width, and the two wrap on a narrow window. -->
+        <div class="finder">
+          <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
+          <!-- The box has no row of its own for a name. Its placeholder shows the name. -->
+          <input
+            #find
+            id="tile-find"
+            type="text"
+            autocomplete="off"
+            aria-label="Find a picture"
+            placeholder="Find a picture"
+            aria-controls="tile-pictures"
+            [value]="query()"
+            (input)="setQuery(find.value)"
+            (keydown.enter)="$event.preventDefault()"
+          />
+          <!-- The kind of picture is a native drop down, so the browser gives it the keyboard. -->
+          <!-- It has no visible label, as the box beside it has none, so its name is given here. -->
+          <span class="pick">
+            <select
+              #kindSelect
+              id="tile-kind"
+              aria-label="Kind of picture"
+              aria-controls="tile-pictures"
+              (change)="setView(kindSelect.value)"
+            >
+              @for (item of kinds; track item.value) {
+                <option [value]="item.value" [selected]="view() === item.value">
+                  {{ item.label }}
+                </option>
+              }
+            </select>
+            <!-- Lucide chevron-down. -->
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </span>
         </div>
-
-        <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
-        <!-- The box has no row of its own for a name. Its placeholder shows the name. -->
-        <input
-          #find
-          id="tile-find"
-          type="text"
-          autocomplete="off"
-          aria-label="Find a picture"
-          placeholder="Find a picture"
-          aria-controls="tile-pictures"
-          [value]="query()"
-          (input)="setQuery(find.value)"
-          (keydown.enter)="$event.preventDefault()"
-        />
 
         <!-- The list scrolls, and Show more is at its end, after the last picture. -->
         <div #pictureList class="pictures" id="tile-pictures">

@@ -48,15 +48,17 @@ describe('TileDialog', () => {
   /** The pictures of the list, without "No picture". */
   const listed = () => pictures().filter((name) => name !== 'No picture');
   const note = () => one('#tile-picture-note').textContent?.trim();
-  const kindLabels = () => texts('.grow > .kinds label');
+  /** The drop down of the kind of picture, beside the box. */
+  const kindSelect = () => one<HTMLSelectElement>('#tile-kind');
+  /** The kind of picture on show, as the drop down holds it. */
+  const kindValue = () => kindSelect().value;
   const chosenPicture = () => one('.pictures label:has(input:checked)').textContent?.trim();
 
-  /** Picks the choice of the list, or of Symbols or Icons, whose name is given. */
-  async function pick(selector: string, name: string | RegExp): Promise<void> {
-    const found = Array.from(element.querySelectorAll<HTMLLabelElement>(selector)).find((label) => {
-      const text = label.textContent?.trim() ?? '';
-      return typeof name === 'string' ? text === name : name.test(text);
-    });
+  /** Picks the choice of the list whose name is given. */
+  async function pick(selector: string, name: string): Promise<void> {
+    const found = Array.from(element.querySelectorAll<HTMLLabelElement>(selector)).find(
+      (label) => label.textContent?.trim() === name,
+    );
     const input = found?.querySelector('input');
     if (!input) {
       throw new Error(`There is no choice named "${String(name)}".`);
@@ -66,8 +68,18 @@ describe('TileDialog', () => {
   }
 
   const pickPicture = (name: string) => pick('.pictures label', name);
-  const pickKind = (name: 'Symbols' | 'Icons') =>
-    pick('.grow > .kinds label', new RegExp(`^${name}`));
+
+  /** Chooses Symbols or Icons in the drop down, as the browser does when an option is picked. */
+  async function pickKind(name: 'Symbols' | 'Icons'): Promise<void> {
+    const select = kindSelect();
+    const option = Array.from(select.options).find((item) => item.textContent?.trim() === name);
+    if (!option) {
+      throw new Error(`The drop down has no option named "${name}".`);
+    }
+    select.value = option.value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await fixture.whenStable();
+  }
 
   async function press(name: string): Promise<void> {
     const found = Array.from(element.querySelectorAll<HTMLButtonElement>('.actions button')).find(
@@ -127,7 +139,7 @@ describe('TileDialog', () => {
   it('TD3: dog is typed in Find a picture, and every picture in the list has dog in its name', async () => {
     await open({ kind: 'add-tile' });
     await type('#tile-find', 'dog');
-    expect(chosen('tile-picture-kind')).toBe('symbol');
+    expect(kindValue()).toBe('symbol');
     const names = listed();
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
@@ -186,7 +198,7 @@ describe('TileDialog', () => {
     expect(style.value).toBe('bleed');
     expect(element.querySelector('input[name="tile-style"]')).toBeNull();
     expect(chosen('tile-colour')).toBe('dark');
-    expect(chosen('tile-picture-kind')).toBe('icon');
+    expect(kindValue()).toBe('icon');
     expect(pictures()[0]).toBe('Grid');
     expect(chosenPicture()).toBe('Grid');
 
@@ -203,7 +215,7 @@ describe('TileDialog', () => {
     expect(one<HTMLInputElement>('#tile-label').value).toBe('Help');
     expect(one<HTMLInputElement>('#tile-phrase').value).toBe('I need help');
     expect(chosen('tile-colour')).toBe('light');
-    expect(chosen('tile-picture-kind')).toBe('symbol');
+    expect(kindValue()).toBe('symbol');
     expect(listed()[0]).toBe('help');
     expect(chosenPicture()).toBe('help');
     expect(chosen('tile-picture')).toBe('symbol:help.svg');
@@ -273,16 +285,23 @@ describe('TileDialog', () => {
     expect(element.querySelector('button.more')).toBeNull();
   });
 
-  it('TD12: apple is typed and Icons is chosen, and the box keeps apple and the choices show no number', async () => {
+  it('TD12: apple is typed and Icons is chosen in the drop down beside the box, and the box keeps apple', async () => {
     await open({ kind: 'add-tile' });
+    // The kind of picture is a drop down on the row of the box, named for screen readers, with two
+    // options and no number in them. The user changed it from two boxes on 2026-11-25.
+    const select = kindSelect();
+    expect(select).toBeInstanceOf(HTMLSelectElement);
+    expect(select.parentElement?.parentElement).toBe(one('#tile-find').parentElement);
+    expect(select.getAttribute('aria-label')).toBe('Kind of picture');
+    expect(select.getAttribute('aria-controls')).toBe('tile-pictures');
+    expect(texts('#tile-kind option')).toEqual(['Symbols', 'Icons']);
+    expect(Array.from(select.options).map((item) => item.value)).toEqual(['symbol', 'icon']);
+    expect(element.querySelector('input[name="tile-picture-kind"]')).toBeNull();
     await type('#tile-find', 'apple');
     await pickKind('Icons');
-    expect(chosen('tile-picture-kind')).toBe('icon');
+    expect(kindValue()).toBe('icon');
     expect(one<HTMLInputElement>('#tile-find').value).toBe('apple');
     expect(listed()).toContain('apple');
-    const [symbols, icons] = kindLabels();
-    expect(symbols).toBe('Symbols');
-    expect(icons).toBe('Icons');
   });
 
   it('TD13: the icon apple is picked in Add Tile, and the preview draws it and Add emits lucide:apple', async () => {

@@ -114,11 +114,14 @@ const listedPictures = (page: Page, kind: 'symbol' | 'icon') =>
 /** The list of pictures of the tile dialog, which scrolls. */
 const pictureList = (page: Page) => sheet(page).locator('#tile-pictures');
 
-/** The choice of Symbols or Icons. */
-const pictureKind = (page: Page, kind: 'Symbols' | 'Icons') =>
-  sheet(page)
-    .locator('.kinds label')
-    .filter({ has: page.getByRole('radio', { name: new RegExp(`^${kind}`) }) });
+/** The drop down of the kind of picture, beside the box "Find a picture". */
+const kindSelect = (page: Page) =>
+  sheet(page).getByRole('combobox', { name: 'Kind of picture', exact: true });
+
+/** Chooses Symbols or Icons in the drop down of the kind of picture. */
+async function pictureKind(page: Page, kind: 'Symbols' | 'Icons'): Promise<void> {
+  await kindSelect(page).selectOption({ label: kind });
+}
 
 /**
  * A picture of the list, by the value of its radio button, such as `symbol:drink.svg`. The value
@@ -783,8 +786,8 @@ test.describe('with reduced motion', () => {
   });
 });
 
-/** The radio buttons and the other controls of the Picture field that are measured for their size. */
-const PICTURE_CONTROLS = 'button, input[type="text"], label:has(input[type="radio"])';
+/** The radio buttons, the drop down and the other controls of the Picture field that are measured for their size. */
+const PICTURE_CONTROLS = 'button, input[type="text"], select, label:has(input[type="radio"])';
 
 /** The Picture field of the tile dialog. */
 const pictureField = (page: Page) =>
@@ -870,7 +873,7 @@ test('PI2: a tile with the icon "apple" is on Needs after a reload, and it draws
   await edit(page, 'needs');
   await editAction(page, 'Add Tile').click();
   await sheet(page).getByLabel('Label').fill('Apple');
-  await pictureKind(page, 'Icons').click();
+  await pictureKind(page, 'Icons');
   await findBox(page).fill('apple');
   await pictureNamed(page, 'apple').click();
   await sheet(page).getByRole('button', { name: 'Add', exact: true }).click();
@@ -906,7 +909,7 @@ test('PI4: a board that is added from home with the symbol "dog" shows the symbo
   await edit(page, 'home', SCAN);
   await editAction(page, 'Add Board').click();
   await sheet(page).getByLabel('Name').fill('Pets');
-  await pictureKind(page, 'Symbols').click();
+  await pictureKind(page, 'Symbols');
   // The empty box lists the symbols from "a", so "dog" is found by its name.
   await findBox(page).fill('dog');
   await pictureNamed(page, 'dog').click();
@@ -997,21 +1000,28 @@ test('PI8: axe reports no WCAG 2.2 Level AA violation in the tile dialog on Symb
     await editAction(page, 'Add Tile').click();
     await expect(listedPictures(page, 'symbol')).toHaveCount(60);
     expect(await axeViolations(page), `${theme} Symbols`).toEqual([]);
-    await pictureKind(page, 'Icons').click();
+    await pictureKind(page, 'Icons');
     await expect(listedPictures(page, 'icon')).toHaveCount(60);
     expect(await axeViolations(page), `${theme} Icons`).toEqual([]);
   }
 });
 
-test('PI9: on Icons each control of the Picture field is at least 48px high and wide, and each name keeps its contrast', async ({
+test('PI9: on Icons each control of the Picture field is at least 48px high and wide, the drop down is as high as the box, and each name keeps its contrast', async ({
   page,
 }) => {
   await edit(page, 'needs');
   await editAction(page, 'Add Tile').click();
-  await pictureKind(page, 'Icons').click();
+  await pictureKind(page, 'Icons');
   await expect(listedPictures(page, 'icon')).toHaveCount(60);
   expect(await pictureField(page).locator(PICTURE_CONTROLS).count()).toBeGreaterThan(60);
   expect(await smallControls(pictureField(page), PICTURE_CONTROLS)).toEqual([]);
+  // The drop down lies on the row of the box, to its right, and has its height.
+  const box = await boxOf(findBox(page));
+  const select = await boxOf(kindSelect(page));
+  expect(select.height).toBeCloseTo(box.height, 0);
+  expect(select.y).toBeCloseTo(box.y, 0);
+  expect(select.x).toBeGreaterThan(box.x + box.width);
+  expect(select.width).toBeLessThan(box.width);
   // The pointer is moved off the list, so no picture shows its hover look.
   await page.mouse.move(1, 1);
   const names = (await drawnContrast(page, 'dialog.sheet[open] #tile-pictures')).filter(
@@ -1022,6 +1032,23 @@ test('PI9: on Icons each control of the Picture field is at least 48px high and 
     .filter(({ ratio }) => ratio < 4.5)
     .map(({ what, ratio }) => `${what}: ${ratio.toFixed(2)} of 4.5`);
   expect(low).toEqual([]);
+  // The text and the border of the drop down keep their contrast, and its arrow has the colour of its text.
+  const finder = await drawnContrast(page, 'dialog.sheet[open] .finder');
+  const parts = finder.filter(({ what }) => /tile-kind|Kind of picture/.test(what));
+  expect(parts.map(({ what }) => what)).toEqual([
+    'text of the list tile-kind',
+    'border of Kind of picture',
+  ]);
+  expect(parts.filter(({ ratio, needed }) => ratio < needed)).toEqual([]);
+  const arrow = await sheet(page)
+    .locator('.finder .pick')
+    .evaluate((pick) => {
+      const select = pick.querySelector('select');
+      const svg = pick.querySelector('svg');
+      return select && svg ? [getComputedStyle(svg).stroke, getComputedStyle(select).color] : [];
+    });
+  expect(arrow.length).toBe(2);
+  expect(arrow[0]).toBe(arrow[1]);
 });
 
 test('PI10: with the keyboard alone Tab reaches each part of the Picture field, the arrow keys pick, and the focus stays in the dialog and on show', async ({
@@ -1043,11 +1070,14 @@ test('PI10: with the keyboard alone Tab reaches each part of the Picture field, 
   // Tab goes to the colour, which is under the preview with the other fields, on the chosen one.
   const colour = await press('Tab');
   expect(colour).toMatchObject({ name: 'White', value: 'light' });
-  // Tab goes on to the Picture field on the right, to the choice of Symbols or Icons, on the chosen one.
-  const kind = await press('Tab');
-  expect(kind.value).toBe('symbol');
+  // Tab goes on to the Picture field on the right, to the box and then to the drop down of the kind
+  // of picture beside it. The user changed the choice of kind to a drop down on 2026-11-25.
   await press('Tab');
   await expect(findBox(page)).toBeFocused();
+  const kind = await press('Tab');
+  await expect(kindSelect(page)).toBeFocused();
+  expect(kind.name).toBe('Kind of picture');
+  await expect(kindSelect(page)).toHaveValue('symbol');
   // Tab goes to the list, on the chosen picture, which is "No picture" for a new tile.
   const first = await press('Tab');
   expect(first).toMatchObject({ name: 'No picture', value: '' });
