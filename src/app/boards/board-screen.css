@@ -121,16 +121,14 @@
   outline-offset: 3px;
 }
 
-/* Open and Go back sit beside Edit, or in its place on a cell that has no Edit button. */
-.edit + .open {
+/* The buttons lie in a row from the top left corner: Remove, Edit, then Open or Go back. */
+/* A cell that lacks one of them has no gap in its place. */
+.tool + .tool {
   left: 46px;
 }
 
-/* Remove sits at the other top corner. It stays inside the edge of the cell, so it clears the */
-/* Edit button of the next column. */
-.remove {
-  left: auto;
-  right: 0;
+.tool + .tool + .tool {
+  left: 102px;
 }
 
 /* An empty group holds its Add Tile button in its middle and Remove column under it, in edit mode only. */

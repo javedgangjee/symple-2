@@ -806,14 +806,15 @@ export class BoardScreen {
 
   /**
    * Puts the focus on an edit button of the cell at a place. A cell without that button, or an
-   * ask that names no button, gives its first one, and a group with no cell there gives its Add
-   * Tile button.
+   * ask that names no button, gives its Edit button, or its first button if it has no Edit
+   * button, and a group with no cell there gives its Add Tile button.
    */
   private focusTool(grid: HTMLElement, { at, tool }: FocusAsk): void {
     const group = grid.querySelectorAll(':scope > .group')[at.group];
     const slot = group?.querySelectorAll(':scope > .slot')[at.cell];
     const target =
       (tool && slot?.querySelector(`.tool.${tool}`)) ??
+      slot?.querySelector('.tool.edit') ??
       slot?.querySelector('.tool') ??
       group?.querySelector('.add-tile');
     if (target instanceof HTMLElement) {

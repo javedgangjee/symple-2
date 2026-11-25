@@ -749,7 +749,7 @@ describe('BoardScreen', () => {
         .filter((label) => label !== 'Back');
       expect(labels.length).toBe(12);
       for (const label of labels) {
-        expect(toolNames(slotOf(label ?? ''))).toEqual([`Edit ${label}`, `Remove ${label}`]);
+        expect(toolNames(slotOf(label ?? ''))).toEqual([`Remove ${label}`, `Edit ${label}`]);
       }
       // A cell that is inert takes no press and no focus in a browser.
       const hosts = Array.from(element.querySelectorAll('.grid app-cell'));
@@ -784,12 +784,12 @@ describe('BoardScreen', () => {
       expect(focused()).toBe('Remove Pain');
     });
 
-    it('ES6: the cell Keyboards, which opens a locked board, has Edit, Open and Remove buttons', async () => {
+    it('ES6: the cell Keyboards, which opens a locked board, has Remove, Edit and Open buttons', async () => {
       await drawBoard('home');
       expect(toolNames(slotOf('Keyboards'))).toEqual([
+        'Remove Keyboards',
         'Edit Keyboards',
         'Open Keyboards',
-        'Remove Keyboards',
       ]);
     });
 

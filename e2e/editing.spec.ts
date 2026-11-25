@@ -614,18 +614,18 @@ test('ED17: in edit mode nothing is highlighted, and Tab goes through the edit b
     );
   }
   expect(visited).toEqual([
+    'Remove My boards',
     'Edit My boards',
     'Open My boards',
-    'Remove My boards',
+    'Remove Needs',
     'Edit Needs',
     'Open Needs',
-    'Remove Needs',
+    'Remove Quick phrases',
     'Edit Quick phrases',
     'Open Quick phrases',
-    'Remove Quick phrases',
+    'Remove Keyboards',
     'Edit Keyboards',
     'Open Keyboards',
-    'Remove Keyboards',
     'Add column',
     'Add Board',
   ]);
