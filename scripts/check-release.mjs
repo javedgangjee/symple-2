@@ -3,7 +3,8 @@
 // Usage: node scripts/check-release.mjs
 // It runs the cases of check A3 of specs/features/13-public-release/validation.md and exits with
 // an error when any case fails. Cases RC4 and RC5 search for secrets. RC4 reads the tracked files
-// and RC5 reads every commit that any branch or tag can reach.
+// and RC5 reads every commit that a branch or a tag of this clone can reach. That includes the
+// branches it has fetched from GitHub.
 //
 // When a search reports a value that is safe to publish, add it to ALLOWED below with the reason.
 // When it reports a real secret, taking the line out is not enough, because the old commit still
@@ -325,9 +326,9 @@ await check(
   'RC5',
   'No commit of the history holds a secret or a file under context/',
   async (problems) => {
-    // Every commit that a branch or a tag can reach, with each line it adds. A merge is compared
+    // Every commit that a local branch, a fetched branch or a tag can reach, with each line it adds. A merge is compared
     // with its first parent, so a line that only a merge adds is read too.
-    const args = ['log', '--branches', '--tags', '--format=commit %h', '--patch', '--unified=0'];
+    const args = ['log', '--all', '--format=commit %h', '--patch', '--unified=0'];
     args.push('--no-color', '--no-ext-diff', '--no-textconv', '--diff-merges=first-parent');
     let commit = '';
     let path = '';
@@ -361,8 +362,7 @@ await check(
     await gitLines(
       [
         'log',
-        '--branches',
-        '--tags',
+        '--all',
         '--format=commit %h',
         '--name-only',
         // A commit that deletes a file does not hold it.
