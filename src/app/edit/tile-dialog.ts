@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -306,7 +305,7 @@ interface PictureLists {
  */
 @Component({
   selector: 'app-tile-dialog',
-  imports: [Cell, Icon, NgTemplateOutlet],
+  imports: [Cell, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tile-dialog.html',
   styleUrl: './tile-dialog.css',

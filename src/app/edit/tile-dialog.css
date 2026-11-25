@@ -51,8 +51,7 @@
   background: oklch(0.2 var(--shc) var(--shade) / 0.28);
 }
 
-.sheet form,
-.fields {
+.sheet form {
   display: grid;
   gap: 1.25rem;
   min-width: 0;
@@ -240,42 +239,58 @@ svg {
   white-space: nowrap;
 }
 
-/* The tile dialog has the preview on the left and the fields on the right. */
-/* The title sits over the preview, so the fields start at the top of the sheet. */
-/* The fields stretch to the height of the sheet, and the list of pictures takes the room that is left. */
-/* On a narrow window the title and the preview sit above the fields. */
+/* The tile dialog has two sides. The left side holds the title, the preview and the fields under it. */
+/* The right side holds the Picture field, which takes the height, and the buttons at its foot. */
+/* On a narrow window the two sides lie one above the other, in the order of the page. */
 .sheet form.split {
   grid-template-columns: minmax(14rem, 2fr) minmax(0, 3fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 1.25rem 1.5rem;
-  align-items: start;
 }
 
-.split h2 {
-  grid-area: 1 / 1;
-}
-
-.split .preview {
-  grid-area: 2 / 1;
-}
-
+.split .side,
 .split .fields {
-  grid-area: 1 / 2 / 3 / 3;
   display: flex;
   flex-direction: column;
-  /* A little less room between the fields keeps two rows of pictures in view at 1024 by 768. */
   gap: 1rem;
-  align-self: stretch;
+  min-width: 0;
   min-height: 0;
 }
 
-/* The Picture field takes the free height, and its list scrolls inside itself. */
+/* The left side scrolls by itself when the window is too low for it. */
+/* The room around it keeps the focus rings of its controls from being cut off. */
+.split .side {
+  margin: -0.5rem;
+  padding: 0.5rem;
+  overflow: auto;
+}
+
+.preview {
+  display: grid;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  margin-inline: auto;
+}
+
+/* The preview is the first part of the left side to give up height when the window is low. */
+/* The cell inside it keeps its shape and grows narrower. */
+.split .preview {
+  flex: 0 1 auto;
+  min-height: 8rem;
+  place-items: center;
+}
+
+.split .preview app-cell {
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 3 / 2;
+}
+
+/* The Picture field takes the free height of the right side, and its list scrolls inside itself. */
 .fields fieldset.grow {
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 auto;
   flex-direction: column;
-  /* The field shrinks to the room that is left, but not below a list of a row or two. */
-  min-height: 18.5rem;
 }
 
 /* The buttons stay at the bottom of the sheet and in view. */
@@ -295,22 +310,33 @@ svg {
     align-content: start;
   }
 
-  .split :is(h2, .preview, .fields) {
-    grid-area: auto;
+  /* Each side is as high as what it holds, and the form scrolls. */
+  .split :is(.side, .fields) {
+    min-height: auto;
   }
 
-  .preview {
+  .split .side {
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .split .preview {
+    flex: none;
     width: min(15rem, 100%);
     height: 10rem;
     aspect-ratio: auto;
   }
-}
 
-.preview {
-  display: grid;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  margin-inline: auto;
+  .split .preview app-cell {
+    width: 100%;
+    aspect-ratio: auto;
+  }
+
+  /* The form scrolls on a narrow window, so the list has a height of its own. */
+  .split .pictures {
+    min-height: 20rem;
+  }
 }
 
 /* The colour is a row of round swatches. The one in use carries a tick. */
@@ -385,8 +411,8 @@ svg {
 /* The pictures are a list that scrolls, in as many columns as fit. It takes the height that is left. */
 /* Each one shows its symbol or its icon on a white plate, and its name. Show more ends the list. */
 .pictures {
-  flex: 1 1 auto;
-  /* The list keeps room for a row or two when the window is small, and the form scrolls instead. */
+  flex: 1 1 0;
+  /* The list keeps room for a row or two when the window is low, and the form scrolls instead. */
   min-height: 6.5rem;
   margin-top: 0.5rem;
   padding: 4px;

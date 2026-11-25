@@ -133,7 +133,7 @@ The cases are in `e2e/editing.spec.ts`. The cases of feature 9 in that file stil
 | PI7 | The page is loaded on home with nothing stored. | No request is made for `lucide.json` or `symbols.json`, in any chunk. |
 | PI8 | The tile dialog is open with the Picture field on Symbols and then on Icons, in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
 | PI9 | The tile dialog is open with the Picture field on Icons. | Each control of the Picture field is at least 48px high and wide, and each name in the list keeps 4.5 to 1. |
-| PI10 | The tile dialog is open, and only the keyboard is used. Tab goes to the choice of Symbols or Icons, to the box, to the list and to Show more, and the arrow keys move in the list. | The focus is always on show, the picked picture changes with the arrow keys, and Tab never leaves the dialog. |
+| PI10 | The tile dialog is open, and only the keyboard is used. Tab goes from the label to the phrase and the colour, then to the choice of Symbols or Icons, to the box, to the list and to Show more, and the arrow keys move in the list. Tab goes on to Cancel and Add and back to the label. The user changed the layout on 2026-11-24, so the colour now comes before the Picture field. | The focus is always on show, the picked picture changes with the arrow keys, and Tab never leaves the dialog. |
 
 ## Manual checks
 
@@ -148,7 +148,7 @@ Claude gives the user the steps of one check at a time and asks for the result. 
 3. Choose Icons, and pick an icon. Type a label and press Add.
 4. Go home, press Add Board, choose Symbols, pick a symbol, type a name and press Add. Press Done.
 
-Expected result: the list fills at once as the text is typed, with no wait that can be seen. The symbols are in colour and the icons are line drawings in the colour of the text. The new cell on Needs shows its icon at the size of a symbol, in the colour of its label. The new cell on home shows its symbol and its name, and it does not look out of place beside the other cells.
+Expected result: the list fills at once as the text is typed, with no wait that can be seen. The symbols are in colour and the icons are line drawings in the colour of the text. The new cell on Needs shows its icon at the size of a symbol, in the colour of its label. The new cell on home shows its symbol and its name, and it does not look out of place beside the other cells. In each tile dialog the title, the preview, the label or name, the phrase, the style and the colour are on the left, and the Picture field with Cancel and Add or Save under it is on the right. The list shows many rows, and everything on the left can be reached. The user changed the layout on 2026-11-24.
 
 ### H2. The search with real names (2, 18)
 

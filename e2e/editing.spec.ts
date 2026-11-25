@@ -940,7 +940,10 @@ test('PI10: with the keyboard alone Tab reaches each part of the Picture field, 
   };
   await press('Tab');
   await expect(sheet(page).getByLabel('Phrase')).toBeFocused();
-  // Tab goes to the choice of Symbols or Icons, on the chosen one.
+  // Tab goes to the colour, which is under the preview with the other fields, on the chosen one.
+  const colour = await press('Tab');
+  expect(colour).toMatchObject({ name: 'White', value: 'light' });
+  // Tab goes on to the Picture field on the right, to the choice of Symbols or Icons, on the chosen one.
   const kind = await press('Tab');
   expect(kind.value).toBe('symbol');
   await press('Tab');
@@ -963,6 +966,10 @@ test('PI10: with the keyboard alone Tab reaches each part of the Picture field, 
   // Tab goes from the list to Show more.
   const more = await press('Tab');
   expect(more.name).toBe('Show more');
+  // Tab goes from Show more to Cancel and Add under the Picture field, and then back to the label.
+  expect((await press('Tab')).name).toBe('Cancel');
+  expect((await press('Tab')).name).toBe('Add');
+  expect((await press('Tab')).name).toBe('tile-label');
   // Tab goes on round the dialog twice, and Shift with Tab goes back round it, and never leaves.
   for (let step = 0; step < 24; step++) {
     await press('Tab');

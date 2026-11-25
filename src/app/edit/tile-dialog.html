@@ -14,14 +14,16 @@
   (keydown)="events.key($event)"
 >
   <form class="split" (submit)="submit($event)">
-    <h2 id="tile-title">{{ title() }}</h2>
+    <!-- The left side holds the title, the preview and the fields that set the words and the look. -->
+    <!-- It scrolls by itself when the window is too low for it. -->
+    <div class="side">
+      <h2 id="tile-title">{{ title() }}</h2>
 
-    <!-- The preview is a picture of the cell. It is inert, so it cannot be pressed or focused and screen readers skip it. -->
-    <div class="preview" inert>
-      <app-cell [tile]="preview()" />
-    </div>
+      <!-- The preview is a picture of the cell. It is inert, so it cannot be pressed or focused and screen readers skip it. -->
+      <div class="preview" inert>
+        <app-cell [tile]="preview()" />
+      </div>
 
-    <div class="fields">
       <div class="field">
         <label for="tile-label">{{ kind() === 'open' ? 'Name' : 'Label' }}</label>
         <input
@@ -55,8 +57,6 @@
             (input)="setPhrase(phraseInput)"
           />
         </div>
-
-        <ng-container *ngTemplateOutlet="pictureField" />
       }
 
       @if (showStyle()) {
@@ -100,10 +100,95 @@
           }
         </div>
       </fieldset>
+    </div>
 
-      @if (kind() === 'open') {
-        <ng-container *ngTemplateOutlet="pictureField" />
-      }
+    <!-- The right side holds the Picture field, which takes the height, and the buttons under it. -->
+    <div class="fields">
+      <fieldset class="grow">
+        <legend>Picture</legend>
+        <div class="kinds" role="radiogroup" aria-label="Kind of picture">
+          @for (item of kinds; track item.value) {
+            <label>
+              <input
+                type="radio"
+                name="tile-picture-kind"
+                [value]="item.value"
+                [checked]="view() === item.value"
+                (change)="setView(item.value)"
+              />
+              {{ item.label }}
+            </label>
+          }
+        </div>
+
+        <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
+        <!-- The box has no row of its own for a name. Its placeholder shows the name. -->
+        <input
+          #find
+          id="tile-find"
+          type="text"
+          autocomplete="off"
+          aria-label="Find a picture"
+          placeholder="Find a picture"
+          aria-controls="tile-pictures"
+          [value]="query()"
+          (input)="setQuery(find.value)"
+          (keydown.enter)="$event.preventDefault()"
+        />
+
+        <!-- The list scrolls, and Show more is at its end, after the last picture. -->
+        <div #pictureList class="pictures" id="tile-pictures">
+          <div class="choices" role="radiogroup" aria-label="Pictures">
+            <!-- No picture is always in the list of a cell that speaks, whatever the box holds. -->
+            @if (kind() === 'speak') {
+              <label>
+                <input
+                  type="radio"
+                  name="tile-picture"
+                  value=""
+                  [checked]="chosenKey() === ''"
+                  (change)="pick(undefined)"
+                />
+                <span class="plate"></span>
+                No picture
+              </label>
+            }
+            @for (item of items(); track item.key) {
+              <label>
+                <input
+                  type="radio"
+                  name="tile-picture"
+                  [value]="item.key"
+                  [checked]="chosenKey() === item.key"
+                  (change)="pick(item.picture)"
+                />
+                @let shown = item.picture;
+                <span class="plate">
+                  @if (shown.kind === 'symbol') {
+                    <img
+                      [src]="'symbols/' + shown.symbol"
+                      alt=""
+                      width="40"
+                      height="40"
+                      loading="lazy"
+                      draggable="false"
+                    />
+                  } @else {
+                    <app-icon [name]="shown.icon" />
+                  }
+                </span>
+                {{ item.name }}
+              </label>
+            }
+          </div>
+          @if (hasMore()) {
+            <button type="button" class="more" (click)="showMore()">Show more</button>
+          }
+          <!-- The note is empty unless the pictures are loading, failed to load or none has the name. -->
+          <!-- It is a polite live region and not a status role, because the board screen keeps the one status line of the page. -->
+          <p class="hint" id="tile-picture-note" aria-live="polite" [textContent]="note()"></p>
+        </div>
+      </fieldset>
 
       <div class="actions">
         <button type="button" (click)="cancel()">Cancel</button>
@@ -113,93 +198,4 @@
       </div>
     </div>
   </form>
-
-  <!-- The Picture field. A cell that speaks shows it after the phrase and a cell that opens a board after the colour. -->
-  <ng-template #pictureField>
-    <fieldset class="grow">
-      <legend>Picture</legend>
-      <div class="kinds" role="radiogroup" aria-label="Kind of picture">
-        @for (item of kinds; track item.value) {
-          <label>
-            <input
-              type="radio"
-              name="tile-picture-kind"
-              [value]="item.value"
-              [checked]="view() === item.value"
-              (change)="setView(item.value)"
-            />
-            {{ item.label }}
-          </label>
-        }
-      </div>
-
-      <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
-      <!-- The box has no row of its own for a name. Its placeholder shows the name. -->
-      <input
-        #find
-        id="tile-find"
-        type="text"
-        autocomplete="off"
-        aria-label="Find a picture"
-        placeholder="Find a picture"
-        aria-controls="tile-pictures"
-        [value]="query()"
-        (input)="setQuery(find.value)"
-        (keydown.enter)="$event.preventDefault()"
-      />
-
-      <!-- The list scrolls, and Show more is at its end, after the last picture. -->
-      <div #pictureList class="pictures" id="tile-pictures">
-        <div class="choices" role="radiogroup" aria-label="Pictures">
-          <!-- No picture is always in the list of a cell that speaks, whatever the box holds. -->
-          @if (kind() === 'speak') {
-            <label>
-              <input
-                type="radio"
-                name="tile-picture"
-                value=""
-                [checked]="chosenKey() === ''"
-                (change)="pick(undefined)"
-              />
-              <span class="plate"></span>
-              No picture
-            </label>
-          }
-          @for (item of items(); track item.key) {
-            <label>
-              <input
-                type="radio"
-                name="tile-picture"
-                [value]="item.key"
-                [checked]="chosenKey() === item.key"
-                (change)="pick(item.picture)"
-              />
-              @let shown = item.picture;
-              <span class="plate">
-                @if (shown.kind === 'symbol') {
-                  <img
-                    [src]="'symbols/' + shown.symbol"
-                    alt=""
-                    width="40"
-                    height="40"
-                    loading="lazy"
-                    draggable="false"
-                  />
-                } @else {
-                  <app-icon [name]="shown.icon" />
-                }
-              </span>
-              {{ item.name }}
-            </label>
-          }
-        </div>
-        @if (hasMore()) {
-          <button type="button" class="more" (click)="showMore()">Show more</button>
-        }
-        <!-- The note is empty unless the pictures are loading, failed to load or none has the name. -->
-        <!-- It is a polite live region and not a status role, because the board screen keeps the one status line of the page. -->
-        <p class="hint" id="tile-picture-note" aria-live="polite" [textContent]="note()"></p>
-      </div>
-    </fieldset>
-  </ng-template>
 </dialog>

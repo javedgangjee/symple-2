@@ -40,7 +40,8 @@ describe('TileDialog', () => {
   const title = () => one('#tile-title').textContent?.trim();
   const texts = (selector: string) =>
     Array.from(element.querySelectorAll(selector)).map((found) => found.textContent?.trim());
-  const fieldNames = () => [...texts('.field > label'), ...texts('legend')];
+  /** The names of the fields, in the order of the page. */
+  const fieldNames = () => texts('.field > label, legend');
   const previewLabel = () => one('.preview .label').textContent?.trim();
   const chosen = (name: string) => one<HTMLInputElement>(`input[name="${name}"]:checked`).value;
   const pictures = () => texts('.pictures label');
@@ -99,12 +100,16 @@ describe('TileDialog', () => {
     localStorage.clear();
   });
 
-  it('TD1: Add Tile shows Label, Phrase, Picture and Colour, with a preview', async () => {
+  it('TD1: Add Tile shows Label, Phrase, Colour and Picture, with a preview', async () => {
     await open({ kind: 'add-tile' });
     expect(dialog().open).toBe(true);
     expect(dialog().getAttribute('aria-labelledby')).toBe('tile-title');
     expect(title()).toBe('Add Tile');
-    expect(fieldNames()).toEqual(['Label', 'Phrase', 'Picture', 'Colour']);
+    expect(fieldNames()).toEqual(['Label', 'Phrase', 'Colour', 'Picture']);
+    // The preview and the fields that set the words and the look are on the left, and the Picture field is on the right.
+    expect(texts('.side .field > label, .side legend')).toEqual(['Label', 'Phrase', 'Colour']);
+    expect(texts('.fields legend')).toEqual(['Picture']);
+    expect(one('.side .preview')).toBeTruthy();
     expect(one('.preview').hasAttribute('inert')).toBe(true);
     expect(one('.preview app-cell')).toBeTruthy();
     expect(previewLabel()).toBe('New tile');
@@ -161,6 +166,7 @@ describe('TileDialog', () => {
     await open({ kind: 'add-board' });
     expect(title()).toBe('Add Board');
     expect(fieldNames()).toEqual(['Name', 'Style', 'Colour', 'Picture']);
+    expect(texts('.fields legend')).toEqual(['Picture']);
     expect(previewLabel()).toBe('New board');
     expect(chosen('tile-style')).toBe('bleed');
     expect(chosen('tile-colour')).toBe('dark');
