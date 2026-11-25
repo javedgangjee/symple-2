@@ -134,3 +134,25 @@ The cases are in `e2e/editing.spec.ts`. The cases of feature 9 in that file stil
 | PI8 | The tile dialog is open with the Picture field on Symbols and then on Icons, in each of the five themes. | axe reports no WCAG 2.2 Level AA violation. |
 | PI9 | The tile dialog is open with the Picture field on Icons. | Each control of the Picture field is at least 48px high and wide, and each name in the list keeps 4.5 to 1. |
 | PI10 | The tile dialog is open, and only the keyboard is used. Tab goes from the label to the phrase and the colour, then to the choice of Symbols or Icons, to the box, to the list and to Show more, and the arrow keys move in the list. Tab goes on to Cancel and Add and back to the label. The user changed the layout on 2026-11-24, so the colour now comes before the Picture field. | The focus is always on show, the picked picture changes with the arrow keys, and Tab never leaves the dialog. |
+
+### A6. Changes the user asked for after the review (25)
+
+The user asked on 2026-11-25 that a tile dragged onto Add column in edit mode adds a column and puts the tile in it. The cases below cover that rule.
+
+Command: `npm test`
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| BE20 | In `src/app/edit/board-edits.spec.ts`, Help is moved from the first group of Needs to a new group. | Needs has a fourth group that holds Help alone, the first group holds Back, Pain, Toilet and Drink, the other groups and the tiles do not change, and `loadBoards` reports no fault. |
+| BE21 | After case BE20, Help, which is the only cell of the fourth group, is moved to a new group again. A cell of the locked board QWERTY keyboard and a place that holds no cell are moved too. | The fourth group stays and is empty, and the fifth holds Help. The set does not change for the locked board or for the empty place. |
+| DR5 | In `src/app/edit/drag.spec.ts`, points inside, on the edges of and just beside a box of 48px by 220px are tested. | The points inside and on the edges are over the box, and the points beside it are not. |
+| ES19 | In `src/app/boards/board-screen.spec.ts`, Help on Needs is pressed in edit mode, and then Add column is pressed. Add column is pressed a second time. | Add column carries the mark that it takes the cell while Help is picked up. Help is the only cell of a new fourth column, nothing is picked up, the status line says "Help moved to a new column", and the focus is on Edit Help. The second press adds an empty fifth column and says "Column 5 added". |
+| ES20 | The board has no room for another group. Help is pressed, and then Add column. | Add column carries no mark, Help stays where it was, Needs keeps three groups, and the status line says "The board has no room for another column." |
+| ES21 | Needs is in the rows layout. Help is pressed, and then Add row. | Help is the only cell of a new fourth row, the status line says "Help moved to a new row", and the focus is on Edit Help. |
+
+Command: `npm run e2e`
+
+| Case | Input | Expected result |
+| --- | --- | --- |
+| ED22 | In `e2e/editing.spec.ts`, Help on Needs is dragged with the mouse onto Add column and let go there. The page is reloaded. | Add column carries the mark that it takes the cell while Help is over it. Needs then has four columns and the fourth holds Help alone, the status line says "Help moved to a new column", and the focus is on Edit Help. A press on Pain then picks Pain up. The columns are the same after the reload. |
+| ED23 | Add column is pressed until it says that it is disabled. Help is dragged onto it and let go there. | Add column carries no mark while Help is over it, every cell stays where it was, and the status line says "The board has no room for another column." |

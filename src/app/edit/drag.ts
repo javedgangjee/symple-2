@@ -88,6 +88,16 @@ export class Drag {
   }
 }
 
+/** Whether a point lies on a box, its edges included. */
+export function isOver(point: Point, box: Box): boolean {
+  return (
+    point.x >= box.left &&
+    point.x <= box.left + box.width &&
+    point.y >= box.top &&
+    point.y <= box.top + box.height
+  );
+}
+
 const middle = (start: number, length: number) => start + length / 2;
 
 /**

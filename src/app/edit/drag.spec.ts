@@ -1,5 +1,5 @@
 import { CellPosition } from '../scan/scan';
-import { Drag, GroupBox, placeUnder } from './drag';
+import { Drag, GroupBox, isOver, placeUnder } from './drag';
 
 /** Three columns of 100px with a gap of 20px. Each holds two cells of 100px, one under the other. */
 const COLUMNS: GroupBox[] = [0, 120, 240].map((left) => ({
@@ -43,5 +43,14 @@ describe('Drag', () => {
     // The click of that release is swallowed, and the next click is a press again.
     expect(drag.swallowsClick()).toBe(true);
     expect(drag.swallowsClick()).toBe(false);
+  });
+
+  it('DR5: a point on Add column, its edges included, is over it, and a point beside it is not', () => {
+    const add = { left: 400, top: 0, width: 48, height: 220 };
+    expect(isOver({ x: 424, y: 110 }, add)).toBe(true);
+    expect(isOver({ x: 400, y: 0 }, add)).toBe(true);
+    expect(isOver({ x: 448, y: 220 }, add)).toBe(true);
+    expect(isOver({ x: 399, y: 110 }, add)).toBe(false);
+    expect(isOver({ x: 424, y: 221 }, add)).toBe(false);
   });
 });

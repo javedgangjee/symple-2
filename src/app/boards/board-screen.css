@@ -227,6 +227,13 @@
   background: color-mix(in oklab, var(--light) 90%, transparent);
 }
 
+/* While a cell is picked up or dragged over it, the box shows that it takes the cell: its */
+/* border turns solid, as the ring of a picked cell is, and its fill is that of its hover look. */
+.add-group[data-takes] {
+  border-style: solid;
+  background: color-mix(in oklab, var(--light) 90%, transparent);
+}
+
 /* With no room for a group the box is dimmed by its fill only, so the plus keeps its contrast. */
 .add-group[aria-disabled='true'] {
   background: transparent;

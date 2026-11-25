@@ -177,10 +177,13 @@
   @if (editing) {
     @let groupsFull = !room.forGroup();
     @let addGroupName = 'Add ' + groupKind().toLowerCase();
+    <!-- A cell that is picked up, or dragged and let go over it, goes to the new group. -->
     <button
+      #newGroup
       class="add-group"
       type="button"
       [attr.data-layout]="layout()"
+      [attr.data-takes]="mark(takesCell())"
       [attr.aria-label]="addGroupName"
       [attr.aria-disabled]="groupsFull"
       [attr.aria-describedby]="groupsFull ? 'edit-groups-full' : null"

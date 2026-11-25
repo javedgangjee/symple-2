@@ -19,6 +19,7 @@ import {
   addGroup,
   editCell,
   moveCell,
+  moveToNewGroup,
   fieldsOf,
   removeCell,
   removeGroup,
@@ -360,6 +361,29 @@ describe('The changes to a set', () => {
     expect(tile(grey, 'help').hue).toBe('c3');
     expect(tile(recoloured(grey, 'dark'), 'help').hue).toBeUndefined();
     expect(loadBoards(grey.tiles, grey.boards).faults).toEqual([]);
+  });
+
+  it('BE20: a cell that is dropped on Add column moves into a new group at the end of the board', () => {
+    const set = moveToNewGroup(BUILT_IN, 'needs', placeOf(BUILT_IN, 'needs', 'help'));
+    const before = layout(BUILT_IN, 'needs');
+    expect(layout(set, 'needs')).toEqual([
+      ['back', 'pain', 'toilet', 'drink'],
+      before[1],
+      before[2],
+      ['help'],
+    ]);
+    expect(set.tiles).toBe(BUILT_IN.tiles);
+    expect(loadBoards(set.tiles, set.boards).faults).toEqual([]);
+  });
+
+  it('BE21: the group that the only cell of a group leaves for a new group stays empty, and a locked board does not change', () => {
+    const once = moveToNewGroup(BUILT_IN, 'needs', placeOf(BUILT_IN, 'needs', 'help'));
+    const twice = moveToNewGroup(once, 'needs', { group: 3, cell: 0 });
+    expect(layout(twice, 'needs').slice(3)).toEqual([[], ['help']]);
+    expect(loadBoards(twice.tiles, twice.boards).faults).toEqual([]);
+    expect(board(BUILT_IN, 'keyboard').locked).toBe(true);
+    expect(moveToNewGroup(BUILT_IN, 'keyboard', { group: 0, cell: 0 })).toBe(BUILT_IN);
+    expect(moveToNewGroup(BUILT_IN, 'needs', { group: 0, cell: 9 })).toBe(BUILT_IN);
   });
 });
 

@@ -520,6 +520,98 @@ test('ED12: when Add column says it is disabled, no cell of the board is under 4
   await expect(page.locator('main .group')).toHaveCount(groups);
 });
 
+/**
+ * Waits until no cell slides. The slides start a frame after the page is drawn again, so each
+ * reading waits two frames first.
+ */
+async function settled(page: Page): Promise<void> {
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        return document.getAnimations().length;
+      }),
+    )
+    .toBe(0);
+}
+
+/**
+ * Drags a cell onto Add column and lets it go there. It checks on the way that Add column shows
+ * that it takes the cell, or that it does not when the board has no room for another column.
+ */
+async function dragOntoAddGroup(page: Page, name: string, takes: boolean): Promise<void> {
+  const from = await middleOf(page, name);
+  const add = await boxOf(addGroup(page));
+  const to = { x: add.x + add.width / 2, y: add.y + add.height / 2 };
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 8 });
+  await expect(page.locator('main .lifted')).toBeVisible();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  if (takes) {
+    await expect(addGroup(page)).toHaveAttribute('data-takes', '');
+  } else {
+    await expect(addGroup(page)).not.toHaveAttribute('data-takes');
+  }
+  await page.mouse.up();
+  await expect(page.locator('main .lifted')).toHaveCount(0);
+}
+
+test('ED22: a tile that is dragged onto Add column is the only cell of a new fourth column, also after a reload, and the next press picks a tile up', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  await dragOntoAddGroup(page, 'Help', true);
+  const dragged = [
+    ['Back', 'Pain', 'Toilet', 'Drink'],
+    ['Eat', 'Medicine', 'Hot', 'Blanket'],
+    ['Bed', 'Move me', 'Itch', 'Glasses'],
+    ['Help'],
+  ];
+  await expect.poll(() => cellsByGroup(page)).toEqual(dragged);
+  await expect(page.locator('main .group')).toHaveCount(4);
+  await expect(page.locator('main [role="status"]')).toHaveText('Help moved to a new column');
+  await expect(tool(page, 'Edit Help')).toBeFocused();
+  await expect(addGroup(page)).not.toHaveAttribute('data-takes');
+  await expect(page.locator('main [data-picked]')).toHaveCount(0);
+  // Once the cells have slid to their places, the next press on a cell picks it up.
+  await settled(page);
+  await pressCell(page, 'Pain');
+  await expect(page.locator('main [role="status"]')).toHaveText(
+    'Pain picked up. Press a tile to take its place.',
+  );
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await expect(title(page)).toHaveText('Needs');
+  expect(await cellsByGroup(page)).toEqual(dragged);
+});
+
+test('ED23: when Add column says it is disabled, a tile that is dragged onto it stays where it was', async ({
+  page,
+}) => {
+  await edit(page, 'needs');
+  const add = addGroup(page);
+  // The count of presses has a limit, so a button that never says it is disabled fails the test.
+  for (let pressCount = 0; pressCount < 40; pressCount++) {
+    if ((await add.getAttribute('aria-disabled')) === 'true') {
+      break;
+    }
+    const groups = await page.locator('main .group').count();
+    await add.click();
+    await expect(page.locator('main .group')).toHaveCount(groups + 1);
+    // The room is measured after the page is drawn again.
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+  }
+  await expect(add).toHaveAttribute('aria-disabled', 'true');
+  const before = await cellsByGroup(page);
+  await dragOntoAddGroup(page, 'Help', false);
+  await expect(page.locator('main [role="status"]')).toHaveText(
+    'The board has no room for another column.',
+  );
+  expect(await cellsByGroup(page)).toEqual(before);
+});
+
 test('ED13: axe reports no WCAG 2.2 Level AA violation in edit mode, in any theme', async ({
   page,
 }) => {

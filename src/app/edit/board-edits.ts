@@ -500,6 +500,22 @@ export function addGroup(set: BoardSet, boardId: string): BoardSet {
   return board ? withBoard(set, withGroups(board, [...board.groups, { cells: [] }])) : set;
 }
 
+/**
+ * Moves a cell into a new group at the end of its board, as one change. The group that the cell
+ * leaves stays, and it is empty when the cell was its only one.
+ */
+export function moveToNewGroup(set: BoardSet, boardId: string, from: CellPosition): BoardSet {
+  const board = editable(set, boardId);
+  const moved = board && cellAt(board, from);
+  if (!board || !moved) {
+    return set;
+  }
+  const left = board.groups.map((group, g) =>
+    g === from.group ? { cells: group.cells.filter((_, c) => c !== from.cell) } : group,
+  );
+  return withBoard(set, withGroups(board, [...left, { cells: [moved] }]));
+}
+
 /** Whether a group of a board can be removed: it is empty, and it is not the last group. */
 export function canRemoveGroup(
   board: { readonly groups: readonly unknown[] },
