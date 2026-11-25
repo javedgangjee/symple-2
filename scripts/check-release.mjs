@@ -1,6 +1,9 @@
 // Checks the files of the public release, and looks for secrets before the repo is made public.
 //
 // Usage: node scripts/check-release.mjs
+//        node scripts/check-release.mjs --history <folder>
+// The second form runs case RC5 alone, on the repo in <folder>. The tests in
+// scripts/check-release.test.mjs use it to try the search on made-up repos.
 // It runs the cases of check A3 of specs/features/13-public-release/validation.md and exits with
 // an error when any case fails. Cases RC4 and RC5 search for secrets. RC4 reads the tracked files
 // and RC5 reads every commit that a branch or a tag of this clone can reach. That includes the
@@ -13,11 +16,15 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+// The repo of the form `--history <folder>`, or undefined when every case runs on this repo.
+const HISTORY_ONLY = process.argv[2] === '--history' ? process.argv[3] : undefined;
+const ROOT = HISTORY_ONLY
+  ? resolve(HISTORY_ONLY)
+  : join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const REPO_ADDRESS = 'https://github.com/javedgangjee/symple-2';
 const LIVE_ADDRESS = 'https://symple-2.web.app';
@@ -108,6 +115,9 @@ let cases = 0;
 
 /** Runs one case and records each problem it finds. */
 async function check(id, title, run) {
+  if (HISTORY_ONLY && id !== 'RC5') {
+    return;
+  }
   cases += 1;
   const problems = [];
   try {
@@ -141,7 +151,7 @@ function gitLines(args, onLine) {
     createInterface({ input: child.stdout, crlfDelay: Infinity }).on('line', onLine);
     child.on('error', reject);
     child.on('close', (code) =>
-      code === 0 ? resolve() : reject(new Error(`git ${args[0]} ended with code ${code}`)),
+      code === 0 ? resolve() : reject(new Error(`git ${args.join(' ')} ended with code ${code}`)),
     );
   });
 }
@@ -162,6 +172,35 @@ function mustHold(path, content, texts, problems) {
       problems.push(`${path} does not hold "${text}".`);
     }
   }
+}
+
+/**
+ * A file name as git prints it in a patch or a list of names, turned back into the name itself.
+ * Git puts a name in quotes when it holds a quote, a backslash or a control character, and writes
+ * those with a backslash. It writes a byte as three octal digits. A name with a space gets a tab
+ * after it in a patch.
+ */
+function gitName(printed) {
+  const text = printed.endsWith('\t') ? printed.slice(0, -1) : printed;
+  if (text.length < 2 || !text.startsWith('"') || !text.endsWith('"')) {
+    return text;
+  }
+  const escapes = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13 };
+  const bytes = [];
+  const inner = text.slice(1, -1);
+  for (let at = 0; at < inner.length; at++) {
+    const octal = /^\\([0-7]{3})/.exec(inner.slice(at, at + 4));
+    if (octal) {
+      bytes.push(parseInt(octal[1], 8));
+      at += 3;
+    } else if (inner[at] === '\\' && at + 1 < inner.length) {
+      at += 1;
+      bytes.push(...(inner[at] in escapes ? [escapes[inner[at]]] : Buffer.from(inner[at])));
+    } else {
+      bytes.push(...Buffer.from(inner[at]));
+    }
+  }
+  return Buffer.from(bytes).toString('utf8');
 }
 
 function isAllowed(path, found) {
@@ -332,7 +371,10 @@ await check(
   async (problems) => {
     // Every commit that a local branch, a fetched branch or a tag can reach, with each line it adds. A merge is compared
     // with its first parent, so a line that only a merge adds is read too.
-    const args = ['log', '--all', '--format=commit %h', '--patch', '--unified=0'];
+    // Git prints a name with a letter outside ASCII as it is, and `gitName` reads the quotes that
+    // are left.
+    const plainNames = ['-c', 'core.quotePath=false'];
+    const args = [...plainNames, 'log', '--all', '--format=commit %h', '--patch', '--unified=0'];
     args.push('--no-color', '--no-ext-diff', '--no-textconv', '--diff-merges=first-parent');
     let commit = '';
     let path = '';
@@ -347,7 +389,8 @@ await check(
       if (line.startsWith('commit ')) {
         commit = line.slice(7);
       } else if (line.startsWith('+++ ')) {
-        path = line === '+++ /dev/null' ? '' : line.slice(6);
+        const name = gitName(line.slice(4));
+        path = name === '/dev/null' ? '' : name.slice(2);
         if (path === 'context' || path.startsWith('context/')) {
           report(`The commit ${commit} holds ${path}.`);
         }
@@ -365,6 +408,7 @@ await check(
     // are read on their own too.
     await gitLines(
       [
+        ...plainNames,
         'log',
         '--all',
         '--format=commit %h',
@@ -374,12 +418,13 @@ await check(
         '--diff-merges=first-parent',
       ],
       (line) => {
+        const name = gitName(line);
         if (line.startsWith('commit ')) {
           commit = line.slice(7);
-        } else if (line === 'context' || line.startsWith('context/')) {
-          report(`The commit ${commit} holds ${line}.`);
-        } else if (line && secretFile(line)) {
-          report(`The commit ${commit} holds ${line}, which looks like ${secretFile(line)}.`);
+        } else if (name === 'context' || name.startsWith('context/')) {
+          report(`The commit ${commit} holds ${name}.`);
+        } else if (name && secretFile(name)) {
+          report(`The commit ${commit} holds ${name}, which looks like ${secretFile(name)}.`);
         }
       },
     );

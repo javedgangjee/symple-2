@@ -10,7 +10,7 @@
     "format:check": "prettier --check .",
     "check:pictures": "node scripts/check-pictures.mjs",
     "deploy": "npm run build && npx firebase-tools deploy --only hosting",
-    "check:release": "node scripts/check-release.mjs"
+    "check:release": "node scripts/check-release.mjs && node --test scripts/check-release.test.mjs"
   },
   "private": true,
   "engines": {

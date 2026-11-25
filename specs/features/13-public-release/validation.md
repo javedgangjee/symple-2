@@ -35,6 +35,19 @@ Command: `node scripts/check-release.mjs`
 | RC11 | The Privacy section of `README.md`. | It does not say that Symple keeps "no other data". The line on Firebase Auth names the time of the last sign in, the IP address and the browser. Added for finding 4 of review.md, which says the Privacy section says Symple keeps no other data while Firebase Auth keeps more. |
 | RC12 | `NOTICE` and the tracked files under `src/app/`. | `NOTICE` names each file that holds a comment `<!-- Lucide`, by its own path or by a folder that holds it. Added for finding 5 of review.md, which says `NOTICE` leaves out three files that hold Lucide drawings. |
 
+### A6. The search of the history, on made-up repos (15)
+
+Command: `node --test scripts/check-release.test.mjs`. The script `check:release` runs it after check A3, the release files.
+
+Each case makes a repo with one commit and runs case RC5, the search of the history, on it. The cases were added for finding 2 of review.md, which says the search misses a file under `context/` when git prints its name in quotes.
+
+| Case | Input | Expected result |
+| ---- | ----- | --------------- |
+| HS1 | The commit holds `notes.md` with one plain line. | The search passes. |
+| HS2 | The commit holds the text file `context/café.txt`. | The search fails and names `context/café.txt`. |
+| HS3 | The commit holds the picture `context/é.png`. | The search fails and names `context/é.png`. |
+| HS4 | The commit holds the text file `context/say "hi".txt`. | The search fails and names `context/say "hi".txt`. |
+
 ### A4. Unit tests (2, 8, 12, 17)
 
 Command: `npm test`
