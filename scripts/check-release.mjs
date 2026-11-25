@@ -101,6 +101,11 @@ const ALLOWED = [
     why: 'The password of the test account. The account exists only in the fakes and the canned replies.',
   },
   {
+    file: /^(scripts\/check-release\.test\.mjs|specs\/features\/13-public-release\/validation\.md)$/,
+    text: '"hunter2hunter2"',
+    why: 'The made-up password of case HS5, which tries the search of the history.',
+  },
+  {
     file: 'e2e/support/firebase.ts',
     text: "'test-refresh-token'",
     why: 'A canned reply of the end to end tests. No server issued this token.',
