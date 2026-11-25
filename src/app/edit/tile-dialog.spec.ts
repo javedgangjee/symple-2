@@ -46,7 +46,7 @@ describe('TileDialog', () => {
   const pictures = () => texts('.pictures label');
   /** The pictures of the list, without "No picture". */
   const listed = () => pictures().filter((name) => name !== 'No picture');
-  const countLine = () => one('#tile-picture-count').textContent?.trim();
+  const note = () => one('#tile-picture-note').textContent?.trim();
   const kindLabels = () => texts('.grow > .kinds label');
   const chosenPicture = () => one('.pictures label:has(input:checked)').textContent?.trim();
 
@@ -218,8 +218,9 @@ describe('TileDialog', () => {
     expect(pictures()[0]).toBe('No picture');
     expect(pictures().length).toBe(61);
     expect(element.querySelectorAll('.pictures img').length).toBe(60);
-    expect(countLine()).toBe('Showing 60 of 3,437');
-    expect(one('#tile-picture-count').getAttribute('aria-live')).toBe('polite');
+    expect(note()).toBe('');
+    expect(element.textContent).not.toContain('Showing');
+    expect(one('#tile-find').getAttribute('aria-label')).toBe('Find a picture');
     expect(texts('button.more')).toEqual(['Show more']);
     const image = one<HTMLImageElement>('.pictures img');
     expect(image.getAttribute('loading')).toBe('lazy');
@@ -232,15 +233,15 @@ describe('TileDialog', () => {
     one<HTMLButtonElement>('button.more').click();
     await fixture.whenStable();
     expect(listed().length).toBe(120);
-    expect(countLine()).toBe('Showing 120 of 3,437');
   });
 
-  it('TD11: advent is typed, and the line gives the number of matches with no Show more', async () => {
+  it('TD11: advent is typed, and the list holds the matches with no Show more', async () => {
     await open({ kind: 'add-tile' });
     await type('#tile-find', 'advent');
     const count = listed().length;
     expect(count).toBeGreaterThan(0);
-    expect(countLine()).toBe(`Showing ${count} of ${count}`);
+    expect(count).toBeLessThan(60);
+    expect(note()).toBe('');
     expect(element.querySelector('button.more')).toBeNull();
   });
 
@@ -299,7 +300,8 @@ describe('TileDialog', () => {
     await type('#tile-find', 'zebra crossing sign');
     expect(pictures()).toEqual(['No picture', 'help']);
     expect(chosenPicture()).toBe('help');
-    expect(countLine()).toBe('No symbol has that name.');
+    expect(note()).toBe('No symbol has that name.');
+    expect(one('#tile-picture-note').getAttribute('aria-live')).toBe('polite');
   });
 
   it('TD17: No picture is picked after a symbol in Add Tile, and the preview shows the label alone', async () => {

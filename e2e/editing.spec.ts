@@ -107,8 +107,9 @@ async function pressCell(page: Page, name: string): Promise<void> {
 /** The box "Find a picture" of the tile dialog. */
 const findBox = (page: Page) => sheet(page).getByLabel('Find a picture');
 
-/** The line of the Picture field that says how many pictures are shown and how many match. */
-const countLine = (page: Page) => sheet(page).locator('#tile-picture-count');
+/** The pictures of one kind that the list of the tile dialog holds. */
+const listedPictures = (page: Page, kind: 'symbol' | 'icon') =>
+  pictureList(page).locator(`input[value^="${kind}:"]`);
 
 /** The list of pictures of the tile dialog, which scrolls. */
 const pictureList = (page: Page) => sheet(page).locator('#tile-pictures');
@@ -555,6 +556,8 @@ test('ED14: the labels and the borders of the edit controls keep their contrast 
     await expectContrast('app-footer, main .tool', `${theme} edit mode`);
     await tool(page, 'Edit Help').click();
     await expect(sheet(page)).toBeVisible();
+    // The pictures have loaded, so the list does not change while it is read.
+    await expect(listedPictures(page, 'symbol')).toHaveCount(60);
     await expectContrast('dialog.sheet[open]', `${theme} tile dialog`);
   }
 });
@@ -846,12 +849,11 @@ test('PI6: after Show more is pressed twice the list holds 180 symbols, and each
 }) => {
   await edit(page, 'needs');
   await editAction(page, 'Add Tile').click();
-  await expect(countLine(page)).toHaveText('Showing 60 of 3,437');
+  await expect(listedPictures(page, 'symbol')).toHaveCount(60);
   const more = pictureList(page).getByRole('button', { name: 'Show more', exact: true });
   await more.click();
-  await expect(countLine(page)).toHaveText('Showing 120 of 3,437');
+  await expect(listedPictures(page, 'symbol')).toHaveCount(120);
   await more.click();
-  await expect(countLine(page)).toHaveText('Showing 180 of 3,437');
   await expect(pictureList(page).locator('input[value^="symbol:"]')).toHaveCount(180);
   // The images load lazily, so the test waits for those that are in the part of the list on show.
   const images = () =>
@@ -893,10 +895,10 @@ test('PI8: axe reports no WCAG 2.2 Level AA violation in the tile dialog on Symb
   for (const theme of THEMES) {
     await edit(page, 'needs', { theme });
     await editAction(page, 'Add Tile').click();
-    await expect(countLine(page)).toHaveText('Showing 60 of 3,437');
+    await expect(listedPictures(page, 'symbol')).toHaveCount(60);
     expect(await axeViolations(page), `${theme} Symbols`).toEqual([]);
     await pictureKind(page, 'Icons').click();
-    await expect(countLine(page)).toHaveText('Showing 60 of 2,110');
+    await expect(listedPictures(page, 'icon')).toHaveCount(60);
     expect(await axeViolations(page), `${theme} Icons`).toEqual([]);
   }
 });
@@ -907,7 +909,7 @@ test('PI9: on Icons each control of the Picture field is at least 48px high and 
   await edit(page, 'needs');
   await editAction(page, 'Add Tile').click();
   await pictureKind(page, 'Icons').click();
-  await expect(countLine(page)).toHaveText('Showing 60 of 2,110');
+  await expect(listedPictures(page, 'icon')).toHaveCount(60);
   expect(await pictureField(page).locator(PICTURE_CONTROLS).count()).toBeGreaterThan(60);
   expect(await smallControls(pictureField(page), PICTURE_CONTROLS)).toEqual([]);
   // The pointer is moved off the list, so no picture shows its hover look.
@@ -927,7 +929,7 @@ test('PI10: with the keyboard alone Tab reaches each part of the Picture field, 
 }) => {
   await edit(page, 'needs');
   await editAction(page, 'Add Tile').click();
-  await expect(countLine(page)).toHaveText('Showing 60 of 3,437');
+  await expect(listedPictures(page, 'symbol')).toHaveCount(60);
   await expect(sheet(page).getByLabel('Label')).toBeFocused();
   const readings: Awaited<ReturnType<typeof focusReading>>[] = [];
   const press = async (key: string) => {

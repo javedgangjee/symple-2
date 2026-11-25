@@ -134,21 +134,15 @@
       </div>
 
       <!-- Enter in the box does not add the tile, because the caregiver is still choosing. -->
-      <!-- The line that counts sits beside the name of the box, so the list keeps the height. -->
-      <!-- It is a polite live region and not a status role, because the board screen keeps the one status line of the page. -->
-      <div class="find">
-        <label class="small" for="tile-find">Find a picture</label>
-        <p class="hint" id="tile-picture-count" aria-live="polite" aria-atomic="true">
-          {{ countLine() }}
-        </p>
-      </div>
+      <!-- The box has no row of its own for a name. Its placeholder shows the name. -->
       <input
         #find
         id="tile-find"
         type="text"
         autocomplete="off"
+        aria-label="Find a picture"
+        placeholder="Find a picture"
         aria-controls="tile-pictures"
-        aria-describedby="tile-picture-count"
         [value]="query()"
         (input)="setQuery(find.value)"
         (keydown.enter)="$event.preventDefault()"
@@ -202,6 +196,9 @@
         @if (hasMore()) {
           <button type="button" class="more" (click)="showMore()">Show more</button>
         }
+        <!-- The note is empty unless the pictures are loading, failed to load or none has the name. -->
+        <!-- It is a polite live region and not a status role, because the board screen keeps the one status line of the page. -->
+        <p class="hint" id="tile-picture-note" aria-live="polite" [textContent]="note()"></p>
       </div>
     </fieldset>
   </ng-template>

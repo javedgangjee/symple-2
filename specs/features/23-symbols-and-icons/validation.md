@@ -105,14 +105,14 @@ The tile dialog, in `src/app/edit/tile-dialog.spec.ts`:
 | TD3 | Add Tile is pressed, and "dog" is typed in "Find a picture". This replaces case TD3 of feature 9, which filtered the 99 symbols. | Symbols is chosen. Every picture in the list has "dog" in its name, and the first is "dog". |
 | TD6 | Add Board is pressed. This replaces case TD6 of feature 9, which listed 12 icons. | A dialog named "Add Board" shows Name, Style, Colour and Picture. Icons is chosen, and the first picture in the list is "Grid", which is chosen. |
 | TD7 | "Edit Help" is pressed. This replaces case TD7 of feature 9. | The dialog is filled in with the label, the phrase and the colour of Help. Symbols is chosen, and the first picture in the list is "help", which is chosen. It has no choice of type. |
-| TD9 | Add Tile is pressed with an empty box. | The list holds "No picture" and 60 symbols, a line reads "Showing 60 of 3,437", and Show more is on show. |
-| TD10 | After case TD9, Show more is pressed. | The list holds 120 symbols, and the line reads "Showing 120 of 3,437". |
-| TD11 | "advent" is typed. | The line gives the number of matches, and Show more is not on show. |
+| TD9 | Add Tile is pressed with an empty box. | The list holds "No picture" and 60 symbols, and Show more is on show. No line counts the pictures, and the box is named "Find a picture" with no row for its name. The user removed that row and the line that counts on 2026-11-24. |
+| TD10 | After case TD9, Show more is pressed. | The list holds 120 symbols. |
+| TD11 | "advent" is typed. | The list holds the matches, which are fewer than 60, and Show more is not on show. |
 | TD12 | "apple" is typed, and Icons is chosen. | The box still holds "apple", the list holds the icon "apple", and the two choices read "Symbols" and "Icons" with no number. The user removed the numbers on 2026-11-24. |
 | TD13 | The icon "apple" is picked in Add Tile. | The preview draws the icon on the plate, and Add emits the icon `lucide:apple`. |
 | TD14 | In Add Board, Symbols is chosen and "dog" is picked. | The Style field is gone, the preview draws the symbol, and Add emits the symbol `dog.svg`. |
 | TD15 | In Add Board, Icons is chosen again after case TD14. | The Style field is back. |
-| TD16 | "Edit Help" is pressed, and "zebra crossing sign" is typed, a text that no symbol name holds. | The list holds "No picture" and "help", which is chosen, and a line says that no picture has that name. |
+| TD16 | "Edit Help" is pressed, and "zebra crossing sign" is typed, a text that no symbol name holds. | The list holds "No picture" and "help", which is chosen, and a note at the end of the list says that no symbol has that name. |
 | TD17 | Add Tile is pressed, and "No picture" is picked after a symbol was picked. | The preview shows the label alone, and Add emits no picture. |
 | TD18 | Enter is pressed in "Find a picture". | The dialog stays open, and nothing is emitted. |
 
@@ -163,7 +163,7 @@ Expected result: each search shows pictures that fit the text. "drink" shows the
 1. Turn VoiceOver on. Open Add Tile in edit mode.
 2. Move through the Picture field. Type "dog", and move through the list.
 
-Expected result: VoiceOver names the choice of Symbols or Icons, the box, each picture by its name and Show more. It reads the line that counts after the text changes.
+Expected result: VoiceOver names the choice of Symbols or Icons, the box, each picture by its name and Show more. When no picture has the typed name, it reads the note that says so.
 
 ### H4. The sync (5)
 

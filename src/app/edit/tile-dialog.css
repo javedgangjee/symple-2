@@ -377,18 +377,8 @@ svg {
   margin-bottom: 0.5rem;
 }
 
-/* The name of the box and the line that counts share a row. */
-.find {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0 0.75rem;
-  margin-bottom: 0.375rem;
-}
-
-.find .small,
-.find .hint {
+/* The note at the end of the list takes no room while it is empty. */
+.pictures .hint:empty {
   margin: 0;
 }
 

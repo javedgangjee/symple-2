@@ -235,7 +235,6 @@ const LUCIDE_PREFIX = 'lucide:';
 const PAGE = 60;
 
 /** Writes a number with a comma between the thousands, such as 3,437. */
-const COUNT = new Intl.NumberFormat('en');
 
 /** The two kinds of picture, which the choice of Symbols or Icons picks between. */
 type PictureKind = Picture['kind'];
@@ -467,19 +466,18 @@ export class TileDialog {
 
   protected readonly hasMore = computed(() => this.page().shown < this.page().total);
 
-  /** The line under the list, which says how many pictures are shown and how many match. */
-  protected readonly countLine = computed(() => {
+  /** The note at the end of the list. It is empty while the list has matches to show. */
+  protected readonly note = computed(() => {
     if (this.failed()) {
       return 'The pictures could not be loaded.';
     }
     if (this.lists() === null) {
       return 'Loading the pictures.';
     }
-    const { shown, total } = this.page();
-    if (total === 0) {
+    if (this.page().total === 0) {
       return this.view() === 'symbol' ? 'No symbol has that name.' : 'No icon has that name.';
     }
-    return `Showing ${COUNT.format(shown)} of ${COUNT.format(total)}`;
+    return '';
   });
 
   protected readonly fields = computed((): CellFields => {
