@@ -5,7 +5,9 @@
   "hosting": {
     "public": "dist/symple/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "**", "destination": "/index.html" }],
+    "rewrites": [
+      { "source": "!**/*.@(js|css|json|svg|png|ico|woff2|txt)", "destination": "/index.html" }
+    ],
     "headers": [
       {
         "source": "**",

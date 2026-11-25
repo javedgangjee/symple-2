@@ -29,6 +29,8 @@ const BUILD_FOLDER = 'dist/symple/browser';
 const ONE_YEAR = 31536000;
 // The files that `ng build` names with a hash: the scripts, the styles and the font in media/.
 const HASHED_FILES = ['**/*.@(js|css)', '/media/**'];
+// The endings of the files that the browser keeps for a year. A rewrite must never answer for one.
+const NEVER_REWRITTEN = ['js', 'css', 'woff2'];
 
 // What NOTICE must say about each of the three other licences: the work, its licence and the
 // place in the repo that the licence covers.
@@ -102,9 +104,11 @@ const ALLOWED = [
 const BINARY_FILE = /\.(png|jpe?g|gif|ico|webp|woff2?|ttf|otf|pdf|zip)$/i;
 
 const failures = [];
+let cases = 0;
 
 /** Runs one case and records each problem it finds. */
 async function check(id, title, run) {
+  cases += 1;
   const problems = [];
   try {
     await run(problems);
@@ -268,7 +272,7 @@ await check('RC3', 'firebase.json', (problems) => {
     problems.push(`The hosting block serves ${hosting.public}, and it must serve ${BUILD_FOLDER}.`);
   }
   const rewrites = hosting.rewrites ?? [];
-  if (!rewrites.some((rule) => rule.source === '**' && rule.destination === '/index.html')) {
+  if (!rewrites.some((rule) => rule.destination === '/index.html')) {
     problems.push('No rewrite sends every other path to /index.html.');
   }
   const cacheOf = (rule) =>
@@ -448,8 +452,31 @@ await check('RC9', 'make deploy', (problems) => {
   }
 });
 
+await check(
+  'RC10',
+  'A missing script, style or font is not answered with index.html',
+  (problems) => {
+    const text = read('firebase.json', problems);
+    if (text === undefined) {
+      return;
+    }
+    // A tab that still runs an old build asks for scripts that a new deploy has removed. A rewrite
+    // that answers with index.html would send it with the header rule of the path that was asked
+    // for, so the browser would keep the wrong answer for a year. The source of the rewrite must
+    // leave those paths out, in the form "!**/*.@(js|css|...)".
+    for (const rule of JSON.parse(text).hosting?.rewrites ?? []) {
+      const left = /^!\*\*\/\*\.@\(([a-z0-9|]+)\)$/.exec(rule.source ?? '')?.[1].split('|') ?? [];
+      for (const ending of NEVER_REWRITTEN) {
+        if (!left.includes(ending)) {
+          problems.push(`The rewrite for "${rule.source}" also answers a missing .${ending} file.`);
+        }
+      }
+    }
+  },
+);
+
 if (failures.length > 0) {
-  console.log(`\n${failures.length} of 9 cases failed: ${failures.join(', ')}.`);
+  console.log(`\n${failures.length} of ${cases} cases failed: ${failures.join(', ')}.`);
   process.exit(1);
 }
-console.log('\nAll 9 cases passed.');
+console.log(`\nAll ${cases} cases passed.`);

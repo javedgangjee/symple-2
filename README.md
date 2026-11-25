@@ -100,7 +100,7 @@ The version is in two places. For a later release, change `version` in `package.
 
 The hosting block of `firebase.json` sets three things.
 
-- Any path that is not a file gets `index.html`, so a reload on a board such as `/needs` works.
+- Any path that is not a file gets `index.html`, so a reload on a board such as `/needs` works. A path that ends like a file, such as `.js` or `.svg`, is left out. If that file is missing, the answer is a 404. An open tab of an old release can ask for a script that a new release has removed, and it must not get `index.html` in its place.
 - Every file without a hash in its name, such as `index.html` and the symbols, is checked with the server on each load. A new release shows on the next load.
 - The scripts, the styles and the font have a hash in their file name, which changes when the file changes. The browser keeps them for a year.
 

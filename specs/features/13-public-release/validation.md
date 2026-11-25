@@ -31,6 +31,7 @@ Command: `node scripts/check-release.mjs`
 | RC6  | `public/licenses/`, `public/fonts/` and `public/symbols/ATTRIBUTION.txt`. | The licence texts of Mulberry, Lucide and Libre Franklin and the attribution file are present.                                                                                                                                                   |
 | RC7  | `README.md`, `settings-panel.html` and `sign-in-screen.html`.             | Each holds the address of the repo, and `README.md` holds the live address and the headings Privacy and Release.                                                                                                                                 |
 | RC9  | `Makefile` and `README.md`.                                               | `Makefile` has the target `deploy`, which runs `npm run deploy` and is on the `.PHONY` line. The target `check` does not run it. The Release section of `README.md` names `make deploy`.                                                         |
+| RC10 | The rewrite of `firebase.json`. | Its source leaves out every path that ends in `.js`, `.css` or `.woff2`, so a script, a style or a font that is missing gets a 404 and never `index.html`. Added for finding 1 of review.md, which says a request for a script that no longer exists gets `index.html` with the order to keep it for a year. |
 
 ### A4. Unit tests (2, 8, 12, 17)
 
