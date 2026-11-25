@@ -256,6 +256,33 @@ button.row svg {
   outline-offset: 3px;
 }
 
+/* A button with words, such as Sign out. It has the outline and the fill of the other controls. */
+.action {
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--control);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease);
+}
+
+.action:hover {
+  border-color: var(--ink);
+  background: var(--control-hover);
+}
+
+.action:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
 /* A choice from a list is a native drop-down, so the browser handles the keyboard and screen readers. */
 .pick {
   position: relative;
