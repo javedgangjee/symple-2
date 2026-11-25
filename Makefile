@@ -1,6 +1,6 @@
 # Each target calls the npm script of the same name. See package.json.
 
-.PHONY: install start stop build test e2e lint format-check check-pictures check
+.PHONY: install start stop build test e2e lint format-check check-pictures check deploy
 
 # Installs the packages and the Chromium browser that the end to end tests use.
 install:
@@ -42,3 +42,8 @@ check:
 	$(MAKE) test
 	$(MAKE) e2e
 	$(MAKE) build
+
+# Builds the app and sends the build to Firebase Hosting, which serves it at https://symple-2.web.app.
+# It does not run the checks, so run `make check` first.
+deploy:
+	npm run deploy
