@@ -156,3 +156,29 @@ Command: `npm run e2e`
 | --- | --- | --- |
 | ED22 | In `e2e/editing.spec.ts`, Help on Needs is dragged with the mouse onto Add column and let go there. The page is reloaded. | Add column carries the mark that it takes the cell while Help is over it. Needs then has four columns and the fourth holds Help alone, the status line says "Help moved to a new column", and the focus is on Edit Help. A press on Pain then picks Pain up. The columns are the same after the reload. |
 | ED23 | Add column is pressed until it says that it is disabled. Help is dragged onto it and let go there. | Add column carries no mark while Help is over it, every cell stays where it was, and the status line says "The board has no room for another column." |
+
+## Results (2026-11-25)
+
+The checks ran on Node 22.23.5, on commit `5c09293` of the feature branch with nothing else changed in the code. The manual checks were removed before the run, because the user said on 2026-11-25 that this validation is automated only.
+
+| Check | Result | Summary |
+| --- | --- | --- |
+| A1, the build | Pass | `npm run build` ended with no errors and no warnings. The first download is 505.53 kB, under the budget of 1 MB. `lucide-json` and `symbols-json` are lazy chunks. |
+| A2, lint and format | Pass | `npm run lint` and `npm run format:check` ended with no errors. |
+| A3, the pictures and their lists | Pass | `node scripts/check-pictures.mjs` passed cases PC1 to PC7. |
+| A4, the unit tests | Pass | `npm test` passed 472 tests in 39 files. Each case label of this check is in a spec file, and no test is skipped. |
+| A5, the end to end tests | Pass | `npm run e2e` passed 315 tests with no failure and no rerun. Cases PI1 to PI10 each passed at both window sizes. |
+| A6, the changes the user asked for after the review | Pass | The unit cases BE20, BE21, DR5, ES19, ES20 and ES21 are in the 472 that passed. The end to end cases ED22 and ED23, the drop of a tile on Add column, each passed at both window sizes. |
+
+Each of requirements 1 to 6, 9 to 22 and 25 has at least one passing check.
+
+Four requirements have no check in this file.
+
+- Requirement 7, which says the feature adds no cloud service. The diff of `package.json` against main adds only the development package `lucide-static` and the script `check:pictures`.
+- Requirement 8, the patent check, which says the search generates nothing and so the check does not apply. No test can show it.
+- Requirement 23, the credits. `README.md` and `public/symbols/ATTRIBUTION.txt` name the Mulberry release 3.6.1 and its 3,436 files.
+- Requirement 24, the file names. The six files it names exist.
+
+Finding 4 of the review, which says the third edit button of a narrow cell is covered by the Remove button of the next cell, is kept and not fixed.
+
+The user asked on 2026-11-25 for the merge to follow this run.
