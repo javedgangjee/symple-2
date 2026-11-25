@@ -50,3 +50,6 @@ Thumbs.db
 /playwright/.cache/
 # The saved browser state of the signed in test device
 /e2e/.auth/
+
+# The mockups and the patents are kept on this machine only
+/context/

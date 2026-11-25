@@ -204,7 +204,7 @@ Run `npm start`, open the app in Chrome on the Mac and sign in.
 
 ## Results, 2026-11-23
 
-The checks ran on Node 22.23.5, the version in `.nvmrc`, on commit d92bb5f of the branch `feature/08-settings`. That commit holds the seven changes of item 36 of requirements.md, which lists the user's decisions of 2026-11-23. Step 12 of plan.md, which fixes four findings of the review, has not been implemented yet.
+The checks ran on Node 22.23.5, the version in `.nvmrc`, on commit 14d3978 of the branch `feature/08-settings`. That commit holds the seven changes of item 36 of requirements.md, which lists the user's decisions of 2026-11-23. Step 12 of plan.md, which fixes four findings of the review, has not been implemented yet.
 
 ### Automated checks
 

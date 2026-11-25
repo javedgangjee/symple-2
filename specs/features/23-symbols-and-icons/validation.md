@@ -159,7 +159,7 @@ Command: `npm run e2e`
 
 ## Results (2026-11-25)
 
-The checks ran on Node 22.23.5, on commit `5c09293` of the feature branch with nothing else changed in the code. The manual checks were removed before the run, because the user said on 2026-11-25 that this validation is automated only.
+The checks ran on Node 22.23.5, on commit `7a22515` of the feature branch with nothing else changed in the code. The manual checks were removed before the run, because the user said on 2026-11-25 that this validation is automated only.
 
 | Check | Result | Summary |
 | --- | --- | --- |
