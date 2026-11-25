@@ -375,7 +375,7 @@ export class SettingsPanel {
   /** The controls that Tab stops on, in order. A group of radio buttons takes one stop, on the chosen one. */
   private tabStops(): HTMLElement[] {
     const candidates = this.dialog().nativeElement.querySelectorAll<HTMLElement>(
-      'button, select, input, [tabindex]',
+      'a[href], button, select, input, [tabindex]',
     );
     return Array.from(candidates).filter(
       (element) =>

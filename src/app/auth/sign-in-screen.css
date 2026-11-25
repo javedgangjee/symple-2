@@ -155,16 +155,40 @@ input[aria-invalid='true'] {
   color: var(--dark);
 }
 
+/* The line under the form says that accounts are by invitation. Its text is ink, as the rest of the card. */
+.invite {
+  margin-top: 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* The link is 24px high, so it is easy to press with a pointer. */
+.invite a {
+  display: inline-block;
+  min-height: 1.5rem;
+  line-height: 1.5rem;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+.invite a:hover {
+  color: var(--dark);
+}
+
 :is(.primary, .link):disabled {
   cursor: default;
 }
 
-:is(input, .primary, .link):focus-visible {
+:is(input, .primary, .link, .invite a):focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 3px;
 }
 
-.link:focus-visible {
+:is(.link, .invite a):focus-visible {
   border-radius: 0.4rem;
 }
 

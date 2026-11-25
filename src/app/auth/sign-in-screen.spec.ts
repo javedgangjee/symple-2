@@ -10,6 +10,7 @@ class Blank {}
 
 const RESET_SENT = 'An email has been sent to the associated account.';
 const NO_NETWORK = 'Symple cannot reach the network. Connect and try again.';
+const REPO = 'https://github.com/javedgangjee/symple-2';
 
 describe('SignInScreen', () => {
   let source: FakeAuthSource;
@@ -106,7 +107,10 @@ describe('SignInScreen', () => {
       'Sign in',
       'Forgot password',
     ]);
-    expect(element.querySelectorAll('a').length).toBe(0);
+    // The one link is About Symple, which case IV1 checks.
+    expect(
+      Array.from(element.querySelectorAll('a')).map((link) => link.textContent?.trim()),
+    ).toEqual(['About Symple']);
     expect(element.querySelectorAll('input').length).toBe(2);
   });
 
@@ -197,6 +201,48 @@ describe('SignInScreen', () => {
     fill('anna@example.com');
     await pressForgot();
     await vi.waitFor(() => expect(message()).toBe(NO_NETWORK));
+  });
+
+  it('IV1: a line under the form says that accounts are by invitation and links to the repo', () => {
+    const form = element.querySelector('form');
+    const line = element.querySelector('p.invite');
+    if (!form || !line) {
+      throw new Error('There is no form, or no line under it.');
+    }
+    // The line comes after the form and is not part of it.
+    expect(form.contains(line)).toBe(false);
+    expect(form.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const text = (line.textContent ?? '').replace(/\s+/g, ' ').trim();
+    expect(text).toContain('Symple is in testing');
+    expect(text).toContain('accounts are by invitation');
+
+    const links = Array.from(line.querySelectorAll('a'));
+    expect(links.map((link) => link.textContent?.trim())).toEqual(['About Symple']);
+    expect(links[0].getAttribute('href')).toBe(REPO);
+    expect(links[0].getAttribute('target')).toBe('_blank');
+    expect(links[0].getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('IV2: no control makes an account, and Sign in and Forgot password are there as before', async () => {
+    const controls = Array.from(element.querySelectorAll('button, a, input'));
+    for (const control of controls) {
+      const name = control.textContent ?? '';
+      expect(name).not.toMatch(/sign up|create|register|new account|make an account/i);
+    }
+    expect(buttons().map((button) => button.textContent?.trim())).toEqual([
+      'Sign in',
+      'Forgot password',
+    ]);
+    expect(signInButton().disabled).toBe(false);
+    expect(forgotButton().type).toBe('button');
+
+    // Both still work as before.
+    fill('anna@example.com', 'secret12');
+    await pressSignIn();
+    expect(source.signIns).toEqual([{ email: 'anna@example.com', password: 'secret12' }]);
+    await vi.waitFor(() => expect(router.url).toBe('/'));
+    await pressForgot();
+    expect(source.resets).toEqual(['anna@example.com']);
   });
 
   it('F15: a message sits in one region that screen readers announce', async () => {
