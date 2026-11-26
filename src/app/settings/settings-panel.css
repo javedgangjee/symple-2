@@ -195,6 +195,25 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+/* A link in a row, such as the address of the source code, is ink with a line under it. */
+.val a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+.val a:hover {
+  color: var(--dark);
+}
+
+.val a:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
 /* A small title can sit above a set. */
 .set-title {
   margin: 0 1rem 0.5rem;

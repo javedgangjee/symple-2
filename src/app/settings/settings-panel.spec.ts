@@ -356,7 +356,8 @@ describe('SettingsPanel', () => {
     const credits = Array.from(
       one('#settings-pane-about').querySelectorAll<HTMLElement>('.row'),
     ).map((row) => row.textContent ?? '');
-    expect(credits.length).toBe(3);
+    // The three credits come first. The fourth row is Source code, which case AB1 checks.
+    expect(credits.length).toBe(4);
     expect(credits[0]).toContain('Javed Gangjee');
     expect(credits[1]).toContain('Mulberry Symbols');
     expect(credits[1]).toContain('CC BY-SA 4.0');
@@ -364,6 +365,23 @@ describe('SettingsPanel', () => {
     expect(credits[2]).toContain('ISC License');
     expect(element.textContent).not.toContain('OpenMoji');
     expect(element.textContent).not.toContain('Material');
+  });
+
+  it('AB1: the About tab holds the row Source code with a link to the repo and the licence, after the credits', async () => {
+    await open();
+    await showTab('About');
+    const rows = Array.from(one('#settings-pane-about').querySelectorAll<HTMLElement>('.row'));
+    const names = rows.map((row) => row.querySelector('.what')?.textContent?.trim());
+    expect(names).toEqual(['Created by', 'Symbols', 'Icons', 'Source code']);
+
+    const source = rows[3];
+    expect(source.textContent).toContain('Apache License 2.0');
+    const links = Array.from(source.querySelectorAll('a'));
+    expect(links.length).toBe(1);
+    expect(links[0].getAttribute('href')).toBe('https://github.com/javedgangjee/symple-2');
+    expect(links[0].textContent?.trim()).toBe('github.com/javedgangjee/symple-2');
+    expect(links[0].getAttribute('target')).toBe('_blank');
+    expect(links[0].getAttribute('rel')).toBe('noopener noreferrer');
   });
 
   it('PA19: Done closes the panel, and so does Escape', async () => {

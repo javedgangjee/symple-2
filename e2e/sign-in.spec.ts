@@ -2,6 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import boardsFile from '../src/data/boards.json' with { type: 'json' };
 import cellsFile from '../src/data/cells.json' with { type: 'json' };
 import { axeViolations } from './support/axe';
+import { drawnContrast } from './support/contrast';
 import {
   NEEDS_LABELS,
   THEMES,
@@ -24,12 +25,16 @@ import {
 
 const HOME_CELLS = ['My boards', 'Needs', 'Quick phrases', 'Keyboards'];
 const WRONG = 'The email or password is wrong.';
+const REPO = 'https://github.com/javedgangjee/symple-2';
 
 const card = (page: Page) => page.locator('app-sign-in-screen');
 const signInButton = (page: Page) => page.getByRole('button', { name: 'Sign in' });
 const signOutButton = (page: Page) => page.getByRole('button', { name: 'Sign out' });
 /** The box that holds the one message of the screen, in its alert region or its status region. */
 const message = (page: Page) => card(page).locator('.message');
+/** The line under the form that says accounts are by invitation. */
+const invite = (page: Page) => card(page).locator('p.invite');
+const aboutLink = (page: Page) => page.getByRole('link', { name: 'About Symple' });
 
 /** Opens the app on a device with no stored sign in and waits for the sign in screen. */
 async function openSignIn(page: Page, theme?: ThemeName): Promise<void> {
@@ -193,6 +198,59 @@ test.describe('on a device with no stored sign in', () => {
       await signInButton(page).click();
       await expect(message(page)).toHaveText(WRONG);
       expect(await axeViolations(page), `${theme} with the message`).toEqual([]);
+    }
+  });
+
+  test('IV3: axe reports no violation, the line keeps its contrast and the link is 24px high, in every theme', async ({
+    page,
+  }) => {
+    for (const theme of THEMES) {
+      await openSignIn(page, theme);
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      await expect(invite(page)).toContainText('accounts are by invitation');
+      await expect(aboutLink(page)).toHaveAttribute('href', REPO);
+      expect(await axeViolations(page), theme).toEqual([]);
+
+      // The pointer is moved off the card, so the link does not show its hover look.
+      await page.mouse.move(1, 1);
+      const readings = await drawnContrast(page, 'app-sign-in-screen p.invite');
+      expect(readings.length, theme).toBeGreaterThan(0);
+      const low = readings
+        .filter(({ ratio }) => ratio < 4.5)
+        .map(({ what, ratio }) => `${what}: ${ratio.toFixed(2)} of 4.5`);
+      expect(low, theme).toEqual([]);
+
+      const box = await aboutLink(page).boundingBox();
+      expect(box?.height ?? 0, theme).toBeGreaterThanOrEqual(24);
+    }
+  });
+
+  test('IV4: Tab reaches the five controls in order, and the focus is always on show', async ({
+    page,
+  }) => {
+    await openSignIn(page);
+    for (const name of ['Email', 'Password', 'Sign in', 'Forgot password', 'About Symple']) {
+      await page.keyboard.press('Tab');
+      expect(await focusedControl(page)).toBe(name);
+      const focus = await page.evaluate(() => {
+        const active = document.activeElement;
+        if (!(active instanceof HTMLElement)) {
+          return null;
+        }
+        const style = getComputedStyle(active);
+        const box = active.getBoundingClientRect();
+        return {
+          visible: active.matches(':focus-visible'),
+          outline: style.outlineStyle,
+          width: parseFloat(style.outlineWidth),
+          inWindow:
+            box.top >= 0 &&
+            box.left >= 0 &&
+            box.bottom <= window.innerHeight &&
+            box.right <= window.innerWidth,
+        };
+      });
+      expect(focus, name).toEqual({ visible: true, outline: 'solid', width: 3, inWindow: true });
     }
   });
 

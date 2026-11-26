@@ -47,15 +47,15 @@ No finding was dropped.
 
 The user picked all three kept findings. `make check` passed after each fix, with 466 unit tests, 311 end to end tests and cases PC1 to PC7 of the check of the pictures.
 
-1. Finding 1, which says a cell already on screen never gets its icon back after a failed load of the Lucide set, is fixed in commit `09354f7`. The fix changed `src/app/cells/icon-set.ts` and `src/app/cells/icon-set.spec.ts`. After a failed read the service waits one second, and twice as long after each further failure up to 60 seconds, and then each icon on screen asks again. Case IC7 of validation.md covers it. That case fails the first read of the set, lets the next one succeed, and expects the icon already drawn to hold the shapes of `apple`.
-2. Finding 2, which says three pairs of symbols share the names "drink", "hot" and "open", is fixed in commit `2fe8e92`. The fix changed `scripts/import-mulberry.mjs`, `scripts/check-pictures.mjs`, `src/data/symbols.json` and one comment in `e2e/editing.spec.ts`. The new symbols are now named "drink 2", "hot 2" and "open 3". Case PC6 of validation.md covers it. That case expects that no two symbols have the same name without regard to case.
-3. Finding 3, which says the licence notes that ship with the app do not match the new sets, is fixed in commit `e89e133`. The fix changed `public/licenses/lucide.txt`, `scripts/import-mulberry.mjs`, `scripts/check-pictures.mjs`, `README.md` and `specs/tech-stack.md`, and it added `public/licenses/mulberry.txt`, which is the unchanged `LICENSE.txt` of the Mulberry release. Case PC7 of validation.md covers it. That case expects the Mulberry licence file to be there and `lucide.txt` to name `lucide-static` 1.77.0.
+1. Finding 1, which says a cell already on screen never gets its icon back after a failed load of the Lucide set, is fixed in commit `464aa51`. The fix changed `src/app/cells/icon-set.ts` and `src/app/cells/icon-set.spec.ts`. After a failed read the service waits one second, and twice as long after each further failure up to 60 seconds, and then each icon on screen asks again. Case IC7 of validation.md covers it. That case fails the first read of the set, lets the next one succeed, and expects the icon already drawn to hold the shapes of `apple`.
+2. Finding 2, which says three pairs of symbols share the names "drink", "hot" and "open", is fixed in commit `9800568`. The fix changed `scripts/import-mulberry.mjs`, `scripts/check-pictures.mjs`, `src/data/symbols.json` and one comment in `e2e/editing.spec.ts`. The new symbols are now named "drink 2", "hot 2" and "open 3". Case PC6 of validation.md covers it. That case expects that no two symbols have the same name without regard to case.
+3. Finding 3, which says the licence notes that ship with the app do not match the new sets, is fixed in commit `d9a14ce`. The fix changed `public/licenses/lucide.txt`, `scripts/import-mulberry.mjs`, `scripts/check-pictures.mjs`, `README.md` and `specs/tech-stack.md`, and it added `public/licenses/mulberry.txt`, which is the unchanged `LICENSE.txt` of the Mulberry release. Case PC7 of validation.md covers it. That case expects the Mulberry licence file to be there and `lucide.txt` to name `lucide-static` 1.77.0.
 
 Every kept finding was fixed.
 
 ## Second review (2026-11-25)
 
-The scope was the seven commits after `e89e133` and the changes to `src/app/settings/settings-panel.html` and `settings-panel.css` that are not yet committed. I ran `npm test` (466 tests pass), `npm run lint` and `npm run format:check`, which both pass. I read the diff and each changed source file in full, and I did not run the end to end tests or open the app, because the server on port 4200 serves another app.
+The scope was the seven commits after `d9a14ce` and the changes to `src/app/settings/settings-panel.html` and `settings-panel.css` that are not yet committed. I ran `npm test` (466 tests pass), `npm run lint` and `npm run format:check`, which both pass. I read the diff and each changed source file in full, and I did not run the end to end tests or open the app, because the server on port 4200 serves another app.
 
 ### 4. On a narrow cell the third edit button runs past the right edge of the cell, and the first button of the next cell covers it.
 
@@ -67,7 +67,7 @@ The scope was the seven commits after `e89e133` and the changes to `src/app/sett
 ### 5. The CSS for the class `small` is left with nothing that uses it.
 
 - File: `src/app/edit/tile-dialog.css`, lines 83 to 93, where `.small` shares a rule with `.hint` and has a rule of its own.
-- Case: the only element with the class `small` was the label "Find a picture", which commit `889f29b` removed. No template in `src/app` uses the class now, and `board-dialog.html`, which shares this file, does not use it either.
+- Case: the only element with the class `small` was the label "Find a picture", which commit `4457b96` removed. No template in `src/app` uses the class now, and `board-dialog.html`, which shares this file, does not use it either.
 - Fix: drop `.small` from the selector on line 84 and delete the rule on lines 91 to 93.
 - Level: low.
 
@@ -82,5 +82,5 @@ No finding was dropped.
 
 ## Fixes of the second review (2026-11-25)
 
-1. Finding 5, which says the `.small` CSS of the tile dialog has nothing using it, is fixed in commit `7138d0f`. The fix changed `src/app/edit/tile-dialog.css`. No test can show unused CSS, so no check was added. The 466 unit tests and the 311 end to end tests pass after the removal.
+1. Finding 5, which says the `.small` CSS of the tile dialog has nothing using it, is fixed in commit `c84708b`. The fix changed `src/app/edit/tile-dialog.css`. No test can show unused CSS, so no check was added. The 466 unit tests and the 311 end to end tests pass after the removal.
 2. Finding 4, which says the third edit button of a narrow cell is covered by the Remove button of the next cell, is kept and not fixed. The user did not pick it.

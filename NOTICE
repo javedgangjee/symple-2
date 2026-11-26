@@ -1,0 +1,36 @@
+Symple
+Copyright 2026 Javed Gangjee
+
+Symple is licensed under the Apache License, Version 2.0. The file LICENSE
+holds the text of that licence.
+
+Three parts of this repo come from other projects. Each keeps its own licence,
+and the Apache License does not cover it.
+
+Mulberry Symbols, release 3.6.1
+  Files:     the symbols in public/symbols/, apart from stop.svg, which is
+             Symple's own drawing and is under the Apache License.
+  Copyright: 2018-2026 Steve Lee.
+  Licence:   CC BY-SA 4.0 (Creative Commons Attribution-ShareAlike 4.0).
+             A changed symbol must be shared under the same licence.
+  Text:      public/licenses/mulberry.txt
+  Credit:    public/symbols/ATTRIBUTION.txt, which also lists the original
+             file names.
+  Source:    https://mulberrysymbols.org
+
+Lucide, version 1.77.0
+  Files:     src/data/lucide.json, and every icon that is drawn inline in
+             the code under src/app/, apart from the Symple logo in
+             src/app/shell/logo.ts.
+  Copyright: 2026 Lucide Icons and Contributors, and for the Feather icons
+             2013-present Cole Bemis.
+  Licence:   ISC License. Some icons come from the Feather project and are
+             also under the MIT License.
+  Text:      public/licenses/lucide.txt
+  Source:    https://lucide.dev
+
+Libre Franklin
+  Files:     the font file in src/fonts/.
+  Copyright: 2015 Impallari Type.
+  Licence:   SIL Open Font License, version 1.1.
+  Text:      public/fonts/LibreFranklin-OFL.txt

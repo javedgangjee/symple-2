@@ -1,6 +1,6 @@
 {
   "name": "symple",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "build": "ng build",
     "start": "ng serve",
@@ -8,7 +8,9 @@
     "e2e": "playwright test",
     "lint": "ng lint && tsc --noEmit -p tsconfig.e2e.json",
     "format:check": "prettier --check .",
-    "check:pictures": "node scripts/check-pictures.mjs"
+    "check:pictures": "node scripts/check-pictures.mjs",
+    "deploy": "npm run build && npx firebase-tools deploy --only hosting",
+    "check:release": "node scripts/check-release.mjs && node --test scripts/check-release.test.mjs"
   },
   "private": true,
   "engines": {
@@ -42,5 +44,6 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "8.72.1",
     "vitest": "^5.0.0"
-  }
+  },
+  "license": "Apache-2.0"
 }

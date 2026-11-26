@@ -8,7 +8,7 @@ The versions below were set on 2026-11-16.
 - The interface is one Angular 22 app. All three targets use the same build.
 - Electron 45 packages the build as the Mac app.
 - Capacitor 8 packages the build as the iPad app. There is no iPhone layout.
-- The web version is the Angular app served to a browser on a Mac.
+- The web version is the Angular app served to a browser on a Mac. Firebase Hosting serves it at `https://symple-2.web.app`, from the hosting block of `firebase.json`. `make deploy` builds the app and deploys it, and only the user runs it. Added on 2026-11-25.
 
 ## Tools
 
@@ -16,6 +16,8 @@ The versions below were set on 2026-11-16.
 - The Angular CLI builds and serves the app.
 - Xcode is needed to build the iPad app. It is not installed on the development Mac yet.
 - ESLint with angular-eslint 22 checks the code and the templates. Prettier formats the files. Added on 2026-11-16.
+- `node scripts/check-release.mjs` checks the files of the public release, and it looks for secrets in the tracked files and in every commit of the history. `make check` runs it. Added on 2026-11-25.
+- The code is under the Apache License 2.0. `LICENSE` holds its text, and `NOTICE` says which files the licences of Mulberry, Lucide and Libre Franklin cover. Decided on 2026-11-25.
 
 ## Tests
 
@@ -80,7 +82,7 @@ The versions below were set on 2026-11-16.
 
 ## Design reference
 
-- The mockups in `context/design/` show the intended look and layout. They are a guide and can be changed when a feature plan gives a reason.
+- The mockups in `context/design/` show the intended look and layout. They are a guide and can be changed when a feature plan gives a reason. The folder `context/` is kept on the development Mac and is not in the repo.
 - The product typeface is Libre Franklin, as in the mockups. The font file ships with the app, so it works offline.
 - The tab icon is the black and white Symple icon of `src/app/shell/logo.ts`. `public/favicon.svg` holds it with the letter drawn as a path, and `public/favicon.ico` is made from it.
 - Red Hat Display is stored next to it in `context/design/mockups/home/fonts/` for later use. No screen uses it until the user says so.
@@ -96,7 +98,7 @@ The versions below were set on 2026-11-16.
 
 ## Patents
 
-- The three patents in `context/patents/` cover generative content, generative messaging and an effector for brain computer interfaces.
+- The three patents in `context/patents/` cover generative content, generative messaging and an effector for brain computer interfaces. The folder is kept on the development Mac and is not in the repo.
 - Synchron Australia owns the two generative patents, US 12,260,774 and US 12,675,164.
 - Any feature that generates content or suggestions must be checked against these patents during its plan, before any code is written.
 - The two generative patents were read on 2026-11-16. The limits below come from that reading. It is not a legal opinion, and a patent attorney should confirm it before feature 7 is built.

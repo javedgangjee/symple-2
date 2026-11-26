@@ -219,6 +219,81 @@ scanTest(
 );
 
 scanTest(
+  'IV5: the scan never lands on the row Source code or on any control of the settings panel',
+  async ({ open }) => {
+    for (const [id, name] of [
+      ['home', 'Home'],
+      ['needs', 'Needs'],
+    ] as const) {
+      const page = await open(id, name);
+      // The caregiver has looked at the About category and closed the panel with Done.
+      await openPanelByShortcut(page);
+      await press(page, tab(page, 'About'));
+      await expect(pane(page, 'About')).toBeVisible();
+      await closePanel(page);
+      // The panel is closed, so the link is looked up by its tag and not by its role.
+      const link = pane(page, 'About').locator('a[href]');
+      await expect(link).toHaveCount(1);
+
+      /** Checks the panel, its controls and the row Source code after each step of the scan. */
+      const check = async (step: string) => {
+        const highlighted = await marked(page, 'data-scan');
+        expect(highlighted.cells, step).not.toContain('Source code');
+        expect(await panel(page).locator('[data-scan]').count(), step).toBe(0);
+        expect((await focusInPanel(page)).inside, step).toBe(false);
+        await expect(link, step).not.toBeFocused();
+        await expect(panel(page), step).not.toHaveAttribute('open');
+      };
+
+      // One round of the groups. The scan then goes to rest by itself.
+      const names = await boardCells(page);
+      await switchKey(page, 'Enter');
+      for (let step = 0; step < names.length; step++) {
+        await expect(groups(page).nth(step), `${name} group step ${step}`).toHaveAttribute(
+          'data-scan',
+          '',
+        );
+        await check(`${name} group step ${step}`);
+        await pass(page, SCAN_TIME);
+      }
+      await check(`${name} after the groups`);
+
+      // One round of the cells of each group.
+      for (const [group, groupNames] of names.entries()) {
+        // The scan makes a second pass over the cells or the groups it is on, goes back to the
+        // groups for two passes and then rests by itself. It is checked at each step.
+        const most = 2 * Math.max(...names.map((cellNames) => cellNames.length)) + 2 * names.length;
+        for (let step = 0; step < most; step++) {
+          if ((await grid(page).getAttribute('data-state')) === 'rest') {
+            break;
+          }
+          await pass(page, SCAN_TIME);
+          await check(`${name} before group ${group}, step ${step}`);
+        }
+        await expect(grid(page)).toHaveAttribute('data-state', 'rest');
+        await switchKey(page, 'Enter');
+        await pass(page, group * SCAN_TIME);
+        await expect(groups(page).nth(group)).toHaveAttribute('data-scan', '');
+        if (groupNames.length === 1) {
+          // A group of one cell has no cell step.
+          await check(`${name} group ${group}`);
+          await pass(page, SCAN_TIME);
+          continue;
+        }
+        await switchKey(page, 'Enter');
+        for (let step = 0; step < groupNames.length; step++) {
+          await expect(cellAt(page, group, step)).toHaveAttribute('data-scan', '');
+          await check(`${name} group ${group} cell step ${step}`);
+          await pass(page, SCAN_TIME);
+        }
+        await check(`${name} after the cells of group ${group}`);
+      }
+      await expect(title(page)).toHaveText(name);
+    }
+  },
+);
+
+scanTest(
   'ST4: while the panel is open nothing is highlighted, and Tab and Enter are not switches',
   async ({ open }) => {
     const page = await open('home', 'Home');
@@ -366,6 +441,20 @@ test('ST11: axe reports no WCAG 2.2 Level AA violation on any tab in any theme',
       await showTab(page, name);
       expect(await axeViolations(page), `${theme} ${name}`).toEqual([]);
     }
+  }
+});
+
+test('IV6: axe reports no WCAG 2.2 Level AA violation on the About category in any theme', async ({
+  page,
+}) => {
+  for (const theme of THEMES) {
+    await openBoard(page, 'home', { theme });
+    await openPanel(page);
+    await showTab(page, 'About');
+    await expect(
+      pane(page, 'About').getByRole('link', { name: 'github.com/javedgangjee/symple-2' }),
+    ).toBeVisible();
+    expect(await axeViolations(page), theme).toEqual([]);
   }
 });
 

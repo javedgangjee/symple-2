@@ -4,7 +4,7 @@ This review looks at code practice, code quality and repeated code. The first re
 
 ## What I ran and what I only read
 
-I ran `make check` with Node 22.23.5 on commit `f244201`. Lint, the format check, 103 unit tests, 106 end to end tests and the build all passed.
+I ran `make check` with Node 22.23.5 on commit `82dac4d`. Lint, the format check, 103 unit tests, 106 end to end tests and the build all passed.
 
 I read in full every source file under `src/app/boards`, `src/app/cells`, `src/app/keyboard`, `src/app/layout` and `src/app/theme`, the route and config files, `src/styles/cells.css` and `src/styles/glass.css`, and the three files under `e2e/support`. I read `e2e/boards.spec.ts`, `e2e/home.spec.ts` and `e2e/keyboard.spec.ts` in full. In `board-data.spec.ts`, `cell.spec.ts` and `e2e/shell.spec.ts` I read parts and searched the rest. I counted the repeats in finding 7 with grep.
 
