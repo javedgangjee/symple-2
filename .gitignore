@@ -56,3 +56,6 @@ Thumbs.db
 
 # The impeccable skill comes from another project and keeps its own licence. skills-lock.json names its source.
 /.claude/skills/impeccable/
+
+# The cache that a deploy to Firebase Hosting leaves
+/.firebase/
