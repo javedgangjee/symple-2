@@ -18,7 +18,7 @@ Two rules apply to every feature. Each screen for the primary user must work by 
 
 ## Release
 
-13. **Public release.** Symple is released to the public as the web app, with a link to the public repo and its licence. The user decided on 2026-11-25 that the release holds the web app and the repo only. The download link for the Mac app and the App Store submission for the iPad app wait for features 10 and 11. Covers: the release step added on 2026-11-16, Platform. Status: in progress.
+13. **Public release.** Symple is released to the public as the web app, with a link to the public repo and its licence. The user decided on 2026-11-25 that the release holds the web app and the repo only. The download link for the Mac app and the App Store submission for the iPad app wait for features 10 and 11. Covers: the release step added on 2026-11-16, Platform. Status: done.
 
 ## Packaging
 
@@ -54,11 +54,8 @@ Each question must be answered in the plan of the feature it names.
 - Feature 11: whether Firebase Auth keeps the sign in inside Capacitor.
 - Feature 11: whether the iPad app works in portrait. Features before it are built and tested in landscape only.
 - Feature 11: the end to end tests run in Chromium only until then. The plan must add WebKit.
-- Feature 13: whether a caregiver can sign up in the app. Until then the user makes each account in the Firebase console.
-- Feature 13: which licence the public repo uses. The Mulberry symbols are CC BY-SA 4.0, so the choice must allow for that.
 - Feature 10: whether the Mac app also goes to the Mac App Store, or is offered only as a download. This question moved from feature 13 on 2026-11-25, when the release became the web app and the repo only.
-- Feature 13: whether the patent attorney has confirmed the limits in tech-stack.md, because the release includes the generated suggestions of feature 7.
-- Feature 13: where the web app is hosted and at which address. The user decided on 2026-11-25 that the release holds the web app and the repo only, and nothing yet says where the web app runs.
+- Feature 7: whether the patent attorney has confirmed the limits in tech-stack.md. This question moved from feature 13 on 2026-11-25, because the release holds no generated content.
 - Feature 14: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
 - Feature 17: when the timed games are added, and how slow they run.
 - Feature 18: where the Twilio keys are kept and how incoming texts reach the app. The two candidates are Firebase functions with Firestore, and Twilio Conversations.
@@ -168,6 +165,15 @@ Each question must be answered in the plan of the feature it names.
 - Feature 23: its validation is automated only. The user removed the manual checks on 2026-11-25.
 - Feature 13: the public release holds the web app and the repo only. The user decided this on 2026-11-25.
 
+## Decisions made on 2026-11-25, on feature 13
+
+- Feature 13: testers are invited only. The app has no sign up, and the user makes each account in the Firebase console.
+- Feature 13: the code is under the Apache License 2.0.
+- Feature 13: Firebase Hosting serves the web app at `https://symple-2.web.app`, and the version is `0.1.0`.
+- Feature 13: the folder `context/` was removed from every commit and is kept on the development Mac only.
+- Feature 13: the user connected the domain `symple-aac.com` to the same Hosting site during the validate run. The requirements of the feature had said the release has no domain of its own.
+- Feature 13: the feature was merged, pushed and made public on 2026-11-25, during its validate run, because check H3 of its validation.md, which looks at the public repo, needs the public repo.
+
 ## Skipped checks
 
 Each line is a check that was skipped during validation, with the requirement that has no passing check until it is run. A check is removed from this list when it is run and passes.
@@ -182,6 +188,9 @@ Each line is a check that was skipped during validation, with the requirement th
 - Feature 23, on 2026-11-25: its manual checks H1 to H4 were removed before validation and were never run. They tried the look of the tile dialog, the search with real names, VoiceOver in the Picture field, and the sync of a tile with a new picture to a second device. Requirements 1, 2, 4, 5, 14, 17, 18 and 21 of feature 23 have only automated checks.
 - Feature 23, on 2026-11-25: requirements 7, 8, 23 and 24 of feature 23 have no check in its validation.md. They say that the feature adds no cloud service, that the patent check does not apply to the search, that the credits name the Mulberry release, and which file names the feature uses.
 - Feature 23, on 2026-11-25: finding 4 of its review is kept and not fixed. It says the third edit button of a narrow cell runs past the cell and is covered by the Remove button of the next cell.
+- Feature 13, on 2026-11-25: check A5 of its validation.md, the end to end tests, had no clean full run. Case K31 of feature 4, which checks that no round cursor is drawn outside `cursor` mode, stopped at the sign in screen and passed when run again. This is the lost sign in that the decisions of feature 4 record.
+- Feature 13, on 2026-11-25: items 6, 7 and 10 of its requirements have no check. They say that the patent check does not apply, which features the release holds, and that the question for the patent attorney stays open for feature 7.
+- Feature 13, on 2026-11-25: nobody has yet seen `https://symple-aac.com` answer. Firebase had accepted the proof of ownership and was still waiting to see the A record when the run ended.
 
 ## Not on the roadmap
 

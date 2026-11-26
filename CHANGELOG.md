@@ -4,6 +4,10 @@ This file records what changed in Symple for a person who reads or runs the proj
 
 ## Unreleased
 
+## 0.1.0 (2026-11-25)
+
+The first public release of Symple is the web app, with a link to the public repo and its licence.
+
 ### Added
 
 - Feature 1 adds the Angular app, which shows an empty home screen with the shared header, the main area and the footer.
@@ -87,6 +91,14 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 23 adds `scripts/import-mulberry.mjs` and `scripts/import-lucide.mjs`, which bring in the two sets, and `scripts/check-pictures.mjs`, which checks the lists against the files. `npm run check:pictures` runs the check, and `make check` includes it.
 - Feature 23 adds `public/licenses/mulberry.txt`, which is the licence text of the Mulberry release, and an Importing the pictures section to `README.md`.
 - Feature 23 adds unit tests for the loader, the icons, the edits, the search, the lists of names and the tile dialog, and end to end cases for the pictures and for the drop on Add column in `e2e/editing.spec.ts`.
+- Feature 13 adds the `LICENSE` file with the text of the Apache License 2.0, and a `NOTICE` file that names the copyright holder and says which files the licences of Mulberry, Lucide and Libre Franklin cover.
+- Feature 13 adds a hosting block to `firebase.json`, so Firebase Hosting serves the web app at https://symple-2.web.app. A missing script, style or font gets a 404, and every other path gets `index.html`.
+- Feature 13 adds the npm script `deploy` and the target `make deploy`, which build the app and send it to Firebase Hosting. Only the owner of the project runs it.
+- Feature 13 adds a row "Source code" to the About category of the settings panel, with a link to the repo and the name of the licence.
+- Feature 13 adds a line under the form of the sign in screen, which says that Symple is in testing and that accounts are by invitation, with the link "About Symple" to the repo.
+- Feature 13 adds `scripts/check-release.mjs`, which checks the release files and looks for secrets and for files under `context/` in the tracked files and in every commit. `make check` runs it with its own tests.
+- Feature 13 adds the sections Try it, Privacy and Release to `README.md`.
+- The release adds the domain `symple-aac.com`, which serves the same site as https://symple-2.web.app.
 
 ### Changed
 
@@ -119,6 +131,8 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 23 names the selection modes "Scan" and "Step" in the settings panel, in place of "Scan, one switch" and "Step, two switches".
 - Feature 23 makes Sign out a button with an outline at the end of the Signed in as row of the settings panel.
 - Feature 23 changes `public/licenses/lucide.txt`, `public/symbols/ATTRIBUTION.txt`, `README.md` and `specs/tech-stack.md` to describe the full sets.
+- Feature 13 sets the version in `package.json` to `0.1.0` and the field `license` to `Apache-2.0`.
+- Feature 13 makes `CLAUDE.md`, `README.md` and `specs/tech-stack.md` say that the folder `context/` is kept on the development Mac and is not in the repo.
 
 ### Fixed
 
@@ -130,3 +144,4 @@ This file records what changed in Symple for a person who reads or runs the proj
 - Feature 8 removes `public/licenses/material-icons.txt` and every credit for the Material icons and for OpenMoji.
 - Feature 8 removes the end to end case N15 of `e2e/sign-in.spec.ts`, which checked that Sign out sits in the bottom right corner of the footer, and the unit case O2 of the footer, which pressed Sign out there.
 - Feature 9 removes the recoloured cell rules in `src/styles/cells.css` that no cell used.
+- Feature 13 removes the folder `.claude/skills/impeccable/` from the repo, because it is the skill of another project, and `.gitignore` now names it.
