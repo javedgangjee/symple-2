@@ -116,3 +116,35 @@ Expected result: the repo opens without a sign in, GitHub names the licence besi
 1. Open the Auth settings of the project `symple-2`.
 
 Expected result: account creation is off, email enumeration protection is on, and `symple-2.web.app` is an authorised domain.
+
+## Results of 2026-11-25
+
+The automated checks ran on the feature branch with Node 22.23.5. The default Node of the shell was 22.22.1, which the build refuses.
+
+### Automated checks
+
+- A1, the build: pass. It ended with no errors and no warnings and wrote `dist/symple/browser/index.html`.
+- A2, lint and format: pass.
+- A3, the release files: pass. All 13 cases passed, from RC1 to RC13. It passed again on main after the merge.
+- A6, the search of the history on made-up repos: pass. All 5 cases passed, from HS1 to HS5.
+- A4, the unit tests: pass. 475 of 475 tests passed, with cases IV1 and IV2 of the sign in screen and case AB1 of the About category among them.
+- A5, the end to end tests: no clean full run. 322 of 323 tests passed. The one failure was case K31 of feature 4, which checks that no round cursor is drawn outside `cursor` mode. It stopped at the sign in screen before its first step, which is the lost sign in that the roadmap records with an unknown cause. It passed when run again. The four cases of feature 13, IV3 to IV6, passed in both runs.
+
+### Manual checks
+
+- H1, the live web app: pass, as the user reported. Claude also saw that the live address serves Symple, that a deep path gets `index.html` with `no-cache`, that the script with a hash in its name is kept for a year, and that a missing script gets a 404.
+- H2, a second device: pass, as the user reported.
+- H3, the public repo: pass. Claude saw that the repo opens with no sign in, that GitHub names the licence Apache-2.0, and that main holds no folder `context/`. The two links in the app and the search of the commit list are passed on the user's report, which was given before the repo was public, in a window that was signed in to GitHub.
+- H4, the Firebase console: pass, as the user reported.
+
+### Requirements with no passing check
+
+- Items 6, 7 and 10 of requirements.md have no check. They say that the patent check does not apply, which features the release holds, and that the question for the patent attorney stays open for feature 7. Each is a statement and not a behaviour.
+- Item 14, the privacy note, is named by no check, but cases RC7 and RC11 of check A3 read the Privacy section of `README.md` and pass.
+
+### What differs from the plan
+
+- The feature was merged into main as commit `af17d59` and pushed during this run, before the run ended, because check H3 needs the public repo. The user chose this.
+- The user added the domain `symple-aac.com` to Firebase Hosting during this run. Its DNS records are in place, and it did not answer yet when the run ended. Item 11 of requirements.md still says the release has no domain of its own, and no document names the new address.
+- `make deploy` leaves an untracked folder `.firebase/`, which `.gitignore` does not name.
+- Part 5 of step 6 of plan.md, which closes the release `0.1.0` in `CHANGELOG.md`, is not done.
