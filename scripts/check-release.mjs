@@ -565,6 +565,20 @@ await check('RC12', 'NOTICE covers every file that holds a Lucide drawing', (pro
   }
 });
 
+await check('RC13', 'The skill of another project is ignored and not tracked', (problems) => {
+  // The skill comes from the GitHub repo that skills-lock.json names, and it keeps its own
+  // licence. NOTICE does not cover it, so it stays out of the repo.
+  const folder = '.claude/skills/impeccable';
+  const ignore = read('.gitignore', problems);
+  if (ignore !== undefined && !ignore.split('\n').some((line) => line.trim() === `/${folder}/`)) {
+    problems.push(`.gitignore does not name /${folder}/.`);
+  }
+  const tracked = git('ls-files', '-z', '--', folder).split('\0').filter(Boolean);
+  if (tracked.length > 0) {
+    problems.push(`${tracked.length} files under ${folder}/ are tracked.`);
+  }
+});
+
 if (failures.length > 0) {
   console.log(`\n${failures.length} of ${cases} cases failed: ${failures.join(', ')}.`);
   process.exit(1);

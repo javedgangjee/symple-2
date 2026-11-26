@@ -34,6 +34,7 @@ Command: `node scripts/check-release.mjs`
 | RC10 | The rewrite of `firebase.json`. | Its source leaves out every path that ends in `.js`, `.css` or `.woff2`, so a script, a style or a font that is missing gets a 404 and never `index.html`. Added for finding 1 of review.md, which says a request for a script that no longer exists gets `index.html` with the order to keep it for a year. |
 | RC11 | The Privacy section of `README.md`. | It does not say that Symple keeps "no other data". The line on Firebase Auth names the time of the last sign in, the IP address and the browser. Added for finding 4 of review.md, which says the Privacy section says Symple keeps no other data while Firebase Auth keeps more. |
 | RC12 | `NOTICE` and the tracked files under `src/app/`. | `NOTICE` names each file that holds a comment `<!-- Lucide`, by its own path or by a folder that holds it. Added for finding 5 of review.md, which says `NOTICE` leaves out three files that hold Lucide drawings. |
+| RC13 | `.gitignore` and the tracked files. | `.gitignore` names `/.claude/skills/impeccable/`, and no tracked file is under that folder. Added for finding 6 of review.md, which says the repo holds the skill of another project with no licence text while `NOTICE` says three parts come from other projects. The user chose on 2026-11-25 to take the folder out of the repo. |
 
 ### A6. The search of the history, on made-up repos (15)
 

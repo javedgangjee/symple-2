@@ -53,3 +53,6 @@ Thumbs.db
 
 # The mockups and the patents are kept on this machine only
 /context/
+
+# The impeccable skill comes from another project and keeps its own licence. skills-lock.json names its source.
+/.claude/skills/impeccable/
