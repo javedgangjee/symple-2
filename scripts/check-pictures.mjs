@@ -21,7 +21,7 @@ const SYMBOL_COUNT = 3437;
 const MULBERRY_COUNT = 3436;
 const OWN_FILES = ['stop.svg'];
 // The commit before feature 23, which holds the 99 symbols the app had.
-const BEFORE = '5aaec75';
+const BEFORE = '183eb73';
 // The rule of loadBoards for a symbol file.
 const SYMBOL_FILE = /^[a-z0-9-]+\.svg$/;
 // The Lucide release the app draws its icons from, its number of icons and its kinds of shape.

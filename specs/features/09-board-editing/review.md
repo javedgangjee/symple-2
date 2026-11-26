@@ -58,7 +58,7 @@ I read the specs of the feature, the whole diff against `main` and each new sour
 
 ## Votes, 2026-11-23
 
-Five voters checked each finding against the code of commit d381bd9. They read the code and ran nothing, so none of them repeated the reviewer's browser checks. No voter found a false statement of fact in the review. Each level below is the middle value of the five levels the voters gave.
+Five voters checked each finding against the code of commit cae9044. They read the code and ran nothing, so none of them repeated the reviewer's browser checks. No voter found a false statement of fact in the review. Each level below is the middle value of the five levels the voters gave.
 
 ### Kept findings, in order
 
@@ -86,11 +86,11 @@ The user picked findings 1, 2, 3, 6 and 7. Each fix has a unit test that failed 
 
 | Finding | Commit | What the fix did | Files | Check in validation.md |
 | --- | --- | --- | --- | --- |
-| Finding 1, the empty screen when a set change removes the board on show | edcbee2 | The board screen opens home when the board on show is no longer in the set. | `src/app/boards/board-screen.ts` | Case ES14, which removes the cell that opens Needs while Needs is on show and expects home. |
-| Finding 2, the board sync that saves over a cloud set the device never took | 28847ec | The sync saves a change only after it has handled the boards document of the account: it took a readable set, or the cloud itself reported no set. While the document holds a set this version cannot read, nothing is saved, and the Boards tab of the settings panel says so. | `src/app/sync/board-sync.ts`, `src/app/sync/board-sync-state.ts`, `src/app/settings/settings-panel.ts`, `.html` and `.css` | Case BY8, which adds a cell while the cloud holds a newer version's set and expects no save. Case BY9, which adds a cell before the first report and expects no save. |
-| Finding 3, the scan that goes to rest on any change of the set | edcbee2 | The scan is given the board again only when another board comes on show or the sizes of its groups change. | `src/app/boards/board-screen.ts` | Case ES15, which renames the board Food while the scan highlights the first group of Needs and expects the highlight to stay. |
-| Finding 6, the picked cell that moves when Add Tile of an empty group is pressed | edcbee2 | A press on a button inside a group no longer counts as a press on the group. | `src/app/boards/board-screen.ts` and `.html` | Case ES16, which presses Help and then Add Tile of an empty column and expects Help to stay. |
-| Finding 7, the status line that repeats the last change of an earlier edit session | 8d494a6 | Edit mode empties its status text when it turns on. | `src/app/edit/edit-mode.ts` | Case EM5, which tells a change, turns edit mode off and on, and expects an empty status text. |
+| Finding 1, the empty screen when a set change removes the board on show | 68cefe6 | The board screen opens home when the board on show is no longer in the set. | `src/app/boards/board-screen.ts` | Case ES14, which removes the cell that opens Needs while Needs is on show and expects home. |
+| Finding 2, the board sync that saves over a cloud set the device never took | 3b1bd8c | The sync saves a change only after it has handled the boards document of the account: it took a readable set, or the cloud itself reported no set. While the document holds a set this version cannot read, nothing is saved, and the Boards tab of the settings panel says so. | `src/app/sync/board-sync.ts`, `src/app/sync/board-sync-state.ts`, `src/app/settings/settings-panel.ts`, `.html` and `.css` | Case BY8, which adds a cell while the cloud holds a newer version's set and expects no save. Case BY9, which adds a cell before the first report and expects no save. |
+| Finding 3, the scan that goes to rest on any change of the set | 68cefe6 | The scan is given the board again only when another board comes on show or the sizes of its groups change. | `src/app/boards/board-screen.ts` | Case ES15, which renames the board Food while the scan highlights the first group of Needs and expects the highlight to stay. |
+| Finding 6, the picked cell that moves when Add Tile of an empty group is pressed | 68cefe6 | A press on a button inside a group no longer counts as a press on the group. | `src/app/boards/board-screen.ts` and `.html` | Case ES16, which presses Help and then Add Tile of an empty column and expects Help to stay. |
+| Finding 7, the status line that repeats the last change of an earlier edit session | 33e624b | Edit mode empties its status text when it turns on. | `src/app/edit/edit-mode.ts` | Case EM5, which tells a change, turns edit mode off and on, and expects an empty status text. |
 
 Two points differ from the fixes the review suggested.
 
