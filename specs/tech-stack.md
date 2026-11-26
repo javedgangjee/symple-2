@@ -8,7 +8,7 @@ The versions below were set on 2026-11-16.
 - The interface is one Angular 22 app. All three targets use the same build.
 - Electron 45 packages the build as the Mac app.
 - Capacitor 8 packages the build as the iPad app. There is no iPhone layout.
-- The web version is the Angular app served to a browser on a Mac. Firebase Hosting serves it at `https://symple-2.web.app`, from the hosting block of `firebase.json`. `make deploy` builds the app and deploys it, and only the user runs it. Added on 2026-11-25.
+- The web version is the Angular app served to a browser on a Mac. Firebase Hosting serves it at `https://symple-2.web.app`, from the hosting block of `firebase.json`. `make deploy` builds the app and deploys it, and only the user runs it. Added on 2026-11-25. The user's own domain `symple-aac.com` is connected to the same Hosting site and is in the authorised domains of Firebase Auth. Its DNS is at Cloudflare, with an A record that must stay on DNS only, because a proxied record stops Firebase from renewing the certificate. Added on 2026-11-25.
 
 ## Tools
 

@@ -6,7 +6,7 @@ Symple is one Angular app. The web app is live, and a Mac app and an iPad app wi
 
 ## Try it
 
-The web app is at https://symple-2.web.app, and the code is at https://github.com/javedgangjee/symple-2.
+The web app is at https://symple-aac.com, and the code is at https://github.com/javedgangjee/symple-2. The same site is also at https://symple-2.web.app.
 
 - Symple is in testing, and accounts are by invitation. Without an account you can open the sign in screen and nothing more.
 - The web app is made for a browser on a Mac.
@@ -79,14 +79,14 @@ Once a board has changed, the whole set of boards is kept in the local storage o
 
 ## Release
 
-Firebase Hosting serves the web app at https://symple-2.web.app, from the Firebase project `symple-2`. The owner of the project releases by hand.
+Firebase Hosting serves the web app at https://symple-2.web.app, from the Firebase project `symple-2`. The domain `symple-aac.com` is connected to the same site, so one deploy serves both addresses. The owner of the project releases by hand.
 
 Release from `main`. Merge the work first, and start with nothing uncommitted, so that the build you deploy is the code you push. Then follow these steps in order.
 
 1. Check the Firebase project in the Firebase console.
    - Open Authentication and then Settings. Account creation must be off under User actions.
    - On the same page, email enumeration protection must be on.
-   - On the same page, `symple-2.web.app` must be in the authorised domains.
+   - On the same page, `symple-2.web.app` and `symple-aac.com` must be in the authorised domains.
    - Open Usage and billing, and check the use of the project against the limits of its plan.
 2. Run `make check`. Every check must pass.
 3. Run `make deploy`. It builds the app and sends the folder `dist/symple/browser` to Firebase Hosting. It does not run the checks, which is why step 2 comes first. The first run asks to install `firebase-tools`, and the answer is yes. If it says you are not signed in, run `npx firebase-tools login` once and run `make deploy` again.
