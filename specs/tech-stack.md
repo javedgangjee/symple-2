@@ -101,7 +101,7 @@ The versions below were set on 2026-11-16.
 - The three patents in `context/patents/` cover generative content, generative messaging and an effector for brain computer interfaces. The folder is kept on the development Mac and is not in the repo.
 - Synchron Australia owns the two generative patents, US 12,260,774 and US 12,675,164.
 - Any feature that generates content or suggestions must be checked against these patents during its plan, before any code is written.
-- The two generative patents were read on 2026-11-16. The limits below come from that reading. It is not a legal opinion, and a patent attorney should confirm it before feature 7 is built.
+- The two generative patents were read on 2026-11-16. The limits below come from that reading. It is not a legal opinion. The user decided on 2026-11-25 that feature 7 does not wait for a patent attorney to confirm it.
 - Generated suggestions must not carry an emotion or a tone. Symple does not label, colour, group or offer them by emotion or tone, and the user never picks a mood first.
 - Symple does not accept input from a brain computer interface, and its documents do not offer one. This includes an EEG headset used as a switch.
 - Symple does not classify the topic of a message as a separate step, and it does not record the speech of the other person.

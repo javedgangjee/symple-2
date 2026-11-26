@@ -55,7 +55,6 @@ Each question must be answered in the plan of the feature it names.
 - Feature 11: whether the iPad app works in portrait. Features before it are built and tested in landscape only.
 - Feature 11: the end to end tests run in Chromium only until then. The plan must add WebKit.
 - Feature 10: whether the Mac app also goes to the Mac App Store, or is offered only as a download. This question moved from feature 13 on 2026-11-25, when the release became the web app and the repo only.
-- Feature 7: whether the patent attorney has confirmed the limits in tech-stack.md. This question moved from feature 13 on 2026-11-25, because the release holds no generated content.
 - Feature 14: what the web version shows for photos, because a browser cannot read the device's photo library and no streaming service covers photos.
 - Feature 17: when the timed games are added, and how slow they run.
 - Feature 18: where the Twilio keys are kept and how incoming texts reach the app. The two candidates are Firebase functions with Firestore, and Twilio Conversations.
@@ -172,6 +171,7 @@ Each question must be answered in the plan of the feature it names.
 - Feature 13: Firebase Hosting serves the web app at `https://symple-2.web.app`, and the version is `0.1.0`.
 - Feature 13: the folder `context/` was removed from every commit and is kept on the development Mac only.
 - Feature 13: the user connected the domain `symple-aac.com` to the same Hosting site during the validate run. The requirements of the feature had said the release has no domain of its own.
+- Feature 7: no patent attorney needs to confirm the limits in tech-stack.md before word suggestions are built. The user decided this on 2026-11-25 and removed the open question. The patent check of the plan and the limits themselves still apply.
 - Feature 13: the feature was merged, pushed and made public on 2026-11-25, during its validate run, because check H3 of its validation.md, which looks at the public repo, needs the public repo.
 
 ## Skipped checks
